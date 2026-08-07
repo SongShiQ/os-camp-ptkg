@@ -11,7 +11,7 @@ PTKG is being expanded from a project-graph validator into a deterministic cours
 | G2 course planner | Complete | Deterministic `os-camp-course@1` compiler, calibration unit, normalized hashes and Dream Agent projection |
 | G3 course quality | Complete | `COURSE001-012`, Ed25519 trust validation, tamper rejection and deterministic tgz; Windows/Ubuntu CI green |
 | G4 Dream Agent import | Complete | `SongShiQ/Dream-Agent:feat/course-package-import`; transactional signed import, immutable versions, cohort pinning and rollback; 203 tests |
-| G5 golden courses | In progress | cgroup 14-unit candidate course complete; full ABI course and rCore cross-repository smoke remain |
+| G5 golden courses | In progress | cgroup 14-unit candidate course complete; commit `79ba1eb`, Windows/Ubuntu CI run `31176323277` green; full ABI course and rCore smoke remain |
 | G6 trusted release | Blocked on implementation | Docker daemon is currently unavailable; real execution cannot be claimed |
 
 Current regression baseline:
