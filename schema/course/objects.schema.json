@@ -1,0 +1,227 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://os-camp.dev/ptkg/course/objects@1.schema.json",
+  "$defs": {
+    "id": { "type": "string", "minLength": 1, "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._@-]*$" },
+    "sha40": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "sha64": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "ids": { "type": "array", "items": { "$ref": "#/$defs/id" }, "uniqueItems": true },
+    "strings": { "type": "array", "items": { "type": "string" } },
+    "status": { "enum": ["candidate", "unresolved", "reviewed"] },
+    "generator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool", "version"],
+      "properties": {
+        "tool": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "agent": { "type": "string", "minLength": 1 }
+      }
+    },
+    "manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "course_id", "version", "title", "language", "package_status", "curriculum_boundary", "project_ref", "generator"],
+      "properties": {
+        "contract": { "const": "os-camp-course@1" },
+        "course_id": { "$ref": "#/$defs/id" },
+        "version": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "language": { "type": "string", "minLength": 1 },
+        "package_status": { "enum": ["draft", "release"] },
+        "curriculum_boundary": { "const": "pre_project_readiness" },
+        "project_ref": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["repo", "commit", "tree"],
+          "properties": {
+            "repo": { "type": "string", "minLength": 1 },
+            "commit": { "$ref": "#/$defs/sha40" },
+            "tree": { "$ref": "#/$defs/sha40" }
+          }
+        },
+        "generator": { "$ref": "#/$defs/generator" }
+      }
+    },
+    "stage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "layer", "order", "title", "required", "unit_ids", "prerequisite_stage_ids", "status", "source_refs", "content_hash"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "layer": { "enum": ["tutorial", "foundation", "pre_project", "project_reference"] },
+        "order": { "type": "integer", "minimum": 0 },
+        "title": { "type": "string", "minLength": 1 },
+        "required": { "type": "boolean" },
+        "unit_ids": { "$ref": "#/$defs/ids" },
+        "prerequisite_stage_ids": { "$ref": "#/$defs/ids" },
+        "status": { "$ref": "#/$defs/status" },
+        "source_refs": { "$ref": "#/$defs/ids" },
+        "content_hash": { "$ref": "#/$defs/sha64" }
+      }
+    },
+    "unit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "stage_id", "title", "required", "node_ids", "prerequisite_unit_ids", "source_refs", "origin_projects", "reuse_count", "dependency_depth", "card_ids", "question_ids", "practice_ids", "gate_ids", "status", "generated_by", "content_hash"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "stage_id": { "$ref": "#/$defs/id" },
+        "title": { "type": "string", "minLength": 1 },
+        "required": { "type": "boolean" },
+        "node_ids": { "$ref": "#/$defs/ids" },
+        "prerequisite_unit_ids": { "$ref": "#/$defs/ids" },
+        "source_refs": { "$ref": "#/$defs/ids" },
+        "origin_projects": { "$ref": "#/$defs/ids" },
+        "reuse_count": { "type": "integer", "minimum": 0 },
+        "dependency_depth": { "type": "integer", "minimum": 0 },
+        "card_ids": { "$ref": "#/$defs/ids" },
+        "question_ids": { "$ref": "#/$defs/ids" },
+        "practice_ids": { "$ref": "#/$defs/ids" },
+        "gate_ids": { "$ref": "#/$defs/ids" },
+        "status": { "$ref": "#/$defs/status" },
+        "generated_by": { "$ref": "#/$defs/generator" },
+        "content_hash": { "$ref": "#/$defs/sha64" }
+      }
+    },
+    "question": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "unit_ids", "node_ids", "source_refs", "pool", "type", "prompt", "options", "answer", "explanation", "difficulty", "status", "generated_by", "content_hash"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "unit_ids": { "$ref": "#/$defs/ids" },
+        "node_ids": { "$ref": "#/$defs/ids" },
+        "source_refs": { "$ref": "#/$defs/ids" },
+        "pool": { "enum": ["diagnostic", "checkpoint"] },
+        "type": { "enum": ["choice", "fill", "code", "design"] },
+        "prompt": { "type": "string", "minLength": 1 },
+        "options": { "$ref": "#/$defs/strings" },
+        "answer": { "type": "string", "minLength": 1 },
+        "explanation": { "type": "string", "minLength": 1 },
+        "difficulty": { "type": "number", "minimum": 0 },
+        "status": { "$ref": "#/$defs/status" },
+        "generated_by": { "$ref": "#/$defs/generator" },
+        "content_hash": { "$ref": "#/$defs/sha64" }
+      }
+    },
+    "practice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "unit_ids", "node_ids", "source_refs", "kind", "title", "instructions", "expected_evidence", "allowed_changes", "safety", "status", "generated_by", "content_hash"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "unit_ids": { "$ref": "#/$defs/ids" },
+        "node_ids": { "$ref": "#/$defs/ids" },
+        "source_refs": { "$ref": "#/$defs/ids" },
+        "kind": { "enum": ["observe", "trace", "code", "debug", "test", "review"] },
+        "title": { "type": "string", "minLength": 1 },
+        "instructions": { "$ref": "#/$defs/strings" },
+        "expected_evidence": { "$ref": "#/$defs/strings" },
+        "allowed_changes": { "$ref": "#/$defs/strings" },
+        "safety": { "$ref": "#/$defs/strings" },
+        "status": { "$ref": "#/$defs/status" },
+        "generated_by": { "$ref": "#/$defs/generator" },
+        "content_hash": { "$ref": "#/$defs/sha64" }
+      }
+    },
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "stage_id", "unit_ids", "prerequisite_gate_ids", "evidence_kinds", "pass_policy", "trusted_evidence", "status", "generated_by", "content_hash"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "stage_id": { "$ref": "#/$defs/id" },
+        "unit_ids": { "$ref": "#/$defs/ids" },
+        "prerequisite_gate_ids": { "$ref": "#/$defs/ids" },
+        "evidence_kinds": { "$ref": "#/$defs/strings" },
+        "pass_policy": { "type": "string", "minLength": 1 },
+        "trusted_evidence": { "type": "boolean" },
+        "status": { "$ref": "#/$defs/status" },
+        "generated_by": { "$ref": "#/$defs/generator" },
+        "content_hash": { "$ref": "#/$defs/sha64" }
+      }
+    },
+    "card": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "unit_ids", "node_ids", "source_refs", "status", "generated_by", "body", "content_hash", "file"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "type": "string", "minLength": 1 },
+        "unit_ids": { "$ref": "#/$defs/ids" },
+        "node_ids": { "$ref": "#/$defs/ids" },
+        "source_refs": { "$ref": "#/$defs/ids" },
+        "status": { "$ref": "#/$defs/status" },
+        "generated_by": { "$ref": "#/$defs/generator" },
+        "body": { "type": "string", "minLength": 1 },
+        "content_hash": { "$ref": "#/$defs/sha64" },
+        "file": { "type": "string", "pattern": "^content/cards/[a-zA-Z0-9._-]+\\.md$" }
+      }
+    },
+    "checksums": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "algorithm", "files", "root_hash"],
+      "properties": {
+        "contract": { "const": "os-camp-course-checksums@1" },
+        "algorithm": { "const": "sha256" },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "sha256", "bytes"],
+            "properties": {
+              "path": { "type": "string", "minLength": 1 },
+              "sha256": { "$ref": "#/$defs/sha64" },
+              "bytes": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "root_hash": { "$ref": "#/$defs/sha64" }
+      }
+    },
+    "attestation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spec_version", "actor", "role", "key_fingerprint", "public_key", "root_hash", "signature", "signed_at"],
+      "properties": {
+        "spec_version": { "const": "course-attestation@1" },
+        "actor": { "type": "string", "minLength": 1 },
+        "role": { "const": "course_release" },
+        "key_fingerprint": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "public_key": { "type": "string", "minLength": 1 },
+        "root_hash": { "$ref": "#/$defs/sha64" },
+        "signature": { "type": "string", "minLength": 1 },
+        "signed_at": { "type": "string", "minLength": 1 }
+      }
+    },
+    "projection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "course_id", "version", "stage_ids", "unit_ids", "question_ids", "practice_ids", "gate_ids", "card_ids", "graph"],
+      "properties": {
+        "contract": { "const": "dream-agent-course-projection@1" },
+        "course_id": { "$ref": "#/$defs/id" },
+        "version": { "type": "string", "minLength": 1 },
+        "stage_ids": { "$ref": "#/$defs/ids" },
+        "unit_ids": { "$ref": "#/$defs/ids" },
+        "question_ids": { "$ref": "#/$defs/ids" },
+        "practice_ids": { "$ref": "#/$defs/ids" },
+        "gate_ids": { "$ref": "#/$defs/ids" },
+        "card_ids": { "$ref": "#/$defs/ids" },
+        "graph": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["node_ids", "edge_ids", "source_ids"],
+          "properties": {
+            "node_ids": { "$ref": "#/$defs/ids" },
+            "edge_ids": { "$ref": "#/$defs/ids" },
+            "source_ids": { "$ref": "#/$defs/ids" }
+          }
+        }
+      }
+    }
+  }
+}

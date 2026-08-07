@@ -1,0 +1,13 @@
+spec_version: ptkg-project-input@1
+workspace_id: project.starryos.cgroup
+status: candidate
+repository:
+  locator: https://github.com/rcore-os/tgoskits
+  kind: remote
+  requested_ref: fc80b868fb3640efe8997994de42c1aee8fd74cb
+  commit: fc80b868fb3640efe8997994de42c1aee8fd74cb
+  tree: 832ce21ea6fdf32a8639c576cc97a137c2d14dcc
+goal: 完整 StarryOS cgroup v2 项目阶段之前的学习道路
+curriculum_boundary: pre_project_readiness
+documents: []
+unresolved_questions: []

@@ -24,3 +24,5 @@ jobs:
       - run: npm run check
       - run: npm run ptkg -- validate fixtures/cgroup-golden
       - run: npm run ptkg -- authoring-validate fixtures/authoring/cgroup-golden
+      - run: npm run ptkg -- course-compile fixtures/authoring/cgroup-golden --out ci-course
+      - run: npm run ptkg -- course-validate ci-course --profile draft

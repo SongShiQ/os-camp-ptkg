@@ -41,8 +41,13 @@ import { initializeProjectWorkspace } from './project/workspace.ts';
 import { authorProject } from './project/author.ts';
 import { getProjectStatus } from './project/status.ts';
 import type { AgentKind } from './project/types.ts';
+import { compileCourse } from './course/compiler.ts';
+import { formatCourseValidation, validateCoursePackage } from './course/validate.ts';
+import { signCoursePackage } from './course/sign.ts';
+import { packCoursePackage } from './course/pack.ts';
+import type { CourseProfile } from './course/types.ts';
 
-const USAGE = `OS Camp PTKG v0.3 — 项目牵引式课程作者与校验工具
+const USAGE = `OS Camp PTKG v0.4 — 项目牵引式课程作者与校验工具
 
 用法：
   ptkg init <dir>                  生成 bundle 骨架（manifest + 四个空文件）
@@ -65,6 +70,14 @@ const USAGE = `OS Camp PTKG v0.3 — 项目牵引式课程作者与校验工具
   ptkg author <dir> --agent codex|claude|manual
                                       执行或生成当前 checkpoint 指令
   ptkg status <dir>                   显示 checkpoint、未决项与下一步
+  ptkg course-compile <workspace> --out <package-dir>
+                                      编译确定性 os-camp-course@1 课程包
+  ptkg course-validate <package-dir> --profile draft|release
+                                      执行 COURSE001-012 质量门
+  ptkg course-sign <package-dir> --key <pkcs8-key> --actor <teacher-id>
+                                      使用 Ed25519 教师身份签署 release
+  ptkg course-pack <package-dir> [--out <archive.tgz>]
+                                      校验并生成确定性 tgz 归档
 
 选项：
   --json                 以 JSON 输出（供网页/CI 消费）
@@ -79,6 +92,9 @@ const USAGE = `OS Camp PTKG v0.3 — 项目牵引式课程作者与校验工具
   --doc <路径或URL>       可重复的项目文档
   --ref <commit/ref>      可选源码 ref；最终仍锁定 40 位 commit
   --agent <名称>          codex / claude / manual
+  --key <文件>            Ed25519 PKCS#8 私钥文件
+  --actor <ID>            教师或发布责任人 ID
+  --trust-store <文件>    ptkg-trust-store@1 外部可信公钥
 
 退出码：
   0  无 blocker（可进入教师审核）
@@ -120,7 +136,7 @@ function parseArgs(argv: string[]): ParsedArgs {
 
     const name = arg.slice(2);
     // 带值的选项
-    if (['only', 'skip', 'stale-after', 'max', 'out', 'profile', 'cache-dir', 'slice', 'image', 'run-command', 'timeout-seconds', 'memory-mb', 'processes', 'repo', 'goal', 'doc', 'ref', 'agent'].includes(name)) {
+    if (['only', 'skip', 'stale-after', 'max', 'out', 'profile', 'cache-dir', 'slice', 'image', 'run-command', 'timeout-seconds', 'memory-mb', 'processes', 'repo', 'goal', 'doc', 'ref', 'agent', 'key', 'actor', 'trust-store'].includes(name)) {
       const value = argv[i + 1];
       if (value === undefined || value.startsWith('--')) {
         throw new Error(`选项 --${name} 需要一个值。`);
@@ -342,6 +358,14 @@ function parseProfile(value: string | boolean | undefined): AuthoringProfile {
   return value as AuthoringProfile;
 }
 
+function parseCourseProfile(value: string | boolean | undefined): CourseProfile {
+  if (value === undefined) return 'draft';
+  if (typeof value !== 'string' || !['draft', 'release'].includes(value)) {
+    throw new Error('--profile 只接受 draft / release。');
+  }
+  return value as CourseProfile;
+}
+
 // ── 主流程 ────────────────────────────────────────────────────────────
 
 async function main(argv: string[]): Promise<number> {
@@ -411,6 +435,73 @@ async function main(argv: string[]): Promise<number> {
         console.log(`退出码：${result.exit_code}`);
       }
       return result.exit_code === 0 ? 0 : 1;
+    }
+
+    case 'course-compile': {
+      const workspace = positional[0];
+      const output = flags.get('out');
+      if (!workspace || typeof output !== 'string') {
+        throw new Error('course-compile 需要 <workspace> 和 --out <package-dir>。');
+      }
+      const compiled = await compileCourse(workspace, output);
+      const validation = await validateCoursePackage(compiled.package_dir, 'draft');
+      if (asJson) console.log(JSON.stringify({ compiled, validation }, null, 2));
+      else {
+        console.log(`课程包已编译：${compiled.package_dir}`);
+        console.log(`package root：${compiled.checksums.root_hash}`);
+        console.log(formatCourseValidation(validation));
+      }
+      return validation.passed ? 0 : 1;
+    }
+
+    case 'course-validate': {
+      const directory = positional[0];
+      if (!directory) throw new Error('course-validate 需要 <package-dir>。');
+      const profile = parseCourseProfile(flags.get('profile'));
+      const trustStore = flags.get('trust-store');
+      const result = await validateCoursePackage(directory, profile, {
+        trustStore: typeof trustStore === 'string' ? trustStore : undefined,
+      });
+      if (asJson) console.log(JSON.stringify(result, null, 2));
+      else console.log(formatCourseValidation(result));
+      return result.passed ? 0 : 1;
+    }
+
+    case 'course-sign': {
+      const directory = positional[0];
+      const key = flags.get('key');
+      const actor = flags.get('actor');
+      if (!directory || typeof key !== 'string' || typeof actor !== 'string') {
+        throw new Error('course-sign 需要 <package-dir>、--key <pkcs8-key> 和 --actor <teacher-id>。');
+      }
+      const result = await signCoursePackage(directory, key, actor);
+      if (asJson) console.log(JSON.stringify(result, null, 2));
+      else {
+        console.log(`课程包已签名：${result.package_dir}`);
+        console.log(`actor：${result.attestation.actor}`);
+        console.log(`key：${result.attestation.key_fingerprint}`);
+        console.log(`package root：${result.attestation.root_hash}`);
+      }
+      return 0;
+    }
+
+    case 'course-pack': {
+      const directory = positional[0];
+      if (!directory) throw new Error('course-pack 需要 <package-dir>。');
+      const trustStore = flags.get('trust-store');
+      const output = flags.get('out');
+      const result = await packCoursePackage(
+        directory,
+        typeof output === 'string' ? output : undefined,
+        typeof trustStore === 'string' ? trustStore : undefined,
+      );
+      if (asJson) console.log(JSON.stringify(result, null, 2));
+      else {
+        console.log(`课程归档：${result.archive}`);
+        console.log(`bytes：${result.bytes}`);
+        console.log(`package root：${result.root_hash}`);
+      }
+      return 0;
     }
 
     case 'init':

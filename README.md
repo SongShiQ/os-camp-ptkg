@@ -55,15 +55,29 @@ ptkg status <workspace>
 
 If a repository contains several plausible project goals, initialization stops at the project-contract checkpoint instead of silently choosing one.
 
-## Target Course Compiler CLI (G2-G3)
+## Course Compiler and Release CLI (G2-G3)
 
-The following names are frozen but remain unavailable until G2/G3 is complete:
+Course compilation, validation, signing, and deterministic archiving are available:
 
 ```bash
 ptkg course-compile <workspace> --out <package-dir>
-ptkg course-validate <package-dir> --profile draft|release
+ptkg course-validate <package-dir> --profile draft|release [--trust-store <file>]
 ptkg course-sign <package-dir> --key <ed25519-key> --actor <teacher-id>
-ptkg course-pack <package-dir> [--out <archive.tgz>]
+ptkg course-pack <package-dir> [--out <archive.tgz>] [--trust-store <file>]
+```
+
+`course-compile` reads `09-course/` from a staged authoring workspace and writes normalized JSONL, content hashes, checksums, and the Dream Agent projection. The output directory must be empty. Draft validation permits `candidate`/`unresolved` content only as review findings; release validation blocks it.
+
+`course-sign` accepts an Ed25519 PKCS#8 private key, changes the package to release status only after all non-signature release checks pass, and writes a public attestation. A signature does not trust itself. `course-validate --profile release` and `course-pack` require a separate `ptkg-trust-store@1` file through `--trust-store` or `PTKG_TRUST_STORE`:
+
+```yaml
+spec_version: ptkg-trust-store@1
+keys:
+  - actor: teacher.chen
+    public_key: |
+      -----BEGIN PUBLIC KEY-----
+      ...
+      -----END PUBLIC KEY-----
 ```
 
 ## Course Package Contract
@@ -87,7 +101,9 @@ projections/dream-agent-v1.json
 checksums.json
 ```
 
-Stages are `tutorial`, `foundation`, `pre_project`, and `project_reference`. The last stage provides project context only. A release package must have fixed source evidence, no unresolved high-risk content, complete required-unit learning assets, canonical checksums, and a trusted Ed25519 teacher signature.
+Stages are `tutorial`, `foundation`, `pre_project`, and `project_reference`. The last stage provides project context only. A required unit must have a knowledge card, a code or high-fidelity practice, two diagnostic/remediation questions, two checkpoint questions, and a trusted-evidence gate. `COURSE001-012` enforce structure, paths/checksums, graph references and DAGs, assets, question pools, evidence, fixed source, review status, reuse metadata, privacy, signature trust, and projection consistency.
+
+The cgroup authoring fixture now contains one complete candidate calibration unit. It demonstrates compilation and teacher review input; it is intentionally not presented as an approved course or a complete cgroup curriculum.
 
 ## Available PTKG Commands
 
@@ -138,7 +154,7 @@ npm test
 npm run check
 ```
 
-CI runs the full check and golden validations on Windows and Ubuntu. The G1 baseline contains 31 tests. Rule meanings are append-only: PTKG001-014 retain their existing semantics, while course-package findings use the independent `COURSE001+` namespace.
+CI runs the full check and graph, authoring, and course-package golden validations on Windows and Ubuntu. The G2/G3 baseline contains 37 tests. Rule meanings are append-only: PTKG001-014 retain their existing semantics, while course-package findings use the independent `COURSE001-012` namespace.
 
 See [STATUS.md](./STATUS.md) for the current implementation gate and [AGENT_INSTRUCTIONS.md](./AGENT_INSTRUCTIONS.md) for the authoring protocol.
 

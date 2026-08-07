@@ -1,0 +1,18 @@
+spec_version: course-blueprint@1
+course_id: oscamp.starryos.cgroup
+version: 0.1.0
+title: StarryOS cgroup 项目先导课程
+language: zh-CN
+stages:
+  - id: stage.starryos.cgroup.foundation
+    layer: foundation
+    order: 10
+    title: cgroup 核心语义与源码纵切
+    required: true
+    unit_ids:
+      - unit.starryos.cgroup.pids-vertical
+    prerequisite_stage_ids: []
+    status: candidate
+    source_refs:
+      - src.tgoskits.pr1379
+      - src.linux.cgroup-v2-doc

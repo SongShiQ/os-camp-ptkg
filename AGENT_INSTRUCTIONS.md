@@ -100,6 +100,8 @@ ptkg authoring-hash <workspace> --write
 ptkg authoring-verify-workspace <workspace>
 ptkg authoring-validate <workspace>
 ptkg validate <workspace>/07-projection
+ptkg course-compile <workspace> --out <empty-package-dir>
+ptkg course-validate <package-dir> --profile draft
 ```
 
 Zero blocker means the artifact may enter teacher review; it does not mean the Agent may release it. Preserve unresolved questions in the status report.

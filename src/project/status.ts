@@ -1,4 +1,4 @@
-import { readFile, stat } from 'node:fs/promises';
+import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import YAML from 'yaml';
 
@@ -68,7 +68,12 @@ export async function getProjectStatus(workspace: string): Promise<ProjectWorksp
     '09-course/practices.jsonl',
     '09-course/gates.jsonl',
   ];
-  const courseExists = (await Promise.all(courseFiles.map((file) => exists(path.join(root, file))))).every(Boolean);
+  const courseCards = await stat(path.join(root, '09-course', 'cards')).catch(() => null);
+  const cardFiles = courseCards?.isDirectory()
+    ? (await readdir(path.join(root, '09-course', 'cards'))).filter((file) => file.endsWith('.md'))
+    : [];
+  const courseExists = (await Promise.all(courseFiles.map((file) => exists(path.join(root, file))))).every(Boolean)
+    && cardFiles.length > 0;
   const reviewComplete = await exists(path.join(root, '08-governance', 'review-queues.json'));
 
   const checkpoints: CheckpointState[] = [];
