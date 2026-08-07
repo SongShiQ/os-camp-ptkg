@@ -1,0 +1,2 @@
+# authoring profile 尚未产生正式审核事件。
+{"spec_version":"review-event@0.1","event_id":"review.broken.local-publish","run_id":"run.starryos.cgroup.001","object_ref":"source-contract.starryos.cgroup","object_hash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","action":"publish","actor_id":"local-user","actor_roles":["release_owner"],"authentication":"local_unverified_review","reason":"试图从本地直接发布","scope":["complete_course"],"created_at":"2026-07-27T00:00:00+08:00"}

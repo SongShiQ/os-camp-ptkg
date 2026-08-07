@@ -1,0 +1,7 @@
+authoring_version: "0.1"
+run_id: run.starryos.cgroup.001
+profile: authoring
+project_ref:
+  repo: https://github.com/rcore-os/tgoskits
+  commit: fc80b868fb3640efe8997994de42c1aee8fd74cb
+reports_dir: reports

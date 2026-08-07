@@ -1,0 +1,289 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://os-camp.dev/ptkg/0.1/node.schema.json",
+  "title": "PTKG Node",
+  "description": "所有节点的统一 schema。公共字段在 properties 里，各 type 的专有必填项由 allOf 的条件分支强制。设计意图：让「理解 cgroup」这类空洞主张在结构层就被拒绝，而不是等人工审核。",
+  "type": "object",
+  "required": ["id", "type", "title", "status"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^(project|outcome|wp|competency|practice|kc|binding|artifact|evidence|misconception|gate)\\.[a-z0-9]",
+      "description": "id 前缀必须与 type 对应，见 allOf 里的前缀约束。人和机器都靠前缀快速判断层级。"
+    },
+    "type": {
+      "enum": [
+        "project",
+        "outcome",
+        "work_package",
+        "competency",
+        "practice",
+        "knowledge",
+        "project_binding",
+        "repo_artifact",
+        "evidence",
+        "misconception",
+        "gate"
+      ]
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "status": {
+      "enum": ["candidate", "unresolved", "approved", "published", "stale", "deprecated"],
+      "description": "AI 只能产出 candidate / unresolved。approved / published 只能由教师在审核流程中赋予。"
+    },
+    "scope": {
+      "enum": ["canonical", "project"],
+      "description": "canonical=可跨项目复用的通用知识积木；project=项目特有。knowledge 节点必填。"
+    },
+
+    "statement": { "type": "string", "minLength": 1 },
+    "claim": { "type": "string", "minLength": 1 },
+    "conditions": { "type": "array", "items": { "type": "string" } },
+    "quality_criteria": { "type": "array", "items": { "type": "string" } },
+    "difficulty": {
+      "type": "object",
+      "description": "多维难度，不用单一 1-5 主观分。缺项按未评估处理。",
+      "properties": {
+        "prerequisite_depth": { "type": "integer", "minimum": 0, "maximum": 5 },
+        "subsystem_span": { "type": "integer", "minimum": 0, "maximum": 5 },
+        "concurrency": { "type": "integer", "minimum": 0, "maximum": 5 },
+        "source_maturity": { "type": "integer", "minimum": 0, "maximum": 5 },
+        "error_consequence": { "type": "integer", "minimum": 0, "maximum": 5 },
+        "test_observability": { "type": "integer", "minimum": 0, "maximum": 5 }
+      }
+    },
+    "misconceptions": { "type": "array", "items": { "type": "string" } },
+    "diagnostic": { "type": "string" },
+    "remediation": { "type": "array", "items": { "type": "string" } },
+
+    "mission": { "type": "string" },
+    "repository": {
+      "type": "object",
+      "required": ["url", "ref"],
+      "properties": {
+        "url": { "type": "string" },
+        "ref": { "type": "string" }
+      }
+    },
+    "target_environment": { "type": "object", "additionalProperties": { "type": "string" } },
+    "curriculum_scope": {
+      "type": "object",
+      "required": ["mode", "entry", "exit", "readiness_criteria"],
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "enum": ["pre_project_readiness", "project_execution", "end_to_end"],
+          "description": "pre_project_readiness=只交付进入项目之前的完整学习道路。"
+        },
+        "entry": { "type": "string", "minLength": 1 },
+        "exit": { "type": "string", "minLength": 1 },
+        "readiness_criteria": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "excluded_responsibilities": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "outcomes": { "type": "array", "items": { "type": "string" } },
+    "acceptance": {
+      "type": "object",
+      "description": "验收必须分类覆盖，只写 functional 会被人工门禁挑出。",
+      "properties": {
+        "functional": { "type": "array", "items": { "type": "string" } },
+        "compatibility": { "type": "array", "items": { "type": "string" } },
+        "concurrency": { "type": "array", "items": { "type": "string" } },
+        "quality": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "non_goals": { "type": "array", "items": { "type": "string" } },
+    "student_model": { "type": "object", "additionalProperties": { "type": "string" } },
+    "unresolved_questions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "需要教师决定的问题。非空时节点 status 应为 unresolved。"
+    },
+
+    "parent_outcome_id": { "type": "string" },
+    "project_value": { "type": "string" },
+    "system_boundary": { "type": "string" },
+    "inputs": { "type": "array", "items": { "type": "string" } },
+    "deliverables": { "type": "array", "items": { "type": "string" } },
+    "interfaces": { "type": "array", "items": { "type": "string" } },
+    "risks": { "type": "array", "items": { "type": "string" } },
+    "definition_of_done": { "type": "array", "items": { "type": "string" } },
+
+    "task_level": {
+      "enum": ["T1", "T2", "T3", "T4"],
+      "description": "脚手架等级。T1 给路径与命令，T4 只给真实 Issue。"
+    },
+    "scenario": { "type": "string" },
+    "student_responsibility": { "type": "array", "items": { "type": "string" } },
+    "provided_scaffolds": { "type": "array", "items": { "type": "string" } },
+    "allowed_changes": { "type": "array", "items": { "type": "string" } },
+    "tests": {
+      "type": "object",
+      "description": "实践任务必须写明测试。只有 positive 的实践无法暴露真实工程问题。",
+      "properties": {
+        "positive": { "type": "array", "items": { "type": "string" } },
+        "negative": { "type": "array", "items": { "type": "string" } },
+        "concurrency": { "type": "array", "items": { "type": "string" } },
+        "regression": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "uses_repo_artifacts": { "type": "array", "items": { "$ref": "#/$defs/repoArtifactRef" } },
+    "safety": { "type": "array", "items": { "type": "string" } },
+
+    "canonical_node_id": { "type": "string" },
+    "project_id": { "type": "string" },
+    "project_semantics": { "type": "string" },
+    "repo_artifacts": { "type": "array", "items": { "$ref": "#/$defs/repoArtifactRef" } },
+    "used_by_work_packages": { "type": "array", "items": { "type": "string" } },
+    "practice_ids": { "type": "array", "items": { "type": "string" } },
+    "differences_from_canonical": { "type": "array", "items": { "type": "string" } },
+    "reuse_relation": {
+      "enum": ["EXACT_REUSE", "SPECIALIZES", "EXTENDS", "ALTERNATIVE", "CONFLICTS", "DEPRECATED_BY"]
+    },
+
+    "evidence_kind": {
+      "enum": [
+        "explanation",
+        "code_trace",
+        "controlled_change",
+        "code_contribution",
+        "integrated_contribution",
+        "test_report",
+        "review_record",
+        "demo_defense"
+      ],
+      "description": "证据强度从 explanation 到 integrated_contribution 递增。高层能力不能只靠 explanation。"
+    },
+    "artifacts": { "type": "array", "items": { "type": "string" } },
+    "collection": {
+      "enum": ["server_verified", "teacher_verified", "server_or_teacher_verified", "self_reported"],
+      "description": "self_reported 不能用于授予 mastery。"
+    },
+    "reviewer": { "type": "string" },
+    "validity": { "type": "object" },
+    "mastery_weight": { "enum": ["none", "low", "medium", "high"] },
+
+    "repo": { "type": "string" },
+    "ref": { "type": "string" },
+    "path": { "type": "string" },
+    "symbol": { "type": ["string", "null"] },
+    "role": { "type": "string" },
+
+    "source_ids": { "type": "array", "items": { "type": "string" } },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "generated": {
+      "type": "object",
+      "required": ["by"],
+      "description": "标记 AI 生成内容。high_stakes=true 且 reviewed_by 为空时触发 PTKG011。",
+      "properties": {
+        "by": { "type": "string" },
+        "at": { "type": "string" },
+        "high_stakes": { "type": "boolean" },
+        "reviewed_by": { "type": ["string", "null"] }
+      }
+    },
+    "notes": { "type": "string" }
+  },
+
+  "$defs": {
+    "repoArtifactRef": {
+      "type": "object",
+      "required": ["repo", "ref", "path"],
+      "additionalProperties": true,
+      "properties": {
+        "repo": { "type": "string" },
+        "ref": {
+          "type": "string",
+          "description": "应为固定 commit SHA。分支名由 PTKG006 拦截（此处不用 pattern，以便规则层给出更好的提示）。"
+        },
+        "path": { "type": "string", "minLength": 1 },
+        "symbol": { "type": ["string", "null"] },
+        "role": { "type": "string" }
+      }
+    }
+  },
+
+  "allOf": [
+    {
+      "if": { "properties": { "type": { "const": "project" } }, "required": ["type"] },
+      "then": {
+        "required": ["mission", "repository", "curriculum_scope", "outcomes", "acceptance", "non_goals"],
+        "properties": { "id": { "pattern": "^project\\." } }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "outcome" } }, "required": ["type"] },
+      "then": {
+        "required": ["project_value", "system_boundary"],
+        "properties": { "id": { "pattern": "^outcome\\." } }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "work_package" } }, "required": ["type"] },
+      "then": {
+        "required": ["parent_outcome_id", "deliverables", "definition_of_done"],
+        "properties": { "id": { "pattern": "^wp\\." } }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "competency" } }, "required": ["type"] },
+      "then": {
+        "required": ["claim", "quality_criteria"],
+        "properties": {
+          "id": { "pattern": "^competency\\." },
+          "claim": {
+            "minLength": 20,
+            "description": "能力主张必须写明场景、动作、对象和质量标准，短句写不下这些内容。"
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "practice" } }, "required": ["type"] },
+      "then": {
+        "required": ["task_level", "scenario", "deliverables", "tests"],
+        "properties": { "id": { "pattern": "^practice\\." } }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "knowledge" } }, "required": ["type"] },
+      "then": {
+        "required": ["statement", "scope"],
+        "properties": { "id": { "pattern": "^kc\\." } }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "project_binding" } }, "required": ["type"] },
+      "then": {
+        "required": ["canonical_node_id", "project_id", "repo_artifacts"],
+        "properties": { "id": { "pattern": "^binding\\." } }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "repo_artifact" } }, "required": ["type"] },
+      "then": {
+        "required": ["repo", "ref", "path"],
+        "properties": { "id": { "pattern": "^artifact\\." } }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "evidence" } }, "required": ["type"] },
+      "then": {
+        "required": ["evidence_kind", "artifacts", "collection"],
+        "properties": { "id": { "pattern": "^evidence\\." } }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "misconception" } }, "required": ["type"] },
+      "then": {
+        "required": ["statement"],
+        "properties": { "id": { "pattern": "^misconception\\." } }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "gate" } }, "required": ["type"] },
+      "then": { "properties": { "id": { "pattern": "^gate\\." } } }
+    }
+  ]
+}

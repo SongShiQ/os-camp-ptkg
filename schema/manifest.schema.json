@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://os-camp.dev/ptkg/0.1/manifest.schema.json",
+  "title": "PTKG Bundle Manifest",
+  "description": "bundle 的身份证。project_ref.git_ref 必须是固定 commit，不接受分支名——分支会漂移，课程内容必须能追溯到确定的代码状态。",
+  "type": "object",
+  "required": [
+    "ptkg_version",
+    "bundle_id",
+    "title",
+    "status",
+    "project_ref"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "ptkg_version": {
+      "type": "string",
+      "const": "0.1",
+      "description": "契约版本。实现只接受精确匹配，避免静默按错版本解析。"
+    },
+    "bundle_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$",
+      "description": "全局唯一，小写点分。例：ptkg.starryos.cgroup.2026spring"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "in_review",
+        "approved",
+        "published",
+        "superseded"
+      ],
+      "description": "bundle 级生命周期。与节点级 status 不同：节点用 candidate/unresolved/...，bundle 用 draft→in_review→approved→published。AI 只能产出 draft。"
+    },
+    "language": {
+      "type": "string",
+      "default": "zh-CN"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "curriculum_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "课程内容语义版本，与仓库 commit 共同构成图谱版本。"
+    },
+    "project_ref": {
+      "type": "object",
+      "required": [
+        "repository_url",
+        "git_ref"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "repository_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "git_ref": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "description": "完整 40 位 commit SHA。分支名和缩写 SHA 都会被 PTKG006 拒绝。"
+        }
+      }
+    },
+    "generator": {
+      "type": "object",
+      "required": [
+        "tool"
+      ],
+      "properties": {
+        "tool": {
+          "type": "string",
+          "description": "哪个 Agent 生成的。用于对比不同模型的产出质量，不用于授权。"
+        },
+        "tool_version": {
+          "type": "string"
+        },
+        "authoring_kit_version": {
+          "type": "string"
+        }
+      }
+    },
+    "approval": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "enum": [
+            "draft",
+            "in_review",
+            "approved",
+            "published",
+            "superseded"
+          ],
+          "description": "教师审核状态。AI 不得自行写成 approved/published（原则八）。"
+        },
+        "approved_by": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "files": {
+      "type": "object",
+      "description": "各部分的实际文件名。省略则按 nodes.jsonl / edges.jsonl / sources.jsonl 约定探测。",
+      "properties": {
+        "nodes": {
+          "type": "string"
+        },
+        "edges": {
+          "type": "string"
+        },
+        "sources": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

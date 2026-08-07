@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://os-camp.dev/ptkg/authoring/0.1/learning-slice.schema.json",
+  "title": "PTKG Learning Slice",
+  "allOf": [
+    { "$ref": "https://os-camp.dev/ptkg/authoring/0.1/common.schema.json#/$defs/envelope" },
+    {
+      "type": "object",
+      "required": ["behavior_ref", "level", "activity_kind", "student_responsibility", "scaffold", "allowed_changes", "prerequisites", "evidence_refs", "execution_refs", "tests", "safety", "coverage_refs"],
+      "properties": {
+        "behavior_ref": { "type": "string", "pattern": "^behavior\\." },
+        "level": { "enum": ["S0", "S1", "S2", "S3", "S4"] },
+        "activity_kind": { "enum": ["executable", "design_review"] },
+        "student_responsibility": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "scaffold": {
+          "type": "object",
+          "required": ["provided", "withheld"],
+          "additionalProperties": false,
+          "properties": {
+            "provided": { "type": "array", "items": { "type": "string" } },
+            "withheld": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "allowed_changes": { "type": "array", "items": { "type": "string" } },
+        "prerequisites": {
+          "type": "object",
+          "required": ["required", "just_in_time", "remediation"],
+          "additionalProperties": false,
+          "properties": {
+            "required": { "type": "array", "items": { "type": "string" } },
+            "just_in_time": { "type": "array", "items": { "type": "string" } },
+            "remediation": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "evidence_refs": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "execution_refs": { "type": "array", "items": { "type": "string" } },
+        "tests": {
+          "type": "object",
+          "required": ["positive", "negative", "concurrency", "regression"],
+          "additionalProperties": false,
+          "properties": {
+            "positive": { "type": "array", "items": { "type": "string" } },
+            "negative": { "type": "array", "items": { "type": "string" } },
+            "concurrency": { "type": "array", "items": { "type": "string" } },
+            "regression": { "type": "array", "items": { "type": "string" } },
+            "concurrency_not_applicable_reason": { "type": "string" }
+          }
+        },
+        "safety": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "coverage_refs": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "rubric": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  ],
+  "unevaluatedProperties": false
+}

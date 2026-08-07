@@ -1,0 +1,724 @@
+{
+  "spec_version": "impact-index@0.1",
+  "run_id": "run.starryos.cgroup.001",
+  "nodes": [
+    {
+      "id": "anchor.starryos.begin-fork",
+      "kind": "anchor",
+      "content_hash": "8570ccb464827c4622e6121237467f09b9e958e6a218e42cedeed5390e6dabf2"
+    },
+    {
+      "id": "anchor.starryos.cgroup-basic-test",
+      "kind": "anchor",
+      "content_hash": "49834e6cd25e157455bc12f079785bd2090ddb7d4c8de03195807d5cb759b92e"
+    },
+    {
+      "id": "anchor.starryos.cgroup-pids-test",
+      "kind": "anchor",
+      "content_hash": "9a37518ee9ff6e2946628c5c4c158024564b6d4ee578096c01568a3c592ad805"
+    },
+    {
+      "id": "anchor.starryos.cgroup.controller-rs",
+      "kind": "anchor",
+      "content_hash": "9d9578ee75c3e75c66c5aeb4d32020f9b01c8694c4e3b58a5802054c715903be"
+    },
+    {
+      "id": "anchor.starryos.cgroup.core-rs",
+      "kind": "anchor",
+      "content_hash": "6df4933075d7516115a65a1c44e92aa89957fc8c4c50a36644441a1d5bd962e6"
+    },
+    {
+      "id": "anchor.starryos.cgroup.cpu-rs",
+      "kind": "anchor",
+      "content_hash": "96ac346a84a31b0a4df9efdd9a4f4fb4b8fd92f977e1f514466a24093f3ccbd5"
+    },
+    {
+      "id": "anchor.starryos.cgroup.cpuset-rs",
+      "kind": "anchor",
+      "content_hash": "5fcf4f7ea8ad1469c3bde66f11b004926eee21a31d929094f14185ee8aa489fc"
+    },
+    {
+      "id": "anchor.starryos.cgroup.io-rs",
+      "kind": "anchor",
+      "content_hash": "f5b89aeb729fcbad36a715cd51f805426a8187e96ca8271685ba9c77ea56d991"
+    },
+    {
+      "id": "anchor.starryos.cgroup.membership-lib",
+      "kind": "anchor",
+      "content_hash": "3ee5657c423b97714bd0d015fa2373e8396a0ce6b3415a107ed3a97180c7afcf"
+    },
+    {
+      "id": "anchor.starryos.cgroup.memory-rs",
+      "kind": "anchor",
+      "content_hash": "f2e142c42d149e092a0c71d0b9d1f086b19a8534c93554191e1c528503c666c7"
+    },
+    {
+      "id": "anchor.starryos.kernel.cgroup-cpu-rs",
+      "kind": "anchor",
+      "content_hash": "c9aa4be20c2eff70f15f21aaf236f6c3fed7b45313b668d1cd3ebc0015a45a40"
+    },
+    {
+      "id": "anchor.starryos.kernel.cgroup-mod-rs",
+      "kind": "anchor",
+      "content_hash": "709a8e4c7bb5aff33f44b54573aff41998b661b3a1689bdc1eb98c3d3af1a5f5"
+    },
+    {
+      "id": "anchor.starryos.new-cgroup2fs",
+      "kind": "anchor",
+      "content_hash": "b6143ebfd25a7228d55f6469e6ac66eb7412c7a1d5f10d5f2a926efaa59cad6c"
+    },
+    {
+      "id": "anchor.starryos.pids-try-charge",
+      "kind": "anchor",
+      "content_hash": "648cd6abd6ced215a5a2fcc41002dace12866b24301871533ab8fa59ab8d5b4e"
+    },
+    {
+      "id": "anchor.starryos.platform.axcgroup-lib",
+      "kind": "anchor",
+      "content_hash": "5245c94cc596a271e8e68064a35ea51d9bbc8f6667e93f2f7c8579fd8115f8a7"
+    },
+    {
+      "id": "anchor.starryos.platform.cgroup-sync",
+      "kind": "anchor",
+      "content_hash": "ebea0f658671922f60eb43be2ee071a1b03e9470dffccd13fc1bcf3d7cc3a7b6"
+    },
+    {
+      "id": "anchor.starryos.platform.cgroup-vfs",
+      "kind": "anchor",
+      "content_hash": "9275eac27901e41eba6112b9292c4930e250d7a872032ce4f2292a1c889b9931"
+    },
+    {
+      "id": "anchor.starryos.platform.task-mod",
+      "kind": "anchor",
+      "content_hash": "0460024879304febbbd14c4ae892d12c2a16fe7be61a7d9e31067e046418257b"
+    },
+    {
+      "id": "anchor.starryos.sys-mount",
+      "kind": "anchor",
+      "content_hash": "7b34229a6c8ff2ab70c042af162f1524b7496a0ac0f006bfced7c19f6c22a966"
+    },
+    {
+      "id": "anchor.starryos.workspace-cargo",
+      "kind": "anchor",
+      "content_hash": "d083dfe8721a2160eeff411e4c380b619cbf5619e0304a33b6f2b8b3be77e6ff"
+    },
+    {
+      "id": "anchor.starryos.xtask-main",
+      "kind": "anchor",
+      "content_hash": "8f105bad823c2e6f519dd631caa0a6a9f819a460cbd5897a152370ee9fdccaae"
+    },
+    {
+      "id": "behavior.starryos.cgroup.mount-observe",
+      "kind": "behavior",
+      "content_hash": "e5b74d765a3e83c2ad5564c051139d34eab5b5b0c84cddfa9a0f7108dc22aac8"
+    },
+    {
+      "id": "behavior.starryos.cgroup.pids-fork-exit",
+      "kind": "behavior",
+      "content_hash": "0ddac2a11f7dbf8f5a9b94bf87ab026172cc7bae8bb82c808a3b0fe97fbe5628"
+    },
+    {
+      "id": "coverage.starryos.cgroup",
+      "kind": "coverage",
+      "content_hash": "ed233840e553f53e29f62e6454114632286068f56b9723af21994a458913078f"
+    },
+    {
+      "id": "exec.starryos.cgroup.mount-s0",
+      "kind": "execution",
+      "content_hash": "1379f9937e85c0cfa03d78a4ab2cdc8ed04b73dc6fdf56b7f314d3a5af3eb78b"
+    },
+    {
+      "id": "exec.starryos.cgroup.pids-s2",
+      "kind": "execution",
+      "content_hash": "cf3ef05d0785fd33534c89a021dc6914c582f79f0b8c4d97022eea7ab1c57d79"
+    },
+    {
+      "id": "fact.starryos.cgroup.build-tests",
+      "kind": "fact",
+      "content_hash": "c0a7db04c18cbaa0539a31dfe3f6b526785fcc5409f87c09710ac0539d0fa328"
+    },
+    {
+      "id": "fact.starryos.cgroup.controller-framework",
+      "kind": "fact",
+      "content_hash": "1c7ad3036bc835f2acce4e13a8a65e60e5d5ab395f0e7957a479103ea79aeb67"
+    },
+    {
+      "id": "fact.starryos.cgroup.core-layout",
+      "kind": "fact",
+      "content_hash": "3b6cf404a319723ecf9cc010c664cca6c8e4195f3c0fdb34ccfa53f5e39de5c3"
+    },
+    {
+      "id": "fact.starryos.cgroup.cpu-files",
+      "kind": "fact",
+      "content_hash": "e9ed75b58b50c338e86082a0e308df7a9e271e2337788c727e4699bc5c6185ed"
+    },
+    {
+      "id": "fact.starryos.cgroup.cpuset-file",
+      "kind": "fact",
+      "content_hash": "05a62462c607e712ba7aa8672ca365828dc3ba62e6b57085ec650bc820550aaa"
+    },
+    {
+      "id": "fact.starryos.cgroup.io-file",
+      "kind": "fact",
+      "content_hash": "b2d2adedf05770addf644c0a6ee7ebb85c77a74ee3b19edda5d01de31997be44"
+    },
+    {
+      "id": "fact.starryos.cgroup.kernel-integration",
+      "kind": "fact",
+      "content_hash": "aa27d035fdf15015f2ea7489eaf4153f1e2eb92d8ebcfded2674b0d3f456a66b"
+    },
+    {
+      "id": "fact.starryos.cgroup.membership",
+      "kind": "fact",
+      "content_hash": "f227186f39e7447161c31ebc9f4dc3016e569d944cd1e5432dec5107faf594bf"
+    },
+    {
+      "id": "fact.starryos.cgroup.memory-file",
+      "kind": "fact",
+      "content_hash": "5ffcab17ae27371cfc8ea69e291e810dfbb90a76229b82d9f10a72f3c2b803d8"
+    },
+    {
+      "id": "fact.starryos.cgroup.mount-entry",
+      "kind": "fact",
+      "content_hash": "abee21c56a66bf83d18ff8a39343ca344db3fd9327587f36f4b702eac27a31ff"
+    },
+    {
+      "id": "fact.starryos.cgroup.pids-charge",
+      "kind": "fact",
+      "content_hash": "82b9eccb7415f83ac22a34a9780f6b6f2308a8074737bae3e0b106eedee6261d"
+    },
+    {
+      "id": "fact.starryos.platform.process",
+      "kind": "fact",
+      "content_hash": "8d1b1721e66926d273fdd8e8e00628c51aeb680afaf2a01e362e14cdbeacd372"
+    },
+    {
+      "id": "fact.starryos.platform.rust-no-std",
+      "kind": "fact",
+      "content_hash": "89c4a3f83655567c0cc3525733bf10d99f9c62acfc99dfc92a43e747a1e0f80a"
+    },
+    {
+      "id": "fact.starryos.platform.sync",
+      "kind": "fact",
+      "content_hash": "52338e56fca843152ee044706b2b67deff6421d0435a0da6142d7b7c61b367c3"
+    },
+    {
+      "id": "fact.starryos.platform.vfs",
+      "kind": "fact",
+      "content_hash": "fac2798d7f18a626de31fb9fa3b21065031680001e9a55be9d4833516ed7dedc"
+    },
+    {
+      "id": "slice.starryos.cgroup.mount-s0",
+      "kind": "slice",
+      "content_hash": "15e930758203e9b19dbeb5e1cb41ff42e05d6210a2c71484b6ea54fad60543d1"
+    },
+    {
+      "id": "slice.starryos.cgroup.pids-s2",
+      "kind": "slice",
+      "content_hash": "4c5c3065940f06e4164c663c3d9ed67490777a8d7a4d6307a5a035f1095d0925"
+    },
+    {
+      "id": "source-contract.starryos.cgroup",
+      "kind": "source_contract",
+      "content_hash": "129b1eb46375bb01600a7255b360c97b2bd8a87e7c3a7d7bc436b28c190034aa"
+    }
+  ],
+  "edges": [
+    {
+      "from": "behavior.starryos.cgroup.mount-observe",
+      "to": "anchor.starryos.new-cgroup2fs",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.mount-observe",
+      "to": "anchor.starryos.sys-mount",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.mount-observe",
+      "to": "exec.starryos.cgroup.mount-s0",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.mount-observe",
+      "to": "fact.starryos.cgroup.mount-entry",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.pids-fork-exit",
+      "to": "anchor.starryos.begin-fork",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.pids-fork-exit",
+      "to": "anchor.starryos.pids-try-charge",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.pids-fork-exit",
+      "to": "exec.starryos.cgroup.pids-s2",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.pids-fork-exit",
+      "to": "fact.starryos.cgroup.pids-charge",
+      "relation": "references"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "behavior.starryos.cgroup.mount-observe",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "behavior.starryos.cgroup.pids-fork-exit",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "fact.starryos.cgroup.build-tests",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "fact.starryos.cgroup.controller-framework",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "fact.starryos.cgroup.core-layout",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "fact.starryos.cgroup.cpu-files",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "fact.starryos.cgroup.cpuset-file",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "fact.starryos.cgroup.io-file",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "fact.starryos.cgroup.kernel-integration",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "fact.starryos.cgroup.membership",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "fact.starryos.cgroup.memory-file",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "fact.starryos.cgroup.mount-entry",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "fact.starryos.cgroup.pids-charge",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "fact.starryos.platform.process",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "fact.starryos.platform.rust-no-std",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "fact.starryos.platform.sync",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "fact.starryos.platform.vfs",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "source-contract.starryos.cgroup",
+      "relation": "projection"
+    },
+    {
+      "from": "exec.starryos.cgroup.mount-s0",
+      "to": "slice.starryos.cgroup.mount-s0",
+      "relation": "evidence"
+    },
+    {
+      "from": "exec.starryos.cgroup.pids-s2",
+      "to": "slice.starryos.cgroup.pids-s2",
+      "relation": "evidence"
+    },
+    {
+      "from": "fact.starryos.cgroup.build-tests",
+      "to": "anchor.starryos.cgroup-basic-test",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.build-tests",
+      "to": "anchor.starryos.cgroup-pids-test",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.build-tests",
+      "to": "anchor.starryos.workspace-cargo",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.build-tests",
+      "to": "anchor.starryos.xtask-main",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.build-tests",
+      "to": "source-contract.starryos.cgroup",
+      "relation": "references"
+    },
+    {
+      "from": "fact.starryos.cgroup.controller-framework",
+      "to": "anchor.starryos.cgroup.controller-rs",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.controller-framework",
+      "to": "source-contract.starryos.cgroup",
+      "relation": "references"
+    },
+    {
+      "from": "fact.starryos.cgroup.core-layout",
+      "to": "anchor.starryos.cgroup.core-rs",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.core-layout",
+      "to": "source-contract.starryos.cgroup",
+      "relation": "references"
+    },
+    {
+      "from": "fact.starryos.cgroup.cpu-files",
+      "to": "anchor.starryos.cgroup.cpu-rs",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.cpu-files",
+      "to": "anchor.starryos.kernel.cgroup-cpu-rs",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.cpu-files",
+      "to": "source-contract.starryos.cgroup",
+      "relation": "references"
+    },
+    {
+      "from": "fact.starryos.cgroup.cpuset-file",
+      "to": "anchor.starryos.cgroup.cpuset-rs",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.cpuset-file",
+      "to": "source-contract.starryos.cgroup",
+      "relation": "references"
+    },
+    {
+      "from": "fact.starryos.cgroup.io-file",
+      "to": "anchor.starryos.cgroup.io-rs",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.io-file",
+      "to": "source-contract.starryos.cgroup",
+      "relation": "references"
+    },
+    {
+      "from": "fact.starryos.cgroup.kernel-integration",
+      "to": "anchor.starryos.kernel.cgroup-mod-rs",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.kernel-integration",
+      "to": "source-contract.starryos.cgroup",
+      "relation": "references"
+    },
+    {
+      "from": "fact.starryos.cgroup.membership",
+      "to": "anchor.starryos.cgroup.membership-lib",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.membership",
+      "to": "source-contract.starryos.cgroup",
+      "relation": "references"
+    },
+    {
+      "from": "fact.starryos.cgroup.memory-file",
+      "to": "anchor.starryos.cgroup.memory-rs",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.memory-file",
+      "to": "source-contract.starryos.cgroup",
+      "relation": "references"
+    },
+    {
+      "from": "fact.starryos.cgroup.mount-entry",
+      "to": "anchor.starryos.new-cgroup2fs",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.mount-entry",
+      "to": "anchor.starryos.sys-mount",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.mount-entry",
+      "to": "source-contract.starryos.cgroup",
+      "relation": "references"
+    },
+    {
+      "from": "fact.starryos.cgroup.pids-charge",
+      "to": "anchor.starryos.begin-fork",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.pids-charge",
+      "to": "anchor.starryos.pids-try-charge",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.pids-charge",
+      "to": "source-contract.starryos.cgroup",
+      "relation": "references"
+    },
+    {
+      "from": "fact.starryos.platform.process",
+      "to": "anchor.starryos.platform.task-mod",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.platform.process",
+      "to": "source-contract.starryos.cgroup",
+      "relation": "references"
+    },
+    {
+      "from": "fact.starryos.platform.rust-no-std",
+      "to": "anchor.starryos.platform.axcgroup-lib",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.platform.rust-no-std",
+      "to": "source-contract.starryos.cgroup",
+      "relation": "references"
+    },
+    {
+      "from": "fact.starryos.platform.sync",
+      "to": "anchor.starryos.platform.cgroup-sync",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.platform.sync",
+      "to": "source-contract.starryos.cgroup",
+      "relation": "references"
+    },
+    {
+      "from": "fact.starryos.platform.vfs",
+      "to": "anchor.starryos.platform.cgroup-vfs",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.platform.vfs",
+      "to": "source-contract.starryos.cgroup",
+      "relation": "references"
+    },
+    {
+      "from": "slice.starryos.cgroup.mount-s0",
+      "to": "behavior.starryos.cgroup.mount-observe",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.mount-s0",
+      "to": "exec.starryos.cgroup.mount-s0",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.pids-s2",
+      "to": "behavior.starryos.cgroup.pids-fork-exit",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.pids-s2",
+      "to": "exec.starryos.cgroup.pids-s2",
+      "relation": "input"
+    }
+  ],
+  "reverse_dependencies": {
+    "anchor.starryos.new-cgroup2fs": [
+      "behavior.starryos.cgroup.mount-observe",
+      "fact.starryos.cgroup.mount-entry"
+    ],
+    "anchor.starryos.sys-mount": [
+      "behavior.starryos.cgroup.mount-observe",
+      "fact.starryos.cgroup.mount-entry"
+    ],
+    "exec.starryos.cgroup.mount-s0": [
+      "behavior.starryos.cgroup.mount-observe",
+      "slice.starryos.cgroup.mount-s0"
+    ],
+    "fact.starryos.cgroup.mount-entry": [
+      "behavior.starryos.cgroup.mount-observe",
+      "coverage.starryos.cgroup"
+    ],
+    "anchor.starryos.begin-fork": [
+      "behavior.starryos.cgroup.pids-fork-exit",
+      "fact.starryos.cgroup.pids-charge"
+    ],
+    "anchor.starryos.pids-try-charge": [
+      "behavior.starryos.cgroup.pids-fork-exit",
+      "fact.starryos.cgroup.pids-charge"
+    ],
+    "exec.starryos.cgroup.pids-s2": [
+      "behavior.starryos.cgroup.pids-fork-exit",
+      "slice.starryos.cgroup.pids-s2"
+    ],
+    "fact.starryos.cgroup.pids-charge": [
+      "behavior.starryos.cgroup.pids-fork-exit",
+      "coverage.starryos.cgroup"
+    ],
+    "behavior.starryos.cgroup.mount-observe": [
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.mount-s0"
+    ],
+    "behavior.starryos.cgroup.pids-fork-exit": [
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.pids-s2"
+    ],
+    "fact.starryos.cgroup.build-tests": [
+      "coverage.starryos.cgroup"
+    ],
+    "fact.starryos.cgroup.controller-framework": [
+      "coverage.starryos.cgroup"
+    ],
+    "fact.starryos.cgroup.core-layout": [
+      "coverage.starryos.cgroup"
+    ],
+    "fact.starryos.cgroup.cpu-files": [
+      "coverage.starryos.cgroup"
+    ],
+    "fact.starryos.cgroup.cpuset-file": [
+      "coverage.starryos.cgroup"
+    ],
+    "fact.starryos.cgroup.io-file": [
+      "coverage.starryos.cgroup"
+    ],
+    "fact.starryos.cgroup.kernel-integration": [
+      "coverage.starryos.cgroup"
+    ],
+    "fact.starryos.cgroup.membership": [
+      "coverage.starryos.cgroup"
+    ],
+    "fact.starryos.cgroup.memory-file": [
+      "coverage.starryos.cgroup"
+    ],
+    "fact.starryos.platform.process": [
+      "coverage.starryos.cgroup"
+    ],
+    "fact.starryos.platform.rust-no-std": [
+      "coverage.starryos.cgroup"
+    ],
+    "fact.starryos.platform.sync": [
+      "coverage.starryos.cgroup"
+    ],
+    "fact.starryos.platform.vfs": [
+      "coverage.starryos.cgroup"
+    ],
+    "source-contract.starryos.cgroup": [
+      "coverage.starryos.cgroup",
+      "fact.starryos.cgroup.build-tests",
+      "fact.starryos.cgroup.controller-framework",
+      "fact.starryos.cgroup.core-layout",
+      "fact.starryos.cgroup.cpu-files",
+      "fact.starryos.cgroup.cpuset-file",
+      "fact.starryos.cgroup.io-file",
+      "fact.starryos.cgroup.kernel-integration",
+      "fact.starryos.cgroup.membership",
+      "fact.starryos.cgroup.memory-file",
+      "fact.starryos.cgroup.mount-entry",
+      "fact.starryos.cgroup.pids-charge",
+      "fact.starryos.platform.process",
+      "fact.starryos.platform.rust-no-std",
+      "fact.starryos.platform.sync",
+      "fact.starryos.platform.vfs"
+    ],
+    "slice.starryos.cgroup.mount-s0": [
+      "exec.starryos.cgroup.mount-s0"
+    ],
+    "slice.starryos.cgroup.pids-s2": [
+      "exec.starryos.cgroup.pids-s2"
+    ],
+    "anchor.starryos.cgroup-basic-test": [
+      "fact.starryos.cgroup.build-tests"
+    ],
+    "anchor.starryos.cgroup-pids-test": [
+      "fact.starryos.cgroup.build-tests"
+    ],
+    "anchor.starryos.workspace-cargo": [
+      "fact.starryos.cgroup.build-tests"
+    ],
+    "anchor.starryos.xtask-main": [
+      "fact.starryos.cgroup.build-tests"
+    ],
+    "anchor.starryos.cgroup.controller-rs": [
+      "fact.starryos.cgroup.controller-framework"
+    ],
+    "anchor.starryos.cgroup.core-rs": [
+      "fact.starryos.cgroup.core-layout"
+    ],
+    "anchor.starryos.cgroup.cpu-rs": [
+      "fact.starryos.cgroup.cpu-files"
+    ],
+    "anchor.starryos.kernel.cgroup-cpu-rs": [
+      "fact.starryos.cgroup.cpu-files"
+    ],
+    "anchor.starryos.cgroup.cpuset-rs": [
+      "fact.starryos.cgroup.cpuset-file"
+    ],
+    "anchor.starryos.cgroup.io-rs": [
+      "fact.starryos.cgroup.io-file"
+    ],
+    "anchor.starryos.kernel.cgroup-mod-rs": [
+      "fact.starryos.cgroup.kernel-integration"
+    ],
+    "anchor.starryos.cgroup.membership-lib": [
+      "fact.starryos.cgroup.membership"
+    ],
+    "anchor.starryos.cgroup.memory-rs": [
+      "fact.starryos.cgroup.memory-file"
+    ],
+    "anchor.starryos.platform.task-mod": [
+      "fact.starryos.platform.process"
+    ],
+    "anchor.starryos.platform.axcgroup-lib": [
+      "fact.starryos.platform.rust-no-std"
+    ],
+    "anchor.starryos.platform.cgroup-sync": [
+      "fact.starryos.platform.sync"
+    ],
+    "anchor.starryos.platform.cgroup-vfs": [
+      "fact.starryos.platform.vfs"
+    ]
+  }
+}

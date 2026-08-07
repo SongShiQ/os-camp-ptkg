@@ -1,0 +1,23 @@
+# 故意有问题的 bundle，用于证明全部规则都能触发。
+# 每处违规都在注释里标了对应规则码，改动时请同步测试期望。
+ptkg_version: "0.1"
+bundle_id: "ptkg.broken.fixture"
+title: "反例 bundle：每条规则至少触发一次"
+status: draft
+language: "zh-CN"
+created_at: "2026-07-25T00:00:00+08:00"
+curriculum_version: "0.0.1"
+project_ref:
+  repository_url: "https://github.com/rcore-os/tgoskits"
+  # PTKG006：这里用分支名而不是固定 commit
+  git_ref: "dev"
+generator:
+  tool: "claude-code"
+  authoring_kit_version: "0.1.1"
+approval:
+  status: draft
+  approved_by: null
+files:
+  nodes: "nodes.jsonl"
+  edges: "edges.jsonl"
+  sources: "sources.jsonl"

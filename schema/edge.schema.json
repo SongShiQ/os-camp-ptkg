@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://os-camp.dev/ptkg/0.1/edge.schema.json",
+  "title": "PTKG Edge",
+  "description": "关系。刻意不提供 related_to：语义不明的关系必须留在候选区，不能用一个万能边糊过去。",
+  "type": "object",
+  "required": ["id", "from", "type", "to", "status"],
+  "additionalProperties": true,
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "from": { "type": "string", "minLength": 1 },
+    "to": { "type": "string", "minLength": 1 },
+    "type": {
+      "enum": [
+        "DECOMPOSES_TO",
+        "REQUIRES",
+        "PREREQUISITE_OF",
+        "PROVEN_BY",
+        "ELICITED_BY",
+        "USES",
+        "AFFECTS",
+        "TESTED_BY",
+        "DERIVED_FROM",
+        "HAS_MISCONCEPTION",
+        "REMEDIATED_BY",
+        "ALTERNATIVE_TO",
+        "CONTRIBUTES_TO",
+        "BINDS"
+      ]
+    },
+    "status": {
+      "enum": ["candidate", "unresolved", "approved", "published", "stale", "deprecated"]
+    },
+    "requirement_kind": {
+      "enum": ["required", "just_in_time", "remediation", "extension"],
+      "description": "REQUIRES 边必填。只有 required 参与严格前置环检测——把协同学习误判成成环是最常见的假报错。"
+    },
+    "source_ids": { "type": "array", "items": { "type": "string" } },
+    "notes": { "type": "string" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "type": { "const": "REQUIRES" } }, "required": ["type"] },
+      "then": { "required": ["requirement_kind"] }
+    }
+  ]
+}

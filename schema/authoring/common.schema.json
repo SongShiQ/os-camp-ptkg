@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://os-camp.dev/ptkg/authoring/0.1/common.schema.json",
+  "title": "PTKG Authoring Common Types",
+  "$defs": {
+    "projectRef": {
+      "type": "object",
+      "required": ["repo", "commit"],
+      "additionalProperties": false,
+      "properties": {
+        "repo": { "type": "string", "minLength": 1 },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+      }
+    },
+    "createdBy": {
+      "type": "object",
+      "required": ["actor_type", "actor_id"],
+      "additionalProperties": false,
+      "properties": {
+        "actor_type": { "enum": ["tool", "agent", "teacher", "service"] },
+        "actor_id": { "type": "string", "minLength": 1 }
+      }
+    },
+    "anchor": {
+      "type": "object",
+      "required": ["id", "path"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^anchor\\." },
+        "path": { "type": "string", "minLength": 1 },
+        "symbol": { "type": ["string", "null"] },
+        "role": { "type": "string" }
+      }
+    },
+    "claim": {
+      "type": "object",
+      "required": ["id", "statement", "epistemic_status", "source_refs", "anchor_refs", "method", "validity"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^claim\\." },
+        "statement": { "type": "string", "minLength": 1 },
+        "epistemic_status": {
+          "enum": ["verified_fact", "supported_inference", "pedagogical_proposal", "teacher_decision", "unresolved"]
+        },
+        "source_refs": { "type": "array", "items": { "type": "string" } },
+        "anchor_refs": { "type": "array", "items": { "type": "string" } },
+        "event_refs": { "type": "array", "items": { "type": "string" } },
+        "method": {
+          "enum": ["git", "parser", "build", "test", "trace", "agent_analysis", "teacher_review"]
+        },
+        "verified_at": { "type": "string", "format": "date-time" },
+        "validity": {
+          "type": "object",
+          "required": ["commit_bound", "invalidates_on"],
+          "additionalProperties": false,
+          "properties": {
+            "commit_bound": { "type": "boolean" },
+            "invalidates_on": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "envelope": {
+      "type": "object",
+      "required": ["spec_version", "id", "run_id", "project_ref", "status", "input_refs", "claims", "created_by", "content_hash", "created_at"],
+      "properties": {
+        "spec_version": { "type": "string", "pattern": "^[a-z-]+@0\\.1$" },
+        "id": { "type": "string", "minLength": 1 },
+        "run_id": { "type": "string", "pattern": "^run\\." },
+        "project_ref": { "$ref": "#/$defs/projectRef" },
+        "status": { "enum": ["candidate", "unresolved"] },
+        "input_refs": { "type": "array", "items": { "type": "string" } },
+        "claims": { "type": "array", "items": { "$ref": "#/$defs/claim" } },
+        "created_by": { "$ref": "#/$defs/createdBy" },
+        "content_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "applicability": {
+      "type": "object",
+      "required": ["applicability"],
+      "additionalProperties": false,
+      "properties": {
+        "applicability": { "enum": ["applicable", "not_applicable"] },
+        "description": { "type": "string" },
+        "reason": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "applicability": { "const": "not_applicable" } } },
+          "then": { "required": ["reason"] }
+        },
+        {
+          "if": { "properties": { "applicability": { "const": "applicable" } } },
+          "then": { "required": ["description"] }
+        }
+      ]
+    }
+  }
+}

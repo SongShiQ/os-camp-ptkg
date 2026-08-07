@@ -1,0 +1,2 @@
+{"id":"src.guess","type":"source","source_kind":"llm_inference","title":"根据函数名推测的 cgroup 行为","retrieved_at":"2026-07-25","trust_level":"D","supports":["cgroup 层级语义"],"notes":"PTKG007：项目事实只有 D 级来源"}
+{"id":"src.ancient","type":"source","source_kind":"third_party_doc","title":"很久以前抓的一篇文档","url":"https://example.com/old","retrieved_at":"2019-01-01","trust_level":"C","supports":["历史背景"],"notes":"PTKG012：retrieved_at 远超过期阈值"}

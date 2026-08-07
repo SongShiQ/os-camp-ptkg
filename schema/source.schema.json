@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://os-camp.dev/ptkg/0.1/source.schema.json",
+  "title": "PTKG Source",
+  "description": "来源节点。trust_level 决定该来源能否支撑项目事实：D 级（推测/LLM 常识）单独出现时触发 PTKG007。",
+  "type": "object",
+  "required": ["id", "type", "source_kind", "title", "retrieved_at", "trust_level"],
+  "additionalProperties": true,
+  "properties": {
+    "id": { "type": "string", "pattern": "^src\\.[a-z0-9]+(?:[.-][a-z0-9]+)*$" },
+    "type": { "const": "source" },
+    "source_kind": {
+      "enum": [
+        "repo_commit",
+        "repo_file",
+        "issue",
+        "pull_request",
+        "official_spec",
+        "official_project_page",
+        "kernel_doc",
+        "man_page",
+        "third_party_doc",
+        "mentor_decision",
+        "meeting_note",
+        "test_result",
+        "inference"
+      ],
+      "description": "来源种类。inference 必须配 trust_level D。"
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "url": { "type": "string" },
+    "local_path": { "type": "string" },
+    "retrieved_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}",
+      "description": "访问日期。网页会失效，日期是判断内容时效的唯一依据。"
+    },
+    "version_or_ref": { "type": ["string", "null"] },
+    "trust_level": {
+      "enum": ["A", "B", "C", "D"],
+      "description": "A=仓库固定 commit/官方规范原文；B=官方项目页/维护者声明；C=第三方文档；D=推测。"
+    },
+    "supports": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "这条来源具体支撑哪些论断。写清楚才能在来源失效时判断影响范围。"
+    },
+    "notes": { "type": "string" }
+  },
+  "anyOf": [
+    { "required": ["url"] },
+    { "required": ["local_path"] },
+    { "properties": { "source_kind": { "const": "mentor_decision" } }, "required": ["source_kind"] }
+  ]
+}

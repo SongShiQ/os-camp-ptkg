@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://os-camp.dev/ptkg/authoring/0.1/run-manifest.schema.json",
+  "title": "PTKG Authoring Run Manifest",
+  "type": "object",
+  "required": ["authoring_version", "run_id", "profile", "project_ref", "reports_dir"],
+  "additionalProperties": false,
+  "properties": {
+    "authoring_version": { "const": "0.1" },
+    "run_id": { "type": "string", "pattern": "^run\\." },
+    "profile": { "enum": ["authoring", "review", "publishing"] },
+    "project_ref": { "$ref": "https://os-camp.dev/ptkg/authoring/0.1/common.schema.json#/$defs/projectRef" },
+    "reports_dir": { "const": "reports" }
+  }
+}

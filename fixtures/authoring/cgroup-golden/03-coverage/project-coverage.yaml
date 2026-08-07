@@ -1,0 +1,174 @@
+spec_version: project-coverage@0.1
+id: coverage.starryos.cgroup
+run_id: run.starryos.cgroup.001
+project_ref:
+  repo: https://github.com/rcore-os/tgoskits
+  commit: fc80b868fb3640efe8997994de42c1aee8fd74cb
+status: candidate
+input_refs:
+  - source-contract.starryos.cgroup
+  - fact.starryos.cgroup.mount-entry
+  - fact.starryos.cgroup.pids-charge
+claims:
+  - id: claim.starryos.cgroup.coverage-plan
+    statement: 完整 cgroup 覆盖必须包含 core、接口、成员、控制器、内核连接点和工程验证
+    epistemic_status: pedagogical_proposal
+    source_refs:
+      - src.scope.cgroup
+    anchor_refs: []
+    method: agent_analysis
+    validity:
+      commit_bound: true
+      invalidates_on:
+        - project_contract_change
+created_by:
+  actor_type: agent
+  actor_id: codex
+content_hash: ed233840e553f53e29f62e6454114632286068f56b9723af21994a458913078f
+created_at: 2026-07-27T00:00:00+08:00
+release_level: author_preview
+required_unit_ids:
+  - coverage.cgroup.core
+  - coverage.cgroup.cgroupfs
+  - coverage.cgroup.membership
+  - coverage.cgroup.controller-framework
+  - coverage.cgroup.pids
+  - coverage.cgroup.cpu
+  - coverage.cgroup.memory
+  - coverage.cgroup.cpuset
+  - coverage.cgroup.io
+  - coverage.cgroup.kernel-integration
+  - coverage.cgroup.concurrency
+  - coverage.cgroup.build-test-debug
+  - coverage.cgroup.provider-decoupling
+  - coverage.cgroup.delegation
+units:
+  - id: coverage.cgroup.core
+    title: core 与层级
+    required: true
+    critical: true
+    status: source_verified
+    implementation_state: present
+    source_refs:
+      - fact.starryos.cgroup.core-layout
+  - id: coverage.cgroup.cgroupfs
+    title: cgroupfs 与用户接口
+    required: true
+    critical: true
+    status: teachable
+    implementation_state: present
+    source_refs:
+      - fact.starryos.cgroup.mount-entry
+    behavior_refs:
+      - behavior.starryos.cgroup.mount-observe
+  - id: coverage.cgroup.membership
+    title: 成员迁移与生命周期
+    required: true
+    critical: true
+    status: source_verified
+    implementation_state: present
+    source_refs:
+      - fact.starryos.cgroup.membership
+  - id: coverage.cgroup.controller-framework
+    title: controller 框架
+    required: true
+    critical: true
+    status: source_verified
+    implementation_state: present
+    source_refs:
+      - fact.starryos.cgroup.controller-framework
+  - id: coverage.cgroup.pids
+    title: pids controller
+    required: true
+    critical: true
+    status: teachable
+    implementation_state: present
+    source_refs:
+      - fact.starryos.cgroup.pids-charge
+    behavior_refs:
+      - behavior.starryos.cgroup.pids-fork-exit
+  - id: coverage.cgroup.cpu
+    title: cpu controller
+    required: true
+    critical: false
+    status: source_verified
+    implementation_state: partial
+    source_refs:
+      - fact.starryos.cgroup.cpu-files
+  - id: coverage.cgroup.memory
+    title: memory controller
+    required: true
+    critical: false
+    status: source_verified
+    implementation_state: partial
+    source_refs:
+      - fact.starryos.cgroup.memory-file
+  - id: coverage.cgroup.cpuset
+    title: cpuset controller
+    required: true
+    critical: false
+    status: source_verified
+    implementation_state: partial
+    source_refs:
+      - fact.starryos.cgroup.cpuset-file
+  - id: coverage.cgroup.io
+    title: io controller
+    required: true
+    critical: false
+    status: source_verified
+    implementation_state: partial
+    source_refs:
+      - fact.starryos.cgroup.io-file
+  - id: coverage.cgroup.kernel-integration
+    title: 页分配调度块层与亲和性连接点
+    required: true
+    critical: true
+    status: source_verified
+    implementation_state: partial
+    source_refs:
+      - fact.starryos.cgroup.kernel-integration
+  - id: coverage.cgroup.concurrency
+    title: 并发错误处理与资源回收
+    required: true
+    critical: true
+    status: source_verified
+    implementation_state: present
+    source_refs:
+      - fact.starryos.platform.sync
+  - id: coverage.cgroup.build-test-debug
+    title: 构建测试调试与回归
+    required: true
+    critical: true
+    status: source_verified
+    implementation_state: present
+    source_refs:
+      - fact.starryos.cgroup.build-tests
+  - id: coverage.cgroup.provider-decoupling
+    title: provider 抽象与内核解耦
+    required: true
+    critical: true
+    status: skeleton
+    implementation_state: present
+    source_refs: []
+  - id: coverage.cgroup.delegation
+    title: 层级委派与权限边界
+    required: true
+    critical: false
+    status: skeleton
+    implementation_state: present
+    source_refs: []
+platform_family:
+  id: platform.starryos
+  shared_trunk_refs:
+    - fact.starryos.cgroup.build-tests
+    - fact.starryos.platform.process
+    - fact.starryos.platform.vfs
+    - fact.starryos.platform.rust-no-std
+reuse_links:
+  - from: canonical.os.process
+    to: binding.starryos.process
+    relation: exact_reuse
+    alignment:
+      learning_goal: true
+      prerequisites: true
+      evidence: true

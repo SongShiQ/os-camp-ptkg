@@ -1,0 +1,52 @@
+spec_version: source-contract@0.1
+id: source-contract.starryos.cgroup
+run_id: run.starryos.cgroup.001
+project_ref:
+  repo: https://github.com/rcore-os/tgoskits
+  commit: fc80b868fb3640efe8997994de42c1aee8fd74cb
+status: candidate
+input_refs:
+  - src.opencamp.project1
+  - src.tgoskits.issue1188
+claims:
+  - id: claim.starryos.cgroup.fixed-baseline
+    statement: 首版作者链绑定固定 commit fc80b868fb3640efe8997994de42c1aee8fd74cb
+    epistemic_status: verified_fact
+    source_refs:
+      - src.tgoskits.pr1379
+    anchor_refs: []
+    method: git
+    verified_at: 2026-07-27T00:00:00+08:00
+    validity:
+      commit_bound: true
+      invalidates_on:
+        - project_ref_change
+created_by:
+  actor_type: agent
+  actor_id: codex
+content_hash: 9d045fdcd39d59527eb8467d8bc60be85334282778377b951c851428a257889d
+created_at: 2026-07-27T00:00:00+08:00
+repository: https://github.com/rcore-os/tgoskits
+target: 完整 StarryOS cgroup v2 项目阶段之前的学习道路
+curriculum_boundary: pre_project_readiness
+non_goals:
+  - 不规划真实项目分工
+  - 不评价个人项目贡献
+  - 不要求真实 PR 或上游合并
+environment:
+  build_system: cargo xtask
+  runner: QEMU
+build:
+  - cargo xtask starry rootfs/qemu --arch riscv64
+tests:
+  - test-suit/starryos/qemu-smp1/system/cgroup-basic/src/main.c
+  - test-suit/starryos/qemu-smp1/system/cgroup-pids/src/main.c
+unresolved_questions: []
+checkout:
+  expected_tree: 832ce21ea6fdf32a8639c576cc97a137c2d14dcc
+  candidates:
+    - repository: https://github.com/rcore-os/tgoskits
+      ref: refs/pull/1379/head
+    - repository: https://github.com/SongShiQ/tgoskits
+      ref: refs/heads/goal/cgroup-next-build
+platform_private_state: should-not-enter-authoritative-contract

@@ -1,0 +1,184 @@
+{
+  "spec_version": "impact-report@0.1",
+  "old_run_id": "run.starryos.cgroup.001",
+  "new_run_id": "run.starryos.cgroup.001",
+  "generated_by": "ptkg",
+  "classification_rules": {
+    "non_semantic": "源码证据与固定契约未变，仅元数据变化。",
+    "structural": "对象拓扑、覆盖或切片结构变化。",
+    "behavioral": "源码 blob/symbol 片段、行为或执行证据变化。",
+    "contractual": "固定 commit 或项目契约变化。"
+  },
+  "added": [],
+  "changed": [],
+  "stale": [],
+  "inherited": [
+    {
+      "id": "source-contract.starryos.cgroup",
+      "kind": "source_contract",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "fact.starryos.cgroup.mount-entry",
+      "kind": "fact",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "fact.starryos.cgroup.pids-charge",
+      "kind": "fact",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "fact.starryos.cgroup.core-layout",
+      "kind": "fact",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "fact.starryos.cgroup.membership",
+      "kind": "fact",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "fact.starryos.cgroup.controller-framework",
+      "kind": "fact",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "fact.starryos.cgroup.cpu-files",
+      "kind": "fact",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "fact.starryos.cgroup.memory-file",
+      "kind": "fact",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "fact.starryos.cgroup.cpuset-file",
+      "kind": "fact",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "fact.starryos.cgroup.io-file",
+      "kind": "fact",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "fact.starryos.cgroup.kernel-integration",
+      "kind": "fact",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "fact.starryos.cgroup.build-tests",
+      "kind": "fact",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "fact.starryos.platform.process",
+      "kind": "fact",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "fact.starryos.platform.vfs",
+      "kind": "fact",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "fact.starryos.platform.rust-no-std",
+      "kind": "fact",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "fact.starryos.platform.sync",
+      "kind": "fact",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "coverage.starryos.cgroup",
+      "kind": "coverage",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "behavior.starryos.cgroup.mount-observe",
+      "kind": "behavior",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "behavior.starryos.cgroup.pids-fork-exit",
+      "kind": "behavior",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "slice.starryos.cgroup.mount-s0",
+      "kind": "slice",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "slice.starryos.cgroup.pids-s2",
+      "kind": "slice",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "exec.starryos.cgroup.mount-s0",
+      "kind": "execution",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "exec.starryos.cgroup.pids-s2",
+      "kind": "execution",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    }
+  ],
+  "teacher_decisions": {
+    "anchor_mappings": [],
+    "reasons": [
+      "移动或重命名的 symbol 不自动重绑，必须由教师审核候选映射。"
+    ]
+  }
+}
