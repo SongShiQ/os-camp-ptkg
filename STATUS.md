@@ -6,7 +6,7 @@ PTKG is being expanded from a project-graph validator into a deterministic cours
 
 | Gate | Status | Evidence |
 |---|---|---|
-| G0 independent repository | In progress | Apache-2.0, clean ignore rules, cross-platform CI, generic README |
+| G0 independent repository | Complete | Public `SongShiQ/os-camp-ptkg`; Windows/Ubuntu CI green |
 | G1 generic authoring | In progress | Existing fixed Git/tree/anchor verifier; generic project workspace pending |
 | G2 course planner | Pending | Course Package schemas and compiler pending |
 | G3 course quality | Pending | `COURSE001+` release rules pending |
