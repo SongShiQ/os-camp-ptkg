@@ -12,7 +12,7 @@ PTKG is being expanded from a project-graph validator into a deterministic cours
 | G3 course quality | Complete | `COURSE001-012`, Ed25519 trust validation, tamper rejection and deterministic tgz; Windows/Ubuntu CI green |
 | G4 Dream Agent import | Complete | `SongShiQ/Dream-Agent:feat/course-package-import`; transactional signed import, immutable versions, cohort pinning and rollback; 204 tests |
 | G5 golden courses | Complete | Commit `35eee22`; cgroup and full ABI candidate courses, six shared canonical nodes, real rCore analysis smoke, Dream Agent dual-course rehearsal, and Windows/Ubuntu CI run `31184975233` |
-| G6 trusted release | Worker local gate complete; real execution blocked | Disposable fixed-source Worker and failure evidence pass locally; exact frozen Docker image is unavailable, so mount S0, pids S2 and seeded-fault S3 remain unresolved |
+| G6 trusted release | Worker published; real execution blocked | Worker commit `6ce2c3b` and Windows/Ubuntu CI run `31188419241` pass; exact frozen Docker image is unavailable, so mount S0, pids S2 and seeded-fault S3 remain unresolved |
 
 Current regression baseline:
 
