@@ -133,6 +133,11 @@
       "content_hash": "cf3ef05d0785fd33534c89a021dc6914c582f79f0b8c4d97022eea7ab1c57d79"
     },
     {
+      "id": "exec.starryos.cgroup.pids-s3",
+      "kind": "execution",
+      "content_hash": "cd90fd41aba3840da4ac2210137ed15d9de67532d02f8af25ce0e2d405e753b9"
+    },
+    {
       "id": "fact.starryos.cgroup.build-tests",
       "kind": "fact",
       "content_hash": "c0a7db04c18cbaa0539a31dfe3f6b526785fcc5409f87c09710ac0539d0fa328"
@@ -216,6 +221,11 @@
       "id": "slice.starryos.cgroup.pids-s2",
       "kind": "slice",
       "content_hash": "4c5c3065940f06e4164c663c3d9ed67490777a8d7a4d6307a5a035f1095d0925"
+    },
+    {
+      "id": "slice.starryos.cgroup.pids-s3",
+      "kind": "slice",
+      "content_hash": "7541c89cdd1fe65cec3c84e3698e66653bda635ee3577708999526ca35213162"
     },
     {
       "id": "source-contract.starryos.cgroup",
@@ -362,6 +372,11 @@
     {
       "from": "exec.starryos.cgroup.pids-s2",
       "to": "slice.starryos.cgroup.pids-s2",
+      "relation": "evidence"
+    },
+    {
+      "from": "exec.starryos.cgroup.pids-s3",
+      "to": "slice.starryos.cgroup.pids-s3",
       "relation": "evidence"
     },
     {
@@ -563,6 +578,16 @@
       "from": "slice.starryos.cgroup.pids-s2",
       "to": "exec.starryos.cgroup.pids-s2",
       "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.pids-s3",
+      "to": "behavior.starryos.cgroup.pids-fork-exit",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.pids-s3",
+      "to": "exec.starryos.cgroup.pids-s3",
+      "relation": "input"
     }
   ],
   "reverse_dependencies": {
@@ -604,7 +629,8 @@
     ],
     "behavior.starryos.cgroup.pids-fork-exit": [
       "coverage.starryos.cgroup",
-      "slice.starryos.cgroup.pids-s2"
+      "slice.starryos.cgroup.pids-s2",
+      "slice.starryos.cgroup.pids-s3"
     ],
     "fact.starryos.cgroup.build-tests": [
       "coverage.starryos.cgroup"
@@ -669,6 +695,9 @@
     "slice.starryos.cgroup.pids-s2": [
       "exec.starryos.cgroup.pids-s2"
     ],
+    "slice.starryos.cgroup.pids-s3": [
+      "exec.starryos.cgroup.pids-s3"
+    ],
     "anchor.starryos.cgroup-basic-test": [
       "fact.starryos.cgroup.build-tests"
     ],
@@ -719,6 +748,9 @@
     ],
     "anchor.starryos.platform.cgroup-vfs": [
       "fact.starryos.platform.vfs"
+    ],
+    "exec.starryos.cgroup.pids-s3": [
+      "slice.starryos.cgroup.pids-s3"
     ]
   }
 }

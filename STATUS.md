@@ -12,11 +12,11 @@ PTKG is being expanded from a project-graph validator into a deterministic cours
 | G3 course quality | Complete | `COURSE001-012`, Ed25519 trust validation, tamper rejection and deterministic tgz; Windows/Ubuntu CI green |
 | G4 Dream Agent import | Complete | `SongShiQ/Dream-Agent:feat/course-package-import`; transactional signed import, immutable versions, cohort pinning and rollback; 204 tests |
 | G5 golden courses | Complete | Commit `35eee22`; cgroup and full ABI candidate courses, six shared canonical nodes, real rCore analysis smoke, Dream Agent dual-course rehearsal, and Windows/Ubuntu CI run `31184975233` |
-| G6 trusted release | Worker published; real execution blocked | Worker commit `6ce2c3b` and Windows/Ubuntu CI run `31188419241` pass; exact frozen Docker image is unavailable, so mount S0, pids S2 and seeded-fault S3 remain unresolved |
+| G6 trusted release | Worker published; frozen image downloading | Worker commit `6ce2c3b` and Windows/Ubuntu CI run `31188419241` pass; exact frozen Docker image is being pulled, so mount S0, pids S2 and seeded-fault S3 remain unresolved |
 
 Current regression baseline:
 
-- PTKG: 42 tests, typecheck passing locally on Node 24.
+- PTKG: 44 tests, typecheck passing locally on Node 24.
 - Stable cgroup fixture: 16 nodes, 24 edges, 12 sources, 0 findings.
 - Cgroup source projection: 21 nodes, 29 edges, 27 sources, 0 findings; all 14 required coverage units retain verified source-state records.
 - Cgroup course: 4 stages, 14 units/cards/practices, 56 questions, 15 gates; draft root `d14cb067c898b431e5ea48b38efd14abf6cbc9eefcec2b431fe1cc6f55e1f37c`, 0 blockers / 167 teacher reviews.
@@ -24,7 +24,7 @@ Current regression baseline:
 - Shared trunk: both StarryOS packages contain six byte-equivalent canonical nodes covering build/QEMU, Rust `no_std`, process lifecycle, `axfs-ng-vfs`, concurrency and four-way test evidence.
 - rCore smoke: fixed commit `c91bd3752b53ff48555aef4e3c7b8d5ddc8ee6e1`, tree `f649d5b69c790b85ea323edc5c9d02afbbb66104`; real analysis recorded 1,023 facts and 1,018 anchors; draft root `e2fdc3c26be190d5198ab77949f1b609b845c9d4d270cad966d5e7b2fc231ffe` with 0 blockers / 23 reviews.
 - Dream Agent rehearsal: a clean temporary SQLite accepted both test-reviewed/test-signed packages transactionally, preserved six shared canonical nodes per version, isolated 120 questions and 32 gates, and independently activated both courses.
-- G6 Worker: verifies cached commit/tree, creates and removes a detached disposable worktree, requires an exact image digest already present locally, disables network/secrets/push, limits memory/processes/time, resets source before a seeded-fault phase, writes hashed local artifacts, and upserts one result per slice. Fixed-image failure remains `failed/unresolved` and cannot inherit requested test coverage.
-- G6 environment: Docker server `29.4.3` is running, but pulls of `ghcr.io/rcore-os/tgoskits-container@sha256:6d3f3af586af971d1570d7993fde2a3ed18c62de1b534efe44bee563cb268c76` timed out at 120 seconds and 10 minutes. Floating-tag substitution is prohibited.
+- G6 Worker: verifies cached commit/tree, creates and removes a detached disposable worktree, requires an exact image digest already present locally, disables network/secrets/push, limits memory/processes/time, resets source before a seeded-fault phase, writes hashed local artifacts, and uses the slice's single stable `execution_refs` ID for deterministic upsert. S2 and S3 use independent slices/results. A seeded fault counts only after a non-zero, non-timeout exit with the exact `PTKG_SEEDED_FAULT_DETECTED:<fault-ref>` marker. Fixed-image failure remains `failed/unresolved` and cannot inherit requested test coverage.
+- G6 environment: Docker server `29.4.3` is running. Earlier pulls of `ghcr.io/rcore-os/tgoskits-container@sha256:6d3f3af586af971d1570d7993fde2a3ed18c62de1b534efe44bee563cb268c76` timed out at 120 seconds and 10 minutes; one detached pull is still downloading the large layers. Floating-tag substitution and concurrent duplicate pulls are prohibited.
 - Fixed source: `rcore-os/tgoskits@fc80b868fb3640efe8997994de42c1aee8fd74cb`, tree `832ce21ea6fdf32a8639c576cc97a137c2d14dcc`.
 - Course boundary: tutorial, foundation, pre-project, project context, then Project Readiness Gate. Project work assignment and contribution evaluation are out of scope.

@@ -99,6 +99,7 @@ const USAGE = `OS Camp PTKG v0.4 — 项目牵引式课程作者与校验工具
   --trust-store <文件>    ptkg-trust-store@1 外部可信公钥
   --fault-command <命令>  基线通过后注入 seeded fault 并运行判别测试
   --fault-ref <ID>        seeded fault 的稳定标识
+                          判别命令须输出 PTKG_SEEDED_FAULT_DETECTED:<ID> 并非零退出
   --test-classes <CSV>    positive,negative,concurrency,regression
   --expected <文本>       本次执行的明确预期
 

@@ -13,6 +13,7 @@ import { verifyAuthoringWorkspace } from './workspace.ts';
 const execFileAsync = promisify(execFile);
 const IMAGE_DIGEST = /^[^@\s]+@sha256:[0-9a-f]{64}$/;
 const SHA40 = /^[0-9a-f]{40}$/;
+const FAULT_DETECTED_PREFIX = 'PTKG_SEEDED_FAULT_DETECTED:';
 
 type TestClasses = {
   positive: boolean;
@@ -68,9 +69,18 @@ function sha256(value: string | Uint8Array): string {
   return createHash('sha256').update(value).digest('hex');
 }
 
-function executionId(runId: string, sliceId: string): string {
-  const digest = sha256(`${runId}\u0000${sliceId}`).slice(0, 16);
-  return `exec.worker.${digest}`;
+function declaredExecutionId(slice: AuthoringObject): string {
+  const refs = Array.isArray(slice.execution_refs)
+    ? slice.execution_refs.filter((value): value is string => typeof value === 'string')
+    : [];
+  const [id] = refs;
+  if (refs.length !== 1 || !id) {
+    throw new Error(`learning-slice ${slice.id} 必须声明且只能声明一个 execution_refs，当前为 ${refs.length} 个。`);
+  }
+  if (!/^exec\.[A-Za-z0-9._-]+$/.test(id)) {
+    throw new Error(`learning-slice ${slice.id} 的 execution_refs 不是稳定 exec.* ID：${id}`);
+  }
+  return id;
 }
 
 function asExitCode(error: unknown): number {
@@ -282,6 +292,19 @@ function defaultTestClasses(succeeded: boolean): TestClasses {
   };
 }
 
+/** A non-zero process exit alone is not proof that the seeded fault was detected. */
+export function hasSeededFaultEvidence(
+  exitCode: number,
+  timedOut: boolean,
+  stdout: string,
+  stderr: string,
+  faultRef: string,
+): boolean {
+  if (exitCode <= 0 || timedOut) return false;
+  const expected = `${FAULT_DETECTED_PREFIX}${faultRef}`;
+  return `${stdout}\n${stderr}`.split(/\r?\n/).some((line) => line.trim() === expected);
+}
+
 async function upsertExecutionResult(file: string, result: AuthoringObject): Promise<void> {
   let existing: AuthoringObject[] = [];
   try {
@@ -311,6 +334,7 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
   const run = loaded.run;
   const slice = run.learningSlices.find((item) => item.id === options.sliceId);
   if (!slice) throw new Error(`找不到 learning-slice：${options.sliceId}`);
+  const id = declaredExecutionId(slice);
   const timeoutSeconds = options.timeoutSeconds ?? 600;
   const memoryMb = options.memoryMb ?? 4096;
   const processes = options.processes ?? 128;
@@ -318,7 +342,6 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
     throw new Error('资源限制必须是正整数。');
   }
 
-  const id = executionId(run.manifest.run_id, options.sliceId);
   const started = Date.now();
   const stdoutParts: string[] = [];
   const stderrParts: string[] = [];
@@ -362,7 +385,12 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
       fault = await capture('docker', faultArgs, { cwd: runDir, timeoutMs: timeoutSeconds * 1000 });
       stdoutParts.push(`[fault]\n${fault.stdout}`);
       stderrParts.push(`[fault]\n${fault.stderr}`);
-      phases.push({ name: 'fault', exit_code: fault.exitCode, timed_out: fault.timedOut, expected: 'non-zero test exit' });
+      phases.push({
+        name: 'fault',
+        exit_code: fault.exitCode,
+        timed_out: fault.timedOut,
+        expected: `non-zero test exit and marker ${FAULT_DETECTED_PREFIX}${options.faultRef}`,
+      });
     }
   } catch (error) {
     setupError = (error as Error).message;
@@ -375,7 +403,13 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
     cleanup,
   };
   const baselinePassed = baseline?.exitCode === 0 && baseline.timedOut === false;
-  const faultFailed = fault !== null && fault.exitCode > 0 && fault.timedOut === false;
+  const faultFailed = fault !== null && options.faultRef !== undefined && hasSeededFaultEvidence(
+    fault.exitCode,
+    fault.timedOut,
+    fault.stdout,
+    fault.stderr,
+    options.faultRef,
+  );
   const refs = inheritedClaimRefs(run, slice);
   const evidenceBound = refs.sourceRefs.length + refs.anchorRefs.length > 0;
   const resetSucceeded = cleanup.succeeded && (!beforeFaultReset || beforeFaultReset.succeeded);

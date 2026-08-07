@@ -161,6 +161,13 @@
       "invalidates": []
     },
     {
+      "id": "slice.starryos.cgroup.pids-s3",
+      "kind": "slice",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
       "id": "exec.starryos.cgroup.mount-s0",
       "kind": "execution",
       "classification": "non_semantic",
@@ -169,6 +176,13 @@
     },
     {
       "id": "exec.starryos.cgroup.pids-s2",
+      "kind": "execution",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "exec.starryos.cgroup.pids-s3",
       "kind": "execution",
       "classification": "non_semantic",
       "reason": "对象 hash 未变化，继承旧运行结果。",

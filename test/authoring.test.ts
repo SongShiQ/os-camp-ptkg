@@ -12,7 +12,7 @@ import YAML from 'yaml';
 
 import { validateAuthoringRun } from '../src/authoring/validate.ts';
 import { analyzeAuthoringImpact } from '../src/authoring/impact.ts';
-import { executeAuthoringSlice } from '../src/authoring/execute.ts';
+import { executeAuthoringSlice, hasSeededFaultEvidence } from '../src/authoring/execute.ts';
 import { computeContentHash } from '../src/authoring/hash.ts';
 import { AUTHORING_RULE_CODES } from '../src/authoring/types.ts';
 import type { AuthoringRuleCode } from '../src/authoring/types.ts';
@@ -66,12 +66,13 @@ describe('作者链 golden：cgroup 双链', () => {
     assert.deepEqual(result.findings, []);
     // code_facts 覆盖固定 commit 的全项目锚点索引（含未做深分支的来源事实），
     // 21 个锚点全部经 authoring-verify-workspace 对固定 commit 核验；
-    // behavior/slice/execution 仍只有 mount 与 pids 两条做深的链。
+    // behavior 仍只有 mount 与 pids 两条做深的链；pids 的 S2 实现证据与
+    // S3 测试判别力证据使用独立 slice/result，避免混淆两种主张。
     assert.deepEqual(result.summary.counts, {
       code_facts: 15,
       behavior_chains: 2,
-      learning_slices: 2,
-      execution_results: 2,
+      learning_slices: 3,
+      execution_results: 3,
       review_events: 0,
       exception_events: 0,
       anchor_verifications: 21,
@@ -207,6 +208,51 @@ describe('P1 增量影响分析', () => {
 });
 
 describe('P2 Worker 安全合同', () => {
+  it('seeded fault 需要非零退出和精确检测标记，注入脚本报错不能冒充命中', () => {
+    const ref = 'fault.starryos.cgroup.pids-bypass-v1';
+    assert.equal(hasSeededFaultEvidence(1, false, '', 'sed: pattern not found', ref), false);
+    assert.equal(hasSeededFaultEvidence(1, false, `PTKG_SEEDED_FAULT_DETECTED:${ref}\n`, '', ref), true);
+    assert.equal(hasSeededFaultEvidence(0, false, `PTKG_SEEDED_FAULT_DETECTED:${ref}\n`, '', ref), false);
+    assert.equal(hasSeededFaultEvidence(1, true, `PTKG_SEEDED_FAULT_DETECTED:${ref}\n`, '', ref), false);
+    assert.equal(
+      hasSeededFaultEvidence(1, false, `prefix PTKG_SEEDED_FAULT_DETECTED:${ref}\n`, '', ref),
+      false,
+    );
+    assert.equal(
+      hasSeededFaultEvidence(1, false, 'PTKG_SEEDED_FAULT_DETECTED:fault.other\n', '', ref),
+      false,
+    );
+  });
+
+  it('Worker 直接使用 slice 声明的稳定 execution ID，并拒绝缺失或歧义引用', async () => {
+    const temp = await mkdtemp(path.join(tmpdir(), 'ptkg-execution-id-'));
+    try {
+      for (const refs of [[], ['exec.one', 'exec.two']]) {
+        const root = path.join(temp, `run-${refs.length}`);
+        await cp(GOLDEN, root, { recursive: true });
+        const slicePath = path.join(root, '05-slices', 'learning-slices.jsonl');
+        const slices = (await readFile(slicePath, 'utf8')).trim().split(/\r?\n/)
+          .map((line) => JSON.parse(line) as Record<string, unknown>);
+        const target = slices.find((slice) => slice.id === 'slice.starryos.cgroup.mount-s0');
+        assert.ok(target);
+        target.execution_refs = refs;
+        target.content_hash = computeContentHash(target);
+        await writeFile(slicePath, `${slices.map((slice) => JSON.stringify(slice)).join('\n')}\n`, 'utf8');
+
+        await assert.rejects(
+          executeAuthoringSlice(root, {
+            sliceId: 'slice.starryos.cgroup.mount-s0',
+            image: 'example.invalid/ptkg@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+            command: 'true',
+          }),
+          /必须声明且只能声明一个 execution_refs/,
+        );
+      }
+    } finally {
+      await rm(temp, { recursive: true, force: true });
+    }
+  });
+
   it('固定镜像不可用时仍落盘可审计结果，并清理 disposable worktree', async () => {
     const temp = await mkdtemp(path.join(tmpdir(), 'ptkg-execution-failure-'));
     const root = path.join(temp, 'run');
@@ -226,6 +272,7 @@ describe('P2 Worker 安全合同', () => {
         cacheDir,
       };
       const result = await executeAuthoringSlice(root, options);
+      assert.equal(result.result.id, 'exec.starryos.cgroup.mount-s0');
       assert.equal(result.result.result_status, 'failed');
       assert.equal(result.result.status, 'unresolved');
       assert.match(String(result.result.environment_hash), /^[0-9a-f]{64}$/);
