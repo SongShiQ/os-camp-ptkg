@@ -10,14 +10,16 @@ PTKG is being expanded from a project-graph validator into a deterministic cours
 | G1 generic authoring | Complete | Local/remote Git input, private docs, checkpoints, Agent adapters, generic analyzers |
 | G2 course planner | Complete | Deterministic `os-camp-course@1` compiler, calibration unit, normalized hashes and Dream Agent projection |
 | G3 course quality | Complete | `COURSE001-012`, Ed25519 trust validation, tamper rejection and deterministic tgz; Windows/Ubuntu CI green |
-| G4 Dream Agent import | Pending | Transactional import and version-scoped repository pending |
-| G5 golden courses | Pending | cgroup deep sample exists only as PTKG authoring fixture |
+| G4 Dream Agent import | Complete | `SongShiQ/Dream-Agent:feat/course-package-import`; transactional signed import, immutable versions, cohort pinning and rollback; 203 tests |
+| G5 golden courses | In progress | cgroup 14-unit candidate course complete; full ABI course and rCore cross-repository smoke remain |
 | G6 trusted release | Blocked on implementation | Docker daemon is currently unavailable; real execution cannot be claimed |
 
 Current regression baseline:
 
-- PTKG: 37 tests, typecheck passing locally on Node 24.
+- PTKG: 38 tests, typecheck passing locally on Node 24.
 - Stable cgroup fixture: 16 nodes, 24 edges, 12 sources, 0 findings.
-- Course fixture: 1 candidate unit, 1 card, 1 high-fidelity practice, 4 questions and 1 gate; draft validation has 0 blockers.
+- Cgroup authoring source projection: 22 fixed sources; 14 required coverage units have verified source-state records.
+- Cgroup course fixture: 4 stages, 14 candidate units/cards/practices, 56 questions and 15 gates; draft validation has 0 blockers and 157 expected teacher-review findings.
+- Deterministic course package: 27 files, root `b87c61261094198ae4b840472c05de5e6a0b05ea0dcafc85e19fd9a28976760c` on two independent compilations.
 - Fixed source: `rcore-os/tgoskits@fc80b868fb3640efe8997994de42c1aee8fd74cb`, tree `832ce21ea6fdf32a8639c576cc97a137c2d14dcc`.
-- Course boundary: tutorial, foundation, pre-project, then Project Readiness Gate. Project work assignment and contribution evaluation are out of scope.
+- Course boundary: tutorial, foundation, pre-project, project context, then Project Readiness Gate. Project work assignment and contribution evaluation are out of scope.

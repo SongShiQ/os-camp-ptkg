@@ -99,6 +99,67 @@ async function createSigningIdentity(temp: string, actor: string): Promise<{ key
 }
 
 describe('G2/G3 Course Package', () => {
+  it('G5 cgroup 黄金课程覆盖 14 个源码单元并止于项目准备度门', async () => {
+    const { packageDir } = await compileFixture('g5-cgroup-coverage');
+    const stages = await readCourseJsonl<CourseStage>(packageDir, 'course/stages.jsonl');
+    const units = await readCourseJsonl<CourseUnit>(packageDir, 'course/units.jsonl');
+    const questions = await readCourseJsonl<CourseQuestion>(packageDir, 'course/questions.jsonl');
+    const practices = await readCourseJsonl<CoursePractice>(packageDir, 'course/practices.jsonl');
+    const gates = await readCourseJsonl<CourseGate>(packageDir, 'course/gates.jsonl');
+    const cardFiles = (await listPackageFiles(packageDir)).filter((file) => file.startsWith('content/cards/'));
+
+    assert.deepEqual(stages.map((stage) => stage.id), stages.map((stage) => stage.id).sort());
+    assert.deepEqual([...stages].sort((a, b) => a.order - b.order).map((stage) => stage.layer), [
+      'tutorial',
+      'foundation',
+      'pre_project',
+      'project_reference',
+    ]);
+    assert.equal(units.length, 14);
+    assert.equal(cardFiles.length, 14);
+    assert.equal(questions.length, 56);
+    assert.equal(practices.length, 14);
+    assert.equal(gates.length, 15);
+    assert.ok(stages.find((stage) => stage.layer === 'project_reference')?.unit_ids.length === 0);
+
+    for (const unit of units) {
+      const unitQuestions = questions.filter((question) => question.unit_ids.includes(unit.id));
+      assert.equal(unitQuestions.filter((question) => question.pool === 'diagnostic').length, 2, `${unit.id} diagnostic 题组不完整`);
+      assert.equal(unitQuestions.filter((question) => question.pool === 'checkpoint').length, 2, `${unit.id} checkpoint 题组不完整`);
+      assert.equal(unit.card_ids.length, 1, `${unit.id} 必须绑定一张知识卡`);
+      assert.equal(unit.practice_ids.length, 1, `${unit.id} 必须绑定一个实践`);
+      assert.ok(unit.gate_ids.length >= 1, `${unit.id} 必须贡献到可信 gate`);
+    }
+
+    const readiness = gates.find((gate) => gate.id === 'gate.starryos.cgroup.project-readiness');
+    assert.ok(readiness);
+    assert.equal(readiness.trusted_evidence, true);
+    assert.deepEqual([...readiness.unit_ids].sort(), units.map((unit) => unit.id).sort());
+    assert.deepEqual(
+      [...readiness.prerequisite_gate_ids].sort(),
+      gates.filter((gate) => gate.id !== readiness.id).map((gate) => gate.id).sort(),
+    );
+
+    const statuses = [
+      ...stages.map((item) => item.status),
+      ...units.map((item) => item.status),
+      ...questions.map((item) => item.status),
+      ...practices.map((item) => item.status),
+      ...gates.map((item) => item.status),
+    ];
+    assert.ok(statuses.every((status) => status === 'candidate' || status === 'unresolved'));
+
+    for (const slug of ['cpu', 'memory', 'cpuset', 'io']) {
+      const cardFile = `content/cards/card.starryos.cgroup.${slug}.md`;
+      const card = parseCard(await readFile(path.join(packageDir, cardFile), 'utf8'), cardFile);
+      const practice = practices.find((item) => item.id === `course-practice.starryos.cgroup.${slug}`);
+      assert.ok(practice);
+      const boundaryText = `${card.title}\n${card.body}\n${practice.instructions.join('\n')}`;
+      assert.match(boundaryText, /不等于|不能.*证明|不足以证明|区分/);
+      assert.doesNotMatch(boundaryText, /(?:已完成|已经完成).{0,16}(?:enforcement|限速|节流|亲和性|资源控制)/i);
+    }
+  });
+
   it('同一作者工作区重复编译逐字节一致，draft 质量门通过', async () => {
     const temp = await mkdtemp(path.join(tmpdir(), 'ptkg-course-determinism-'));
     const workspace = path.join(temp, 'workspace');

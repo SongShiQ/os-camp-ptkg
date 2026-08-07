@@ -1,18 +1,67 @@
 spec_version: course-blueprint@1
 course_id: oscamp.starryos.cgroup
-version: 0.1.0
+version: 0.2.0
 title: StarryOS cgroup 项目先导课程
 language: zh-CN
 stages:
-  - id: stage.starryos.cgroup.foundation
-    layer: foundation
-    order: 10
-    title: cgroup 核心语义与源码纵切
+  - id: stage.starryos.cgroup.tutorial
+    layer: tutorial
+    order: 0
+    title: 固定源码、构建与全景观察
     required: true
     unit_ids:
-      - unit.starryos.cgroup.pids-vertical
+      - unit.starryos.cgroup.build-test-debug
     prerequisite_stage_ids: []
     status: candidate
     source_refs:
       - src.tgoskits.pr1379
+      - src.starryos.xtask-main
+  - id: stage.starryos.cgroup.foundation
+    layer: foundation
+    order: 10
+    title: cgroup 核心、接口与模块边界
+    required: true
+    unit_ids:
+      - unit.starryos.cgroup.core
+      - unit.starryos.cgroup.cgroupfs
+      - unit.starryos.cgroup.membership
+      - unit.starryos.cgroup.controller-framework
+      - unit.starryos.cgroup.provider-decoupling
+      - unit.starryos.cgroup.delegation
+    prerequisite_stage_ids:
+      - stage.starryos.cgroup.tutorial
+    status: candidate
+    source_refs:
+      - src.tgoskits.pr1379
       - src.linux.cgroup-v2-doc
+  - id: stage.starryos.cgroup.pre-project
+    layer: pre_project
+    order: 20
+    title: 控制器纵切、内核连接点与准备度证据
+    required: true
+    unit_ids:
+      - unit.starryos.cgroup.pids-vertical
+      - unit.starryos.cgroup.cpu
+      - unit.starryos.cgroup.memory
+      - unit.starryos.cgroup.cpuset
+      - unit.starryos.cgroup.io
+      - unit.starryos.cgroup.kernel-integration
+      - unit.starryos.cgroup.concurrency
+    prerequisite_stage_ids:
+      - stage.starryos.cgroup.foundation
+    status: candidate
+    source_refs:
+      - src.tgoskits.pr1379
+      - src.linux.cgroup-v2-doc
+  - id: stage.starryos.cgroup.project-reference
+    layer: project_reference
+    order: 30
+    title: 完整项目上下文与准备度出口
+    required: false
+    unit_ids: []
+    prerequisite_stage_ids:
+      - stage.starryos.cgroup.pre-project
+    status: candidate
+    source_refs:
+      - src.opencamp.project1
+      - src.tgoskits.issue1188

@@ -103,7 +103,7 @@ checksums.json
 
 Stages are `tutorial`, `foundation`, `pre_project`, and `project_reference`. The last stage provides project context only. A required unit must have a knowledge card, a code or high-fidelity practice, two diagnostic/remediation questions, two checkpoint questions, and a trusted-evidence gate. `COURSE001-012` enforce structure, paths/checksums, graph references and DAGs, assets, question pools, evidence, fixed source, review status, reuse metadata, privacy, signature trust, and projection consistency.
 
-The cgroup authoring fixture now contains one complete candidate calibration unit. It demonstrates compilation and teacher review input; it is intentionally not presented as an approved course or a complete cgroup curriculum.
+The cgroup authoring fixture is the first deep candidate course: 4 stages, 14 required source-coverage units, 14 cards, 56 questions, 14 practices, and 15 gates culminating in one Project Readiness Gate. It covers build/test/debug, cgroup core and cgroupfs, membership, controller and provider boundaries, delegation, pids/cpu/memory/cpuset/io, kernel integration, and concurrency. Partial controllers explicitly separate file/state presence from accounting, kernel enforcement, and executed evidence. Every item remains `candidate` or `unresolved`; the fixture is not an approved or release-ready course.
 
 ## Available PTKG Commands
 
@@ -154,7 +154,7 @@ npm test
 npm run check
 ```
 
-CI runs the full check and graph, authoring, and course-package golden validations on Windows and Ubuntu. The G2/G3 baseline contains 37 tests. Rule meanings are append-only: PTKG001-014 retain their existing semantics, while course-package findings use the independent `COURSE001-012` namespace.
+CI runs the full check and graph, authoring, and course-package golden validations on Windows and Ubuntu. The current baseline contains 38 tests, including the 14-unit cgroup course contract and deterministic recompilation. Rule meanings are append-only: PTKG001-014 retain their existing semantics, while course-package findings use the independent `COURSE001-012` namespace.
 
 See [STATUS.md](./STATUS.md) for the current implementation gate and [AGENT_INSTRUCTIONS.md](./AGENT_INSTRUCTIONS.md) for the authoring protocol.
 
