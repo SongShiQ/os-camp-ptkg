@@ -329,7 +329,8 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
   if ((options.faultCommand && !options.faultRef) || (!options.faultCommand && options.faultRef)) {
     throw new Error('--fault-command 与 --fault-ref 必须同时提供。');
   }
-  const loaded = await loadAuthoringRun(runDir);
+  const rootDir = path.resolve(runDir);
+  const loaded = await loadAuthoringRun(rootDir);
   if (!loaded.run) throw new Error(`无法载入作者运行：${loaded.findings.map((item) => item.message).join('；')}`);
   const run = loaded.run;
   const slice = run.learningSlices.find((item) => item.id === options.sliceId);
@@ -357,12 +358,12 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
   let beforeFaultReset: ResetStep | null = null;
 
   try {
-    const snapshot = await readVerifiedSnapshot(runDir, run, options.cacheDir);
+    const snapshot = await readVerifiedSnapshot(rootDir, run, options.cacheDir);
     sourceSnapshot = { ...run.sourceContract.project_ref, tree: snapshot.tree };
     worktree = await createWorktree(
       snapshot,
       run.sourceContract.project_ref.commit,
-      path.join(runDir, '.ptkg', 'workers'),
+      path.join(rootDir, '.ptkg', 'workers'),
     );
     commands.push(displayedDockerCommand(['image', 'inspect', options.image, '--format', '{{json .}}']));
     const inspect = await capture('docker', ['image', 'inspect', options.image, '--format', '{{json .}}'], { timeoutMs: 60_000 });
@@ -376,7 +377,7 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
 
     const baselineArgs = dockerArgs(options.image, worktree.source, options.command, memoryMb, processes);
     commands.push(displayedDockerCommand(baselineArgs));
-    baseline = await capture('docker', baselineArgs, { cwd: runDir, timeoutMs: timeoutSeconds * 1000 });
+    baseline = await capture('docker', baselineArgs, { cwd: rootDir, timeoutMs: timeoutSeconds * 1000 });
     stdoutParts.push(`[baseline]\n${baseline.stdout}`);
     stderrParts.push(`[baseline]\n${baseline.stderr}`);
     phases.push({ name: 'baseline', exit_code: baseline.exitCode, timed_out: baseline.timedOut, expected: 'exit 0' });
@@ -386,7 +387,7 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
       if (!beforeFaultReset.succeeded) throw new Error(`seeded fault 前无法恢复固定源码：${beforeFaultReset.log}`);
       const faultArgs = dockerArgs(options.image, worktree.source, options.faultCommand, memoryMb, processes);
       commands.push(displayedDockerCommand(faultArgs));
-      fault = await capture('docker', faultArgs, { cwd: runDir, timeoutMs: timeoutSeconds * 1000 });
+      fault = await capture('docker', faultArgs, { cwd: rootDir, timeoutMs: timeoutSeconds * 1000 });
       stdoutParts.push(`[fault]\n${fault.stdout}`);
       stderrParts.push(`[fault]\n${fault.stderr}`);
       phases.push({
@@ -436,7 +437,7 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
         : '基线命令通过，worktree 已清理。'
       : `执行未满足预期：baseline=${baseline?.exitCode ?? 'not-run'} fault=${fault?.exitCode ?? 'not-run'} reset=${resetSucceeded}`;
 
-  const artifactRoot = path.join(runDir, run.manifest.reports_dir, 'execution', id);
+  const artifactRoot = path.join(rootDir, run.manifest.reports_dir, 'execution', id);
   const artifactPrefix = path.posix.join(run.manifest.reports_dir, 'execution', id);
   await mkdir(artifactRoot, { recursive: true });
   const environmentText = `${JSON.stringify(environment, null, 2)}\n`;
@@ -501,6 +502,6 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
     reset: { succeeded: resetSucceeded, log_hash: sha256(JSON.stringify(resetEvidence)) },
   };
   result.content_hash = computeContentHash(result);
-  await upsertExecutionResult(path.join(runDir, run.origin.executionResults), result);
+  await upsertExecutionResult(path.join(rootDir, run.origin.executionResults), result);
   return { result, stdout, stderr };
 }
