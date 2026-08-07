@@ -8,8 +8,8 @@ PTKG is being expanded from a project-graph validator into a deterministic cours
 |---|---|---|
 | G0 independent repository | Complete | Public `SongShiQ/os-camp-ptkg`; Windows/Ubuntu CI green |
 | G1 generic authoring | Complete | Local/remote Git input, private docs, checkpoints, Agent adapters, generic analyzers |
-| G2 course planner | Implemented, CI pending | Deterministic `os-camp-course@1` compiler, calibration unit, normalized hashes and Dream Agent projection |
-| G3 course quality | Implemented, CI pending | `COURSE001-012`, Ed25519 trust validation, tamper rejection and deterministic tgz |
+| G2 course planner | Complete | Deterministic `os-camp-course@1` compiler, calibration unit, normalized hashes and Dream Agent projection |
+| G3 course quality | Complete | `COURSE001-012`, Ed25519 trust validation, tamper rejection and deterministic tgz; Windows/Ubuntu CI green |
 | G4 Dream Agent import | Pending | Transactional import and version-scoped repository pending |
 | G5 golden courses | Pending | cgroup deep sample exists only as PTKG authoring fixture |
 | G6 trusted release | Blocked on implementation | Docker daemon is currently unavailable; real execution cannot be claimed |
