@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://os-camp.dev/ptkg/project-input@1.schema.json",
+  "title": "PTKG Project Input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "spec_version",
+    "workspace_id",
+    "status",
+    "repository",
+    "goal",
+    "curriculum_boundary",
+    "documents",
+    "unresolved_questions"
+  ],
+  "properties": {
+    "spec_version": { "const": "ptkg-project-input@1" },
+    "workspace_id": { "type": "string", "pattern": "^project\\." },
+    "status": { "enum": ["candidate", "unresolved"] },
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["locator", "kind", "requested_ref", "commit", "tree"],
+      "properties": {
+        "locator": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["local", "remote"] },
+        "requested_ref": { "type": ["string", "null"] },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "tree": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+      }
+    },
+    "goal": { "type": ["string", "null"] },
+    "curriculum_boundary": { "const": "pre_project_readiness" },
+    "documents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "locator", "kind", "privacy", "sha256", "bytes"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^doc\\." },
+          "locator": { "type": "string", "minLength": 1 },
+          "kind": { "enum": ["local", "remote"] },
+          "privacy": { "enum": ["private_local", "public_remote"] },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "bytes": { "type": "integer", "minimum": 0, "maximum": 2097152 },
+          "local_copy": { "type": "string" }
+        }
+      }
+    },
+    "unresolved_questions": { "type": "array", "items": { "type": "string" } }
+  }
+}

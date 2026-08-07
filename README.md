@@ -41,21 +41,30 @@ npm run ptkg -- validate fixtures/cgroup-golden
 npm run ptkg -- authoring-validate fixtures/authoring/cgroup-golden
 ```
 
-## Target Course Compiler CLI (G1-G3)
+## Project Authoring (G1)
 
-The following command names are the frozen public contract for G1-G3. They are not available in the G0 release yet; use the existing PTKG commands in the next section until their gate is marked complete in [STATUS.md](./STATUS.md).
+Project initialization and checkpointed Agent authoring are available:
 
 ```bash
-ptkg project-init <workspace> --repo <url> [--goal <text>] [--doc <path-or-url>] [--ref <sha>]
+ptkg project-init <workspace> --repo <url-or-local-path> [--goal <text>] [--doc <path-or-url>]... [--ref <sha>]
 ptkg author <workspace> --agent codex|claude|manual
 ptkg status <workspace>
+```
+
+`project-init` freezes a 40-character commit and tree, stores remote checkouts under the user cache, classifies local documents as private, and runs Git/Markdown/Cargo/Rust analyzers. Unsupported languages degrade to file-level unresolved facts. `manual` writes the next checkpoint instruction; the other adapters invoke the already-authenticated local CLI and do not persist API keys.
+
+If a repository contains several plausible project goals, initialization stops at the project-contract checkpoint instead of silently choosing one.
+
+## Target Course Compiler CLI (G2-G3)
+
+The following names are frozen but remain unavailable until G2/G3 is complete:
+
+```bash
 ptkg course-compile <workspace> --out <package-dir>
 ptkg course-validate <package-dir> --profile draft|release
 ptkg course-sign <package-dir> --key <ed25519-key> --actor <teacher-id>
 ptkg course-pack <package-dir> [--out <archive.tgz>]
 ```
-
-Authoring is checkpointed. `manual` writes complete stage instructions for tools such as Codex Desktop; the CLI adapters invoke already-authenticated local tools and never store API keys. If a repository contains several plausible project goals, initialization records candidate contracts and questions instead of silently choosing one.
 
 ## Course Package Contract
 
@@ -106,6 +115,7 @@ Exit codes are `0` for success, `1` for validation blockers, and `2` for usage o
 
 ```text
 src/authoring/       Fixed-source authoring and evidence chain
+src/project/         Generic project workspace, analyzers, checkpoints, and Agent adapters
 src/course/          Course compiler, validation, signing, and packing
 schema/              Stable JSON Schema contracts
 fixtures/            Golden and deliberately broken examples
@@ -128,7 +138,7 @@ npm test
 npm run check
 ```
 
-CI runs the full check and golden validations on Windows and Ubuntu. Rule meanings are append-only: PTKG001-014 retain their existing semantics, while course-package findings use the independent `COURSE001+` namespace.
+CI runs the full check and golden validations on Windows and Ubuntu. The G1 baseline contains 31 tests. Rule meanings are append-only: PTKG001-014 retain their existing semantics, while course-package findings use the independent `COURSE001+` namespace.
 
 See [STATUS.md](./STATUS.md) for the current implementation gate and [AGENT_INSTRUCTIONS.md](./AGENT_INSTRUCTIONS.md) for the authoring protocol.
 

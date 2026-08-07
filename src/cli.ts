@@ -37,8 +37,12 @@ import { inspectAuthoringHashes, writeAuthoringHashes } from './authoring/hash.t
 import { verifyAuthoringWorkspace } from './authoring/workspace.ts';
 import { analyzeAuthoringImpact } from './authoring/impact.ts';
 import { executeAuthoringSlice } from './authoring/execute.ts';
+import { initializeProjectWorkspace } from './project/workspace.ts';
+import { authorProject } from './project/author.ts';
+import { getProjectStatus } from './project/status.ts';
+import type { AgentKind } from './project/types.ts';
 
-const USAGE = `PTKG Authoring Kit v0.1 — 项目牵引式任务—知识图谱校验工具
+const USAGE = `OS Camp PTKG v0.3 — 项目牵引式课程作者与校验工具
 
 用法：
   ptkg init <dir>                  生成 bundle 骨架（manifest + 四个空文件）
@@ -56,6 +60,11 @@ const USAGE = `PTKG Authoring Kit v0.1 — 项目牵引式任务—知识图谱�
   ptkg authoring-impact <旧dir> <新dir> 生成增量影响索引与教师审核报告
   ptkg authoring-execute <dir> --slice <id> --image <digest> --run-command <cmd>
                                       在固定 digest 的隔离容器中执行切片
+  ptkg project-init <dir> --repo <url-or-path> [--goal <text>] [--doc <path-or-url>]...
+                                      锁定项目源码并建立通用作者工作区
+  ptkg author <dir> --agent codex|claude|manual
+                                      执行或生成当前 checkpoint 指令
+  ptkg status <dir>                   显示 checkpoint、未决项与下一步
 
 选项：
   --json                 以 JSON 输出（供网页/CI 消费）
@@ -65,6 +74,11 @@ const USAGE = `PTKG Authoring Kit v0.1 — 项目牵引式任务—知识图谱�
   --no-hints             不输出修复建议
   --max <条数>            每条规则最多显示几条，默认 10
   --profile <名称>        authoring / review / publishing
+  --repo <URL或路径>      project-init 的 Git 仓库
+  --goal <文本>           可选完整项目目标
+  --doc <路径或URL>       可重复的项目文档
+  --ref <commit/ref>      可选源码 ref；最终仍锁定 40 位 commit
+  --agent <名称>          codex / claude / manual
 
 退出码：
   0  无 blocker（可进入教师审核）
@@ -76,11 +90,13 @@ interface ParsedArgs {
   command: string;
   positional: string[];
   flags: Map<string, string | boolean>;
+  multiFlags: Map<string, string[]>;
 }
 
 function parseArgs(argv: string[]): ParsedArgs {
   const positional: string[] = [];
   const flags = new Map<string, string | boolean>();
+  const multiFlags = new Map<string, string[]>();
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -104,12 +120,16 @@ function parseArgs(argv: string[]): ParsedArgs {
 
     const name = arg.slice(2);
     // 带值的选项
-    if (['only', 'skip', 'stale-after', 'max', 'out', 'profile', 'cache-dir', 'slice', 'image', 'run-command', 'timeout-seconds', 'memory-mb', 'processes'].includes(name)) {
+    if (['only', 'skip', 'stale-after', 'max', 'out', 'profile', 'cache-dir', 'slice', 'image', 'run-command', 'timeout-seconds', 'memory-mb', 'processes', 'repo', 'goal', 'doc', 'ref', 'agent'].includes(name)) {
       const value = argv[i + 1];
       if (value === undefined || value.startsWith('--')) {
         throw new Error(`选项 --${name} 需要一个值。`);
       }
-      flags.set(name, value);
+      if (name === 'doc') {
+        multiFlags.set(name, [...(multiFlags.get(name) ?? []), value]);
+      } else {
+        flags.set(name, value);
+      }
       i++;
     } else {
       flags.set(name, true);
@@ -120,6 +140,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     command: positional[0] ?? '',
     positional: positional.slice(1).filter((p) => p !== '-o'),
     flags,
+    multiFlags,
   };
 }
 
@@ -329,10 +350,69 @@ async function main(argv: string[]): Promise<number> {
     return 0;
   }
 
-  const { command, positional, flags } = parseArgs(argv);
+  const { command, positional, flags, multiFlags } = parseArgs(argv);
   const asJson = flags.get('json') === true;
 
   switch (command) {
+    case 'project-init': {
+      const dir = positional[0];
+      const repository = flags.get('repo');
+      if (!dir || typeof repository !== 'string') {
+        throw new Error('project-init 需要 <workspace> 和 --repo <url-or-path>。');
+      }
+      const result = await initializeProjectWorkspace(dir, {
+        repository,
+        goal: typeof flags.get('goal') === 'string' ? flags.get('goal') as string : undefined,
+        documents: multiFlags.get('doc') ?? [],
+        ref: typeof flags.get('ref') === 'string' ? flags.get('ref') as string : undefined,
+        cacheDir: typeof flags.get('cache-dir') === 'string' ? flags.get('cache-dir') as string : undefined,
+      });
+      if (asJson) console.log(JSON.stringify(result, null, 2));
+      else {
+        console.log(`项目工作区已初始化：${result.status.workspace}`);
+        console.log(`固定 commit：${result.snapshot.projectRef.commit}`);
+        console.log(`固定 tree：${result.snapshot.tree}`);
+        console.log(`代码事实：${result.analyzerResults.reduce((sum, item) => sum + item.facts.length, 0)}`);
+        console.log(`下一 checkpoint：${result.status.next_checkpoint ?? 'none'}`);
+      }
+      return 0;
+    }
+
+    case 'status': {
+      const dir = positional[0];
+      if (!dir) throw new Error('status 需要一个项目工作区。');
+      const status = await getProjectStatus(dir);
+      if (asJson) console.log(JSON.stringify(status, null, 2));
+      else {
+        console.log(`PTKG 项目工作区：${status.workspace}`);
+        console.log(`源码锁定：${status.source_locked ? 'yes' : 'no'}`);
+        for (const checkpoint of status.checkpoints) {
+          console.log(`  ${checkpoint.status.padEnd(8)} ${checkpoint.id} · ${checkpoint.evidence.join('，')}`);
+          for (const blocker of checkpoint.blockers) console.log(`    blocker: ${blocker}`);
+        }
+        console.log(`下一步：${status.next_command ?? '全部 checkpoint 已完成'}`);
+      }
+      return status.source_locked ? 0 : 1;
+    }
+
+    case 'author': {
+      const dir = positional[0];
+      const rawAgent = flags.get('agent');
+      if (!dir || typeof rawAgent !== 'string' || !['codex', 'claude', 'manual'].includes(rawAgent)) {
+        throw new Error('author 需要 <workspace> 和 --agent codex|claude|manual。');
+      }
+      const result = await authorProject(dir, rawAgent as AgentKind);
+      if (asJson) console.log(JSON.stringify(result, null, 2));
+      else if (!result.checkpoint) console.log('全部 checkpoint 已完成。');
+      else {
+        console.log(`checkpoint：${result.checkpoint}`);
+        console.log(`指令：${result.instruction_path}`);
+        if (result.log_path) console.log(`日志：${result.log_path}`);
+        console.log(`退出码：${result.exit_code}`);
+      }
+      return result.exit_code === 0 ? 0 : 1;
+    }
+
     case 'init':
       return cmdInit(positional[0] ?? '');
 

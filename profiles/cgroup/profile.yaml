@@ -1,0 +1,27 @@
+spec_version: ptkg-project-profile@1
+id: starryos-cgroup
+title: StarryOS cgroup v2 deep golden profile
+repository: https://github.com/rcore-os/tgoskits
+fixed_commit: fc80b868fb3640efe8997994de42c1aee8fd74cb
+fixed_tree: 832ce21ea6fdf32a8639c576cc97a137c2d14dcc
+curriculum_boundary: pre_project_readiness
+tracking_issue: https://github.com/rcore-os/tgoskits/issues/1188
+required_coverage:
+  - core-and-hierarchy
+  - cgroupfs
+  - membership-lifecycle
+  - controller-framework
+  - pids
+  - cpu
+  - memory
+  - cpuset
+  - io
+  - kernel-integration
+  - concurrency
+  - build-and-tests
+  - provider-decoupling
+  - delegation
+non_goals:
+  - real project work allocation
+  - personal contribution evaluation
+  - upstream merge requirement
