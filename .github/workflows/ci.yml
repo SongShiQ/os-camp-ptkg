@@ -21,8 +21,16 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - run: npm run fixtures:g5
+      - run: git diff --exit-code
       - run: npm run check
       - run: npm run ptkg -- validate fixtures/cgroup-golden
       - run: npm run ptkg -- authoring-validate fixtures/authoring/cgroup-golden
       - run: npm run ptkg -- course-compile fixtures/authoring/cgroup-golden --out ci-course
       - run: npm run ptkg -- course-validate ci-course --profile draft
+      - run: npm run ptkg -- validate fixtures/authoring/starryos-abi-golden/07-projection
+      - run: npm run ptkg -- course-compile fixtures/authoring/starryos-abi-golden --out ci-abi-course
+      - run: npm run ptkg -- course-validate ci-abi-course --profile draft
+      - run: npm run ptkg -- validate fixtures/authoring/rcore-tutorial-smoke/07-projection
+      - run: npm run ptkg -- course-compile fixtures/authoring/rcore-tutorial-smoke --out ci-rcore-smoke
+      - run: npm run ptkg -- course-validate ci-rcore-smoke --profile draft

@@ -1,0 +1,29 @@
+spec_version: course-blueprint@1
+course_id: oscamp.rcore.tutorial-v3.smoke
+version: 0.1.0
+title: rCore-Tutorial-v3 跨仓库分析冒烟
+language: zh-CN
+stages:
+  - id: stage.rcore.smoke.tutorial
+    layer: tutorial
+    order: 0
+    title: 跨仓库源码分析
+    required: true
+    unit_ids:
+      - unit.rcore.analysis-smoke
+    prerequisite_stage_ids: []
+    status: candidate
+    source_refs:
+      - src.rcore.commit
+      - src.rcore.syscall-mod
+  - id: stage.rcore.smoke.project-reference
+    layer: project_reference
+    order: 10
+    title: rCore 项目上下文
+    required: false
+    unit_ids: []
+    prerequisite_stage_ids:
+      - stage.rcore.smoke.tutorial
+    status: candidate
+    source_refs:
+      - src.rcore.commit

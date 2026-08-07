@@ -1,0 +1,20 @@
+ptkg_version: "0.1"
+bundle_id: ptkg.rcore.tutorial-v3.smoke
+title: rCore-Tutorial-v3 cross-repository smoke
+status: draft
+language: zh-CN
+created_at: 2026-08-07T00:00:00+08:00
+curriculum_version: 0.1.0
+project_ref:
+  repository_url: https://github.com/rcore-os/rCore-Tutorial-v3.git
+  git_ref: c91bd3752b53ff48555aef4e3c7b8d5ddc8ee6e1
+generator:
+  tool: "@os-camp/ptkg"
+  authoring_kit_version: 0.4.0
+approval:
+  status: draft
+  approved_by: null
+files:
+  nodes: nodes.jsonl
+  edges: edges.jsonl
+  sources: sources.jsonl

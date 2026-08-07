@@ -1,0 +1,65 @@
+spec_version: course-blueprint@1
+course_id: oscamp.starryos.linux-abi
+version: 0.1.0
+title: StarryOS Linux ABI 与 syscall 项目先导课程
+language: zh-CN
+stages:
+  - id: stage.starryos.abi.tutorial
+    layer: tutorial
+    order: 0
+    title: 固定环境与 Rust 内核入口
+    required: true
+    unit_ids:
+      - unit.starryos.abi.build-qemu
+      - unit.starryos.abi.rust-no-std
+    prerequisite_stage_ids: []
+    status: candidate
+    source_refs:
+      - src.tgoskits.fc80b868
+  - id: stage.starryos.abi.foundation
+    layer: foundation
+    order: 10
+    title: ABI 合同与核心子系统基础
+    required: true
+    unit_ids:
+      - unit.starryos.abi.abi-contract
+      - unit.starryos.abi.user-memory
+      - unit.starryos.abi.dispatch-arch
+      - unit.starryos.abi.process-lifecycle
+      - unit.starryos.abi.vfs-fd-path
+      - unit.starryos.abi.virtual-memory
+    prerequisite_stage_ids:
+      - stage.starryos.abi.tutorial
+    status: candidate
+    source_refs:
+      - src.starryos.abi.dispatch-arch
+  - id: stage.starryos.abi.pre-project
+    layer: pre_project
+    order: 20
+    title: 复杂行为链与兼容证据
+    required: true
+    unit_ids:
+      - unit.starryos.abi.signals
+      - unit.starryos.abi.futex-sync
+      - unit.starryos.abi.ipc
+      - unit.starryos.abi.time-timers
+      - unit.starryos.abi.network-sockets
+      - unit.starryos.abi.event-multiplexing
+      - unit.starryos.abi.resources-security
+      - unit.starryos.abi.compat-regression
+    prerequisite_stage_ids:
+      - stage.starryos.abi.foundation
+    status: candidate
+    source_refs:
+      - src.starryos.abi.compat-regression
+  - id: stage.starryos.abi.project-reference
+    layer: project_reference
+    order: 30
+    title: 完整兼容工程上下文与准备度出口
+    required: false
+    unit_ids: []
+    prerequisite_stage_ids:
+      - stage.starryos.abi.pre-project
+    status: candidate
+    source_refs:
+      - src.tgoskits.fc80b868

@@ -26,6 +26,7 @@
   },
   "scripts": {
     "ptkg": "node src/cli.ts",
+    "fixtures:g5": "node scripts/generate-g5-fixtures.ts",
     "typecheck": "tsc --noEmit",
     "test": "node --test \"test/**/*.test.ts\"",
     "check": "npm run typecheck && npm run test"

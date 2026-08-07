@@ -317,6 +317,8 @@ export interface PtkgSource {
   local_path?: string;
   retrieved_at: string;
   version_or_ref?: string | null;
+  tree_oid?: string;
+  blob_oid?: string;
   trust_level: TrustLevel;
   supports?: string[];
   notes?: string;

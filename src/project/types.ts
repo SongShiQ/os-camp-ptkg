@@ -44,6 +44,7 @@ export interface ProjectInput {
 export interface GitSnapshot {
   projectRef: ProjectRef;
   tree: string;
+  createdAt: string;
   repositoryKind: 'local' | 'remote';
   repositoryLocator: string;
   requestedRef: string | null;
@@ -55,6 +56,7 @@ export interface AnalyzerContext {
   runId: string;
   projectRef: ProjectRef;
   commit: string;
+  createdAt: string;
   listFiles(): Promise<string[]>;
   readFile(file: string): Promise<string>;
 }

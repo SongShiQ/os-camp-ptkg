@@ -1,0 +1,13 @@
+spec_version: ptkg-project-input@1
+workspace_id: project.rcore.tutorial-v3
+status: candidate
+repository:
+  locator: https://github.com/rcore-os/rCore-Tutorial-v3.git
+  kind: remote
+  requested_ref: c91bd3752b53ff48555aef4e3c7b8d5ddc8ee6e1
+  commit: c91bd3752b53ff48555aef4e3c7b8d5ddc8ee6e1
+  tree: f649d5b69c790b85ea323edc5c9d02afbbb66104
+goal: rCore-Tutorial-v3 跨仓库分析与课程编译冒烟
+curriculum_boundary: pre_project_readiness
+documents: []
+unresolved_questions: []

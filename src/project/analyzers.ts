@@ -49,7 +49,7 @@ function fact(
     ],
     created_by: { actor_type: 'tool', actor_id: 'ptkg-source-analyzer' },
     content_hash: '',
-    created_at: new Date().toISOString(),
+    created_at: context.createdAt,
     fact_kind: input.kind,
     anchors: [
       {

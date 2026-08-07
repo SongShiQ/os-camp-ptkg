@@ -36,6 +36,16 @@
       "description": "访问日期。网页会失效，日期是判断内容时效的唯一依据。"
     },
     "version_or_ref": { "type": ["string", "null"] },
+    "tree_oid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$",
+      "description": "固定 commit 的 Git tree OID。"
+    },
+    "blob_oid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$",
+      "description": "固定仓库文件的 Git blob OID。"
+    },
     "trust_level": {
       "enum": ["A", "B", "C", "D"],
       "description": "A=仓库固定 commit/官方规范原文；B=官方项目页/维护者声明；C=第三方文档；D=推测。"

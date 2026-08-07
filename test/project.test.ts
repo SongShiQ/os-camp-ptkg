@@ -71,7 +71,7 @@ describe('G1 通用项目工作区', () => {
     assert.equal((await readFile(path.join(workspace, '.gitignore'), 'utf8')).trim(), '.ptkg/');
   });
 
-  it('相同固定源码的 fact id 和 content hash 完全一致', async () => {
+  it('相同固定源码的公开作者事实逐字节一致', async () => {
     const temp = await mkdtemp(path.join(tmpdir(), 'ptkg-determinism-'));
     const repository = await createRepository(temp);
     const cacheDir = path.join(temp, 'cache');
@@ -79,13 +79,18 @@ describe('G1 通用项目工作区', () => {
     const second = path.join(temp, 'second');
     await initializeProjectWorkspace(first, { repository, goal: 'Complete job queue subsystem', cacheDir });
     await initializeProjectWorkspace(second, { repository, goal: 'Complete job queue subsystem', cacheDir });
-    const normalize = async (workspace: string) => (await readFile(path.join(workspace, '02-facts', 'code-facts.jsonl'), 'utf8'))
-      .trim()
-      .split(/\r?\n/)
-      .filter(Boolean)
-      .map((line) => JSON.parse(line) as { id: string; content_hash: string })
-      .map(({ id, content_hash }) => ({ id, content_hash }));
-    assert.deepEqual(await normalize(first), await normalize(second));
+    for (const relative of [
+      'project-input.yaml',
+      '01-source/source-contract.yaml',
+      '02-facts/code-facts.jsonl',
+      '03-coverage/project-coverage.yaml',
+    ]) {
+      assert.equal(
+        await readFile(path.join(first, relative), 'utf8'),
+        await readFile(path.join(second, relative), 'utf8'),
+        `${relative} 不是逐字节确定的`,
+      );
+    }
   });
 
   it('仓库目标不明确时停在项目合同 checkpoint，不擅自选择', async () => {

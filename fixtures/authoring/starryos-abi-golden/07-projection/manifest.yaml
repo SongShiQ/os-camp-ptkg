@@ -1,0 +1,20 @@
+ptkg_version: "0.1"
+bundle_id: ptkg.starryos.linux-abi.golden
+title: StarryOS Linux ABI/syscall 项目先导图谱
+status: draft
+language: zh-CN
+created_at: 2026-08-07T00:00:00+08:00
+curriculum_version: 0.1.0
+project_ref:
+  repository_url: https://github.com/rcore-os/tgoskits
+  git_ref: fc80b868fb3640efe8997994de42c1aee8fd74cb
+generator:
+  tool: "@os-camp/ptkg"
+  authoring_kit_version: 0.4.0
+approval:
+  status: draft
+  approved_by: null
+files:
+  nodes: nodes.jsonl
+  edges: edges.jsonl
+  sources: sources.jsonl

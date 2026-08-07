@@ -103,7 +103,13 @@ checksums.json
 
 Stages are `tutorial`, `foundation`, `pre_project`, and `project_reference`. The last stage provides project context only. A required unit must have a knowledge card, a code or high-fidelity practice, two diagnostic/remediation questions, two checkpoint questions, and a trusted-evidence gate. `COURSE001-012` enforce structure, paths/checksums, graph references and DAGs, assets, question pools, evidence, fixed source, review status, reuse metadata, privacy, signature trust, and projection consistency.
 
-The cgroup authoring fixture is the first deep candidate course: 4 stages, 14 required source-coverage units, 14 cards, 56 questions, 14 practices, and 15 gates culminating in one Project Readiness Gate. It covers build/test/debug, cgroup core and cgroupfs, membership, controller and provider boundaries, delegation, pids/cpu/memory/cpuset/io, kernel integration, and concurrency. Partial controllers explicitly separate file/state presence from accounting, kernel enforcement, and executed evidence. Every item remains `candidate` or `unresolved`; the fixture is not an approved or release-ready course.
+## G5 Golden Courses
+
+The cgroup authoring fixture is the first deep candidate course: 4 stages, 14 required source-coverage units, 14 cards, 56 questions, 14 practices, and 15 gates culminating in one Project Readiness Gate. It covers build/test/debug, cgroup core and cgroupfs, membership, controller and provider boundaries, delegation, pids/cpu/memory/cpuset/io, kernel integration, and concurrency. Partial controllers explicitly separate file/state presence from accounting, kernel enforcement, and executed evidence.
+
+The second deep fixture covers the complete StarryOS Linux ABI/syscall compatibility project as a backward-design root. It contains 4 stages, 16 required units/cards/practices, 64 questions, and 17 gates across fixed builds, Rust `no_std`, ABI contracts, user memory, dispatch, process/VFS/MM, signals, futex, IPC, time, networking, event multiplexing, security/resources, and compatibility regression. The two StarryOS courses reuse six byte-equivalent canonical nodes for build/QEMU, `no_std`, process lifecycle, `axfs-ng-vfs`, concurrency, and four-way test evidence.
+
+`rCore-Tutorial-v3` is a deliberately small cross-repository smoke fixture. Its evidence records a real fixed-source analysis of 1,023 facts and 1,018 anchors at commit `c91bd3752b53ff48555aef4e3c7b8d5ddc8ee6e1`; it proves analysis and compilation portability without pretending to be a complete rCore course. Every golden item remains `candidate` or `unresolved`; none of these fixtures is an approved or release-ready course.
 
 ## Available PTKG Commands
 
@@ -140,7 +146,7 @@ AGENT_INSTRUCTIONS.md Model-independent staged authoring protocol
 STATUS.md             Gate-level implementation status
 ```
 
-The cgroup fixture is the first deep calibration sample, not the product boundary. Planned compatibility samples cover the complete StarryOS Linux ABI/syscall project and cross-repository analysis of rCore-Tutorial-v3.
+The fixtures are calibration samples, not the product boundary. `scripts/generate-g5-fixtures.ts` deterministically rebuilds the shared StarryOS trunk, the complete ABI candidate course, and the rCore cross-repository smoke artifacts.
 
 ## Security and Privacy
 
@@ -154,7 +160,7 @@ npm test
 npm run check
 ```
 
-CI runs the full check and graph, authoring, and course-package golden validations on Windows and Ubuntu. The current baseline contains 38 tests, including the 14-unit cgroup course contract and deterministic recompilation. Rule meanings are append-only: PTKG001-014 retain their existing semantics, while course-package findings use the independent `COURSE001-012` namespace.
+CI runs the full check and graph, authoring, and course-package golden validations on Windows and Ubuntu. The current baseline contains 42 tests, including deterministic G5 fixture regeneration, the 14-unit cgroup course, the 16-unit ABI course, exact shared-node reuse, and the rCore smoke compilation. Rule meanings are append-only: PTKG001-014 retain their existing semantics, while course-package findings use the independent `COURSE001-012` namespace.
 
 See [STATUS.md](./STATUS.md) for the current implementation gate and [AGENT_INSTRUCTIONS.md](./AGENT_INSTRUCTIONS.md) for the authoring protocol.
 

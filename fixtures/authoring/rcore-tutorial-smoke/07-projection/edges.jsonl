@@ -1,0 +1,6 @@
+{"from":"project.rcore.tutorial-v3","id":"edge.rcore.001","status":"candidate","to":"outcome.rcore.analysis-smoke","type":"DECOMPOSES_TO"}
+{"from":"outcome.rcore.analysis-smoke","id":"edge.rcore.002","status":"candidate","to":"wp.rcore.analysis-smoke","type":"DECOMPOSES_TO"}
+{"from":"wp.rcore.analysis-smoke","id":"edge.rcore.003","requirement_kind":"required","status":"candidate","to":"competency.rcore.analysis-smoke","type":"REQUIRES"}
+{"from":"competency.rcore.analysis-smoke","id":"edge.rcore.004","status":"candidate","to":"evidence.rcore.analysis-smoke","type":"PROVEN_BY"}
+{"from":"evidence.rcore.analysis-smoke","id":"edge.rcore.005","status":"candidate","to":"practice.rcore.analysis-smoke","type":"ELICITED_BY"}
+{"from":"practice.rcore.analysis-smoke","id":"edge.rcore.006","requirement_kind":"required","status":"candidate","to":"kc.rust.no-std.kernel-boundaries","type":"REQUIRES"}

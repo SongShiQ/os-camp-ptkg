@@ -94,10 +94,12 @@ async function ensureRemoteSnapshot(locator: string, requestedRef: string | unde
     commit = await git([`--git-dir=${repoDir}`, 'rev-parse', 'FETCH_HEAD^{commit}']);
   }
   const tree = await git([`--git-dir=${repoDir}`, 'show', '-s', '--format=%T', commit]);
+  const createdAt = await git([`--git-dir=${repoDir}`, 'show', '-s', '--format=%cI', commit]);
   const checkout = await ensureCheckout(repoDir, cacheDir, repoKey, commit);
   return {
     projectRef: { repo: locator, commit },
     tree,
+    createdAt,
     repositoryKind: 'remote',
     repositoryLocator: locator,
     requestedRef: requestedRef ?? null,
@@ -114,6 +116,7 @@ async function ensureLocalSnapshot(locator: string, requestedRef: string | undef
   if (inside !== 'true') throw new Error(`路径不是 Git 工作树：${root}`);
   const commit = await git(['-C', root, 'rev-parse', `${requestedRef ?? 'HEAD'}^{commit}`]);
   const tree = await git(['-C', root, 'show', '-s', '--format=%T', commit]);
+  const createdAt = await git(['-C', root, 'show', '-s', '--format=%cI', commit]);
   const repoKey = sha256(root).slice(0, 20);
   const gitDir = path.join(cacheDir, 'git', `${repoKey}.git`);
   try {
@@ -130,6 +133,7 @@ async function ensureLocalSnapshot(locator: string, requestedRef: string | undef
   return {
     projectRef: { repo: root, commit },
     tree,
+    createdAt,
     repositoryKind: 'local',
     repositoryLocator: root,
     requestedRef: requestedRef ?? null,
@@ -154,6 +158,7 @@ function analyzerContext(snapshot: GitSnapshot, runId: string): AnalyzerContext 
     runId,
     projectRef: snapshot.projectRef,
     commit: snapshot.projectRef.commit,
+    createdAt: snapshot.createdAt,
     async listFiles() {
       if (files) return files;
       const text = await git([`--git-dir=${snapshot.gitDir}`, 'ls-tree', '-r', '--name-only', snapshot.projectRef.commit]);
@@ -308,7 +313,7 @@ export async function initializeProjectWorkspace(
     }],
     created_by: { actor_type: 'tool', actor_id: 'ptkg-project-init' },
     content_hash: '',
-    created_at: new Date().toISOString(),
+    created_at: snapshot.createdAt,
     repository: snapshot.projectRef.repo,
     target: input.goal ?? '待教师确认的完整系统项目目标',
     curriculum_boundary: 'pre_project_readiness',
@@ -332,7 +337,7 @@ export async function initializeProjectWorkspace(
     claims: [],
     created_by: { actor_type: 'tool', actor_id: 'ptkg-project-init' },
     content_hash: '',
-    created_at: new Date().toISOString(),
+    created_at: snapshot.createdAt,
     release_level: 'author_preview',
     required_unit_ids: [`coverage.${workspaceKey}.full-project`],
     units: [{
