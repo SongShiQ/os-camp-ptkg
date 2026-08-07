@@ -111,6 +111,26 @@ The second deep fixture covers the complete StarryOS Linux ABI/syscall compatibi
 
 `rCore-Tutorial-v3` is a deliberately small cross-repository smoke fixture. Its evidence records a real fixed-source analysis of 1,023 facts and 1,018 anchors at commit `c91bd3752b53ff48555aef4e3c7b8d5ddc8ee6e1`; it proves analysis and compilation portability without pretending to be a complete rCore course. Every golden item remains `candidate` or `unresolved`; none of these fixtures is an approved or release-ready course.
 
+## Trusted Execution Worker (G6 In Progress)
+
+The evidence Worker can execute one learning slice against a verified fixed commit and tree:
+
+```bash
+ptkg authoring-execute <workspace> \
+  --slice <slice-id> \
+  --image <name@sha256:digest> \
+  --run-command <command> \
+  [--fault-command <command> --fault-ref <stable-id>] \
+  [--test-classes positive,negative,concurrency,regression] \
+  [--expected <text>] [--cache-dir <dir>]
+```
+
+The Worker refuses floating image tags and uses `--pull never`. It verifies the image's reported digest, mounts a detached disposable Git worktree, disables network access, host secrets and push, applies memory/PID/time limits, and removes both the worktree directory and Git registration. Before a seeded-fault phase it resets tracked files and removes untracked/ignored files, then verifies the original commit, tree and clean status.
+
+Execution artifacts are written under the ignored `reports/execution/<execution-id>/` directory. The public result stores their hashes and safe relative paths, not host checkout/cache paths. Declared slice tests are not treated as executed coverage: failed runs report every test class as false, and successful S2/S3 evidence must explicitly identify the classes actually exercised. Repeating the same run/slice upserts one result instead of appending duplicates.
+
+The frozen tgoskits image is not yet available in the current Docker cache, so real mount S0, pids S2 and seeded-fault S3 evidence remains unresolved. A floating tag or fixture result must not be substituted for that release gate.
+
 ## Available PTKG Commands
 
 The original graph and authoring commands remain supported:
@@ -128,7 +148,7 @@ ptkg authoring-validate <dir>              Validate the authoring chain
 ptkg authoring-hash <dir> [--write]        Verify normalized SHA-256 hashes
 ptkg authoring-verify-workspace <dir>       Verify commit, tree, paths, and symbols
 ptkg authoring-impact <old> <new>           Build an incremental impact report
-ptkg authoring-execute <dir> ...            Run a constrained evidence worker
+ptkg authoring-execute <dir> ...            Run the fixed-source disposable evidence worker
 ```
 
 Exit codes are `0` for success, `1` for validation blockers, and `2` for usage or internal errors. JSON output is available with `--json` where applicable.

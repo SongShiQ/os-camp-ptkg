@@ -4,6 +4,7 @@ coverage/
 .cache/
 .ptkg-cache/
 runs/
+**/reports/execution/
 *.tgz
 *.log
 .env

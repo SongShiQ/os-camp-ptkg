@@ -1,21 +1,61 @@
 /** PTKG 作者链 P0 回归测试。 */
 
 import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
 import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
 import { describe, it } from 'node:test';
+import YAML from 'yaml';
 
 import { validateAuthoringRun } from '../src/authoring/validate.ts';
 import { analyzeAuthoringImpact } from '../src/authoring/impact.ts';
 import { executeAuthoringSlice } from '../src/authoring/execute.ts';
+import { computeContentHash } from '../src/authoring/hash.ts';
 import { AUTHORING_RULE_CODES } from '../src/authoring/types.ts';
 import type { AuthoringRuleCode } from '../src/authoring/types.ts';
 
+const execFileAsync = promisify(execFile);
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const GOLDEN = path.join(HERE, '..', 'fixtures', 'authoring', 'cgroup-golden');
 const BROKEN = path.join(HERE, '..', 'fixtures', 'authoring', 'broken');
+
+async function git(cwd: string, args: string[]): Promise<string> {
+  const { stdout } = await execFileAsync('git', args, { cwd, encoding: 'utf8' });
+  return stdout.trim();
+}
+
+async function createWorkerRepository(parent: string): Promise<{ repository: string; commit: string; tree: string }> {
+  const repository = path.join(parent, 'worker-source');
+  await mkdir(repository, { recursive: true });
+  await writeFile(path.join(repository, 'README.md'), '# Disposable worker fixture\n', 'utf8');
+  await git(repository, ['init', '-b', 'main']);
+  await git(repository, ['config', 'user.name', 'PTKG Test']);
+  await git(repository, ['config', 'user.email', 'ptkg@example.invalid']);
+  await git(repository, ['add', '.']);
+  await git(repository, ['commit', '-m', 'fixture']);
+  return {
+    repository,
+    commit: await git(repository, ['rev-parse', 'HEAD']),
+    tree: await git(repository, ['show', '-s', '--format=%T', 'HEAD']),
+  };
+}
+
+async function bindRunToWorkerRepository(runRoot: string, source: { repository: string; commit: string; tree: string }): Promise<void> {
+  const contractPath = path.join(runRoot, '01-source', 'source-contract.yaml');
+  const contract = YAML.parse(await readFile(contractPath, 'utf8')) as Record<string, unknown>;
+  contract.project_ref = { repo: 'https://example.invalid/worker-fixture', commit: source.commit };
+  contract.repository = 'https://example.invalid/worker-fixture';
+  contract.checkout = {
+    expected_tree: source.tree,
+    candidates: [{ repository: source.repository, ref: 'refs/heads/main' }],
+  };
+  contract.content_hash = computeContentHash(contract);
+  await writeFile(contractPath, YAML.stringify(contract), 'utf8');
+  await rm(path.join(runRoot, '02-facts', 'workspace-verification.json'), { force: true });
+}
 
 describe('作者链 golden：cgroup 双链', () => {
   it('authoring profile 零 blocker', async () => {
@@ -167,30 +207,87 @@ describe('P1 增量影响分析', () => {
 });
 
 describe('P2 Worker 安全合同', () => {
-  it('Docker 不可用时仍写入 failed/unresolved execution-result', async () => {
-    const root = await mkdtemp(path.join(tmpdir(), 'ptkg-execution-failure-'));
+  it('固定镜像不可用时仍落盘可审计结果，并清理 disposable worktree', async () => {
+    const temp = await mkdtemp(path.join(tmpdir(), 'ptkg-execution-failure-'));
+    const root = path.join(temp, 'run');
     try {
       await cp(GOLDEN, root, { recursive: true });
-      const result = await executeAuthoringSlice(root, {
+      const source = await createWorkerRepository(temp);
+      const cacheDir = path.join(temp, 'cache');
+      await bindRunToWorkerRepository(root, source);
+      const options = {
         sliceId: 'slice.starryos.cgroup.mount-s0',
         image: 'example.invalid/ptkg@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
         command: 'true',
+        testClasses: { positive: true, negative: true, concurrency: true as const, regression: true },
         timeoutSeconds: 1,
         memoryMb: 128,
         processes: 8,
-      });
+        cacheDir,
+      };
+      const result = await executeAuthoringSlice(root, options);
       assert.equal(result.result.result_status, 'failed');
       assert.equal(result.result.status, 'unresolved');
       assert.match(String(result.result.environment_hash), /^[0-9a-f]{64}$/);
       assert.deepEqual(result.result.sandbox, {
         network: 'disabled',
-        filesystem: 'read_only',
+        filesystem: 'disposable_worktree',
         secrets: 'none',
         resettable: true,
         push_allowed: false,
       });
+      assert.deepEqual(result.result.test_classes, {
+        positive: false,
+        negative: false,
+        concurrency: 'not_applicable',
+        regression: false,
+      });
+      assert.equal((result.result.reset as { succeeded: boolean }).succeeded, true);
+      assert.equal((result.result.source_snapshot as { tree: string }).tree, source.tree);
+      assert.equal(result.result.image, undefined);
+      const validation = await validateAuthoringRun(root, 'authoring');
+      assert.equal(
+        validation.findings.some(
+          (finding) => finding.code === 'CANDIDATE-CONTRACT-001' && finding.subject === result.result.id,
+        ),
+        false,
+        'Worker 生成的 failed/unresolved result 必须仍满足 execution-result Schema 与 content hash',
+      );
+
+      const artifactFiles = result.result.artifact_files as {
+        stdout: string;
+        stderr: string;
+        environment: string;
+        phases: string;
+        reset: string;
+      };
+      for (const relative of Object.values(artifactFiles)) {
+        await readFile(path.join(root, ...relative.split('/')));
+      }
+      const resetEvidence = JSON.parse(await readFile(path.join(root, ...artifactFiles.reset.split('/')), 'utf8')) as {
+        cleanup: { succeeded: boolean };
+      };
+      assert.equal(resetEvidence.cleanup.succeeded, true);
+
+      const verification = JSON.parse(await readFile(path.join(root, '02-facts', 'workspace-verification.json'), 'utf8')) as {
+        cache_repo: string;
+      };
+      const registry = await git(verification.cache_repo, ['worktree', 'list', '--porcelain']);
+      assert.doesNotMatch(registry, /ptkg-worker-/);
+
+      const serialized = JSON.stringify(result.result);
+      assert.doesNotMatch(serialized, /ptkg-worker-/);
+      assert.equal(serialized.includes(source.repository), false);
+      assert.equal(serialized.includes(cacheDir), false);
+
+      await executeAuthoringSlice(root, options);
+      const stored = (await readFile(path.join(root, '06-execution', 'execution-results.jsonl'), 'utf8'))
+        .trim()
+        .split(/\r?\n/)
+        .map((line) => JSON.parse(line) as { id: string });
+      assert.equal(stored.filter((item) => item.id === result.result.id).length, 1);
     } finally {
-      await rm(root, { recursive: true, force: true });
+      await rm(temp, { recursive: true, force: true });
     }
   });
 });

@@ -64,7 +64,9 @@ const USAGE = `OS Camp PTKG v0.4 — 项目牵引式课程作者与校验工具
   ptkg authoring-verify-workspace <dir> 验证固定 Git tree、path 与 symbol
   ptkg authoring-impact <旧dir> <新dir> 生成增量影响索引与教师审核报告
   ptkg authoring-execute <dir> --slice <id> --image <digest> --run-command <cmd>
-                                      在固定 digest 的隔离容器中执行切片
+                                      在固定源码 worktree 与固定 digest 容器中执行切片
+      [--fault-command <cmd> --fault-ref <id>] [--test-classes <csv>]
+                                      可选重放 seeded fault 并声明实际覆盖的测试类别
   ptkg project-init <dir> --repo <url-or-path> [--goal <text>] [--doc <path-or-url>]...
                                       锁定项目源码并建立通用作者工作区
   ptkg author <dir> --agent codex|claude|manual
@@ -95,6 +97,10 @@ const USAGE = `OS Camp PTKG v0.4 — 项目牵引式课程作者与校验工具
   --key <文件>            Ed25519 PKCS#8 私钥文件
   --actor <ID>            教师或发布责任人 ID
   --trust-store <文件>    ptkg-trust-store@1 外部可信公钥
+  --fault-command <命令>  基线通过后注入 seeded fault 并运行判别测试
+  --fault-ref <ID>        seeded fault 的稳定标识
+  --test-classes <CSV>    positive,negative,concurrency,regression
+  --expected <文本>       本次执行的明确预期
 
 退出码：
   0  无 blocker（可进入教师审核）
@@ -136,7 +142,7 @@ function parseArgs(argv: string[]): ParsedArgs {
 
     const name = arg.slice(2);
     // 带值的选项
-    if (['only', 'skip', 'stale-after', 'max', 'out', 'profile', 'cache-dir', 'slice', 'image', 'run-command', 'timeout-seconds', 'memory-mb', 'processes', 'repo', 'goal', 'doc', 'ref', 'agent', 'key', 'actor', 'trust-store'].includes(name)) {
+    if (['only', 'skip', 'stale-after', 'max', 'out', 'profile', 'cache-dir', 'slice', 'image', 'run-command', 'fault-command', 'fault-ref', 'test-classes', 'expected', 'timeout-seconds', 'memory-mb', 'processes', 'repo', 'goal', 'doc', 'ref', 'agent', 'key', 'actor', 'trust-store'].includes(name)) {
       const value = argv[i + 1];
       if (value === undefined || value.startsWith('--')) {
         throw new Error(`选项 --${name} 需要一个值。`);
@@ -182,6 +188,21 @@ function parseNumber(value: string | boolean | undefined, label: string): number
     throw new Error(`--${label} 需要一个非负数字，收到 \`${value}\`。`);
   }
   return n;
+}
+
+function parseTestClasses(value: string | boolean | undefined) {
+  if (typeof value !== 'string') return undefined;
+  const classes = value.split(',').map((item) => item.trim().toLowerCase()).filter(Boolean);
+  const allowed = new Set(['positive', 'negative', 'concurrency', 'regression']);
+  const invalid = classes.filter((item) => !allowed.has(item));
+  if (invalid.length > 0) throw new Error(`--test-classes 含无效类别：${invalid.join(', ')}。`);
+  const selected = new Set(classes);
+  return {
+    positive: selected.has('positive'),
+    negative: selected.has('negative'),
+    concurrency: selected.has('concurrency') ? true as const : 'not_applicable' as const,
+    regression: selected.has('regression'),
+  };
 }
 
 // ── init ──────────────────────────────────────────────────────────────
@@ -580,9 +601,14 @@ async function main(argv: string[]): Promise<number> {
         sliceId,
         image,
         command: runCommand,
+        faultCommand: typeof flags.get('fault-command') === 'string' ? flags.get('fault-command') as string : undefined,
+        faultRef: typeof flags.get('fault-ref') === 'string' ? flags.get('fault-ref') as string : undefined,
+        expected: typeof flags.get('expected') === 'string' ? flags.get('expected') as string : undefined,
+        testClasses: parseTestClasses(flags.get('test-classes')),
         timeoutSeconds: parseNumber(flags.get('timeout-seconds'), 'timeout-seconds'),
         memoryMb: parseNumber(flags.get('memory-mb'), 'memory-mb'),
         processes: parseNumber(flags.get('processes'), 'processes'),
+        cacheDir: typeof flags.get('cache-dir') === 'string' ? flags.get('cache-dir') as string : undefined,
       });
       console.log(asJson ? JSON.stringify(result.result, null, 2) : `${result.result.id} ${result.result.result_status} → ${dir}`);
       return result.result.result_status === 'succeeded' ? 0 : 1;

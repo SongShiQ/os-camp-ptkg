@@ -10,9 +10,9 @@ PTKG is being expanded from a project-graph validator into a deterministic cours
 | G1 generic authoring | Complete | Local/remote Git input, private docs, checkpoints, Agent adapters, generic analyzers |
 | G2 course planner | Complete | Deterministic `os-camp-course@1` compiler, calibration unit, normalized hashes and Dream Agent projection |
 | G3 course quality | Complete | `COURSE001-012`, Ed25519 trust validation, tamper rejection and deterministic tgz; Windows/Ubuntu CI green |
-| G4 Dream Agent import | Complete | `SongShiQ/Dream-Agent:feat/course-package-import`; transactional signed import, immutable versions, cohort pinning and rollback; 203 tests |
-| G5 golden courses | Local gate complete; publication pending | cgroup and full ABI candidate courses, six shared canonical nodes, real rCore analysis smoke, and Dream Agent dual-course rehearsal pass; awaiting commit/push and Windows/Ubuntu CI |
-| G6 trusted release | Not started | Docker/QEMU environment must be rechecked after G5 publication; real execution cannot be claimed without mount/pids/seeded-fault evidence |
+| G4 Dream Agent import | Complete | `SongShiQ/Dream-Agent:feat/course-package-import`; transactional signed import, immutable versions, cohort pinning and rollback; 204 tests |
+| G5 golden courses | Complete | Commit `35eee22`; cgroup and full ABI candidate courses, six shared canonical nodes, real rCore analysis smoke, Dream Agent dual-course rehearsal, and Windows/Ubuntu CI run `31184975233` |
+| G6 trusted release | Worker local gate complete; real execution blocked | Disposable fixed-source Worker and failure evidence pass locally; exact frozen Docker image is unavailable, so mount S0, pids S2 and seeded-fault S3 remain unresolved |
 
 Current regression baseline:
 
@@ -24,5 +24,7 @@ Current regression baseline:
 - Shared trunk: both StarryOS packages contain six byte-equivalent canonical nodes covering build/QEMU, Rust `no_std`, process lifecycle, `axfs-ng-vfs`, concurrency and four-way test evidence.
 - rCore smoke: fixed commit `c91bd3752b53ff48555aef4e3c7b8d5ddc8ee6e1`, tree `f649d5b69c790b85ea323edc5c9d02afbbb66104`; real analysis recorded 1,023 facts and 1,018 anchors; draft root `e2fdc3c26be190d5198ab77949f1b609b845c9d4d270cad966d5e7b2fc231ffe` with 0 blockers / 23 reviews.
 - Dream Agent rehearsal: a clean temporary SQLite accepted both test-reviewed/test-signed packages transactionally, preserved six shared canonical nodes per version, isolated 120 questions and 32 gates, and independently activated both courses.
+- G6 Worker: verifies cached commit/tree, creates and removes a detached disposable worktree, requires an exact image digest already present locally, disables network/secrets/push, limits memory/processes/time, resets source before a seeded-fault phase, writes hashed local artifacts, and upserts one result per slice. Fixed-image failure remains `failed/unresolved` and cannot inherit requested test coverage.
+- G6 environment: Docker server `29.4.3` is running, but pulls of `ghcr.io/rcore-os/tgoskits-container@sha256:6d3f3af586af971d1570d7993fde2a3ed18c62de1b534efe44bee563cb268c76` timed out at 120 seconds and 10 minutes. Floating-tag substitution is prohibited.
 - Fixed source: `rcore-os/tgoskits@fc80b868fb3640efe8997994de42c1aee8fd74cb`, tree `832ce21ea6fdf32a8639c576cc97a137c2d14dcc`.
 - Course boundary: tutorial, foundation, pre-project, project context, then Project Readiness Gate. Project work assignment and contribution evaluation are out of scope.
