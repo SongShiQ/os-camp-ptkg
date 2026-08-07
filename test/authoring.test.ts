@@ -2,7 +2,7 @@
 
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -320,10 +320,11 @@ describe('P2 Worker 安全合同', () => {
         cache_repo: string;
       };
       const registry = await git(verification.cache_repo, ['worktree', 'list', '--porcelain']);
-      assert.doesNotMatch(registry, /ptkg-worker-/);
+      assert.equal((await readdir(path.join(root, '.ptkg', 'workers'))).length, 0);
+      assert.doesNotMatch(registry.replaceAll('\\', '/'), /\/\.ptkg\/workers\//);
 
       const serialized = JSON.stringify(result.result);
-      assert.doesNotMatch(serialized, /ptkg-worker-/);
+      assert.equal(serialized.includes('.ptkg'), false);
       assert.equal(serialized.includes(source.repository), false);
       assert.equal(serialized.includes(cacheDir), false);
 

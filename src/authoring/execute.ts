@@ -1,7 +1,6 @@
 import { createHash } from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -150,8 +149,9 @@ async function readVerifiedSnapshot(runDir: string, run: AuthoringRun, cacheDir?
   return { cacheRepo: verified.cache_repo, tree: verified.tree };
 }
 
-async function createWorktree(snapshot: VerifiedSnapshot, commit: string): Promise<DisposableWorktree> {
-  const root = await mkdtemp(path.join(tmpdir(), 'ptkg-worker-'));
+async function createWorktree(snapshot: VerifiedSnapshot, commit: string, workerBase: string): Promise<DisposableWorktree> {
+  await mkdir(workerBase, { recursive: true });
+  const root = await mkdtemp(path.join(workerBase, 'worker-'));
   const source = path.join(root, 'source');
   let registered = false;
   try {
@@ -359,7 +359,11 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
   try {
     const snapshot = await readVerifiedSnapshot(runDir, run, options.cacheDir);
     sourceSnapshot = { ...run.sourceContract.project_ref, tree: snapshot.tree };
-    worktree = await createWorktree(snapshot, run.sourceContract.project_ref.commit);
+    worktree = await createWorktree(
+      snapshot,
+      run.sourceContract.project_ref.commit,
+      path.join(runDir, '.ptkg', 'workers'),
+    );
     commands.push(displayedDockerCommand(['image', 'inspect', options.image, '--format', '{{json .}}']));
     const inspect = await capture('docker', ['image', 'inspect', options.image, '--format', '{{json .}}'], { timeoutMs: 60_000 });
     if (inspect.exitCode !== 0) throw new Error(inspect.stderr.trim() || `fixed image is unavailable: ${options.image}`);

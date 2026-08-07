@@ -3,6 +3,7 @@ dist/
 coverage/
 .cache/
 .ptkg-cache/
+.ptkg/
 runs/
 **/reports/execution/
 *.tgz
