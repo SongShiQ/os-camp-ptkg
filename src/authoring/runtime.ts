@@ -72,14 +72,22 @@ function safeRelative(root: string, file: string): string {
   return relative.split(path.sep).join('/');
 }
 
-async function collectEntries(root: string, current = root): Promise<RuntimeFileEntry[]> {
-  const entries: RuntimeFileEntry[] = [];
+interface PendingRuntimeFile {
+  path: string;
+  full: string;
+  kind: 'file' | 'symlink';
+  size: number;
+  target?: string;
+}
+
+async function collectPendingFiles(root: string, current = root): Promise<PendingRuntimeFile[]> {
+  const entries: PendingRuntimeFile[] = [];
   const directory = await opendir(current);
   for await (const dirent of directory) {
     const full = path.join(current, dirent.name);
     const info = await lstat(full);
     if (info.isDirectory()) {
-      entries.push(...await collectEntries(root, full));
+      entries.push(...await collectPendingFiles(root, full));
       continue;
     }
     const relative = safeRelative(root, full);
@@ -89,16 +97,34 @@ async function collectEntries(root: string, current = root): Promise<RuntimeFile
       safeRelative(root, resolved);
       entries.push({
         path: relative,
+        full,
         kind: 'symlink',
         size: 0,
-        sha256: sha256(`symlink\0${target}`),
         target,
       });
       continue;
     }
     if (!info.isFile()) throw new Error(`runtime cache 只允许普通文件、目录和内部符号链接：${relative}`);
-    entries.push({ path: relative, kind: 'file', size: info.size, sha256: await hashFile(full) });
+    entries.push({ path: relative, full, kind: 'file', size: info.size });
   }
+  return entries;
+}
+
+async function collectEntries(root: string): Promise<RuntimeFileEntry[]> {
+  const pending = await collectPendingFiles(root);
+  const entries = new Array<RuntimeFileEntry>(pending.length);
+  const workerCount = Math.min(8, pending.length);
+  let next = 0;
+  await Promise.all(Array.from({ length: workerCount }, async () => {
+    while (next < pending.length) {
+      const index = next++;
+      const entry = pending[index];
+      if (!entry) throw new Error(`runtime cache 并发索引越界：${index}`);
+      entries[index] = entry.kind === 'symlink'
+        ? { path: entry.path, kind: entry.kind, size: 0, sha256: sha256(`symlink\0${entry.target}`), target: entry.target }
+        : { path: entry.path, kind: entry.kind, size: entry.size, sha256: await hashFile(entry.full) };
+    }
+  }));
   return entries.sort(comparePath);
 }
 
