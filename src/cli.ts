@@ -36,7 +36,7 @@ import { formatAuthoringResult, validateAuthoringRun } from './authoring/validat
 import { inspectAuthoringHashes, writeAuthoringHashes } from './authoring/hash.ts';
 import { verifyAuthoringWorkspace } from './authoring/workspace.ts';
 import { analyzeAuthoringImpact } from './authoring/impact.ts';
-import { executeAuthoringSlice } from './authoring/execute.ts';
+import { executeAuthoringSlice, prepareAuthoringRuntime } from './authoring/execute.ts';
 import { initializeProjectWorkspace } from './project/workspace.ts';
 import { authorProject } from './project/author.ts';
 import { getProjectStatus } from './project/status.ts';
@@ -63,9 +63,12 @@ const USAGE = `OS Camp PTKG v0.4 — 项目牵引式课程作者与校验工具
   ptkg authoring-hash <dir>        校验或回写规范化 content hash
   ptkg authoring-verify-workspace <dir> 验证固定 Git tree、path 与 symbol
   ptkg authoring-impact <旧dir> <新dir> 生成增量影响索引与教师审核报告
+  ptkg authoring-runtime-prepare <dir> --image <digest> --prepare-command <cmd> --out <cache-dir>
+                                      在联网准备阶段填充 source/image 绑定的离线 runtime cache
   ptkg authoring-execute <dir> --slice <id> --image <digest> --run-command <cmd>
                                       在固定源码 worktree 与固定 digest 容器中执行切片
       [--fault-command <cmd> --fault-ref <id>] [--test-classes <csv>]
+      [--cache-dir <dir>] [--runtime-cache <prepared-cache-dir>]
                                       可选重放 seeded fault 并声明实际覆盖的测试类别
   ptkg project-init <dir> --repo <url-or-path> [--goal <text>] [--doc <path-or-url>]...
                                       锁定项目源码并建立通用作者工作区
@@ -143,7 +146,7 @@ function parseArgs(argv: string[]): ParsedArgs {
 
     const name = arg.slice(2);
     // 带值的选项
-    if (['only', 'skip', 'stale-after', 'max', 'out', 'profile', 'cache-dir', 'slice', 'image', 'run-command', 'fault-command', 'fault-ref', 'test-classes', 'expected', 'timeout-seconds', 'memory-mb', 'processes', 'repo', 'goal', 'doc', 'ref', 'agent', 'key', 'actor', 'trust-store'].includes(name)) {
+    if (['only', 'skip', 'stale-after', 'max', 'out', 'profile', 'cache-dir', 'runtime-cache', 'slice', 'image', 'run-command', 'prepare-command', 'fault-command', 'fault-ref', 'test-classes', 'expected', 'timeout-seconds', 'memory-mb', 'processes', 'repo', 'goal', 'doc', 'ref', 'agent', 'key', 'actor', 'trust-store'].includes(name)) {
       const value = argv[i + 1];
       if (value === undefined || value.startsWith('--')) {
         throw new Error(`选项 --${name} 需要一个值。`);
@@ -590,6 +593,33 @@ async function main(argv: string[]): Promise<number> {
       return 0;
     }
 
+    case 'authoring-runtime-prepare': {
+      const dir = positional[0];
+      const image = flags.get('image');
+      const command = flags.get('prepare-command');
+      const output = flags.get('out');
+      if (!dir || typeof image !== 'string' || typeof command !== 'string' || typeof output !== 'string') {
+        throw new Error('authoring-runtime-prepare 需要 <dir>、--image、--prepare-command 和 --out。');
+      }
+      const result = await prepareAuthoringRuntime(dir, {
+        image,
+        command,
+        outDir: output,
+        timeoutSeconds: parseNumber(flags.get('timeout-seconds'), 'timeout-seconds'),
+        memoryMb: parseNumber(flags.get('memory-mb'), 'memory-mb'),
+        processes: parseNumber(flags.get('processes'), 'processes'),
+        cacheDir: typeof flags.get('cache-dir') === 'string' ? flags.get('cache-dir') as string : undefined,
+      });
+      console.log(asJson ? JSON.stringify(result, null, 2) : [
+        `runtime cache：${result.status}`,
+        `目录：${result.cache_dir}`,
+        `root hash：${result.root_hash ?? 'unresolved'}`,
+        `准备 stdout：${result.stdout_file}`,
+        `准备 stderr：${result.stderr_file}`,
+      ].join('\n'));
+      return result.status === 'ready' ? 0 : 1;
+    }
+
     case 'authoring-execute': {
       const dir = positional[0];
       const sliceId = flags.get('slice');
@@ -610,6 +640,7 @@ async function main(argv: string[]): Promise<number> {
         memoryMb: parseNumber(flags.get('memory-mb'), 'memory-mb'),
         processes: parseNumber(flags.get('processes'), 'processes'),
         cacheDir: typeof flags.get('cache-dir') === 'string' ? flags.get('cache-dir') as string : undefined,
+        runtimeCache: typeof flags.get('runtime-cache') === 'string' ? flags.get('runtime-cache') as string : undefined,
       });
       console.log(asJson ? JSON.stringify(result.result, null, 2) : `${result.result.id} ${result.result.result_status} → ${dir}`);
       return result.result.result_status === 'succeeded' ? 0 : 1;

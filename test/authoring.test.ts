@@ -2,7 +2,7 @@
 
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,8 +12,22 @@ import YAML from 'yaml';
 
 import { validateAuthoringRun } from '../src/authoring/validate.ts';
 import { analyzeAuthoringImpact } from '../src/authoring/impact.ts';
-import { executeAuthoringSlice, hasSeededFaultEvidence } from '../src/authoring/execute.ts';
+import {
+  executeAuthoringSlice,
+  frozenCheckoutGitOptions,
+  hasSeededFaultEvidence,
+  resolveWorkerBase,
+  runtimeShellCommand,
+  runtimeTargetMountArgs,
+  verifyRuntimeWorkspaceOverlay,
+} from '../src/authoring/execute.ts';
 import { computeContentHash } from '../src/authoring/hash.ts';
+import {
+  hashRuntimePrepareCommand,
+  verifyRuntimeCache,
+  writeRuntimeCacheManifest,
+  type RuntimeCacheIdentity,
+} from '../src/authoring/runtime.ts';
 import { AUTHORING_RULE_CODES } from '../src/authoring/types.ts';
 import type { AuthoringRuleCode } from '../src/authoring/types.ts';
 
@@ -175,11 +189,20 @@ describe('作者链 loader', () => {
 
 describe('P1 增量影响分析', () => {
   it('同一运行继承对象并生成完整反向依赖', async () => {
-    const result = await analyzeAuthoringImpact(GOLDEN, GOLDEN);
-    assert.equal(result.report.added.length, 0);
-    assert.equal(result.report.changed.length, 0);
-    assert.ok(result.report.inherited.some((item) => item.id === 'fact.starryos.cgroup.mount-entry'));
-    assert.ok(result.index.reverse_dependencies['anchor.starryos.sys-mount']?.includes('fact.starryos.cgroup.mount-entry'));
+    const root = await mkdtemp(path.join(tmpdir(), 'ptkg-impact-same-'));
+    const oldDir = path.join(root, 'old');
+    const newDir = path.join(root, 'new');
+    try {
+      await cp(GOLDEN, oldDir, { recursive: true });
+      await cp(GOLDEN, newDir, { recursive: true });
+      const result = await analyzeAuthoringImpact(oldDir, newDir);
+      assert.equal(result.report.added.length, 0);
+      assert.equal(result.report.changed.length, 0);
+      assert.ok(result.report.inherited.some((item) => item.id === 'fact.starryos.cgroup.mount-entry'));
+      assert.ok(result.index.reverse_dependencies['anchor.starryos.sys-mount']?.includes('fact.starryos.cgroup.mount-entry'));
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
   });
 
   it('源码 blob 变化会使锚点及下游执行证据进入 stale', async () => {
@@ -208,6 +231,203 @@ describe('P1 增量影响分析', () => {
 });
 
 describe('P2 Worker 安全合同', () => {
+  it('Windows 使用短 worker 根目录，并只接受显式绝对路径覆盖', () => {
+    assert.equal(resolveWorkerBase('D:\\course\\run', {}, 'win32'), 'D:\\ptkg-workers');
+    assert.equal(resolveWorkerBase('D:\\course\\run', { PTKG_WORKER_DIR: 'D:\\isolated-workers' }, 'win32'), 'D:\\isolated-workers');
+    assert.equal(resolveWorkerBase('/tmp/course/run', {}, 'linux'), '/tmp/course/run/.ptkg/workers');
+    assert.throws(() => resolveWorkerBase('D:\\course\\run', { PTKG_WORKER_DIR: 'relative-workers' }, 'win32'), /必须是绝对路径/);
+  });
+
+  it('固定源码 checkout 显式禁用 CRLF 转换', () => {
+    assert.deepEqual(frozenCheckoutGitOptions(), ['-c', 'core.autocrlf=false', '-c', 'core.eol=lf']);
+  });
+
+  it('fault 阶段重放 workspace overlay，但不重复初始化离线依赖', () => {
+    const baseline = runtimeShellCommand('cargo test', true);
+    const fault = runtimeShellCommand('cargo test', false);
+    assert.match(baseline, /^cp -a \/runtime-ro\/\. \/runtime\//);
+    assert.doesNotMatch(fault, /runtime-ro/);
+    assert.match(baseline, /cp -a \/runtime\/workspace\/\. \/workspace\//);
+    assert.match(fault, /cp -a \/runtime\/workspace\/\. \/workspace\//);
+  });
+
+  it('runtime target 缓存挂载到 axbuild 实际使用的 workspace 目录', () => {
+    assert.deepEqual(
+      runtimeTargetMountArgs('D:/runtime-copy/target'),
+      ['--mount', 'type=bind,src=D:/runtime-copy/target,dst=/workspace/target'],
+    );
+  });
+
+  it('runtime cache 对文件顺序确定、绑定源码镜像，并拒绝篡改', async () => {
+    const root = await mkdtemp(path.join(tmpdir(), 'ptkg-runtime-cache-'));
+    const first = path.join(root, 'first');
+    const second = path.join(root, 'second');
+    const image = 'example.invalid/ptkg@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+    const identity: RuntimeCacheIdentity = {
+      project_ref: {
+        repo: 'https://example.invalid/source',
+        commit: '1111111111111111111111111111111111111111',
+      },
+      tree: '2222222222222222222222222222222222222222',
+      image: { reference: image, id: 'sha256:aaaaaaaa', repo_digests: [image] },
+      prepare_command_hash: hashRuntimePrepareCommand('cargo test'),
+    };
+    try {
+      await Promise.all([
+        mkdir(path.join(first, 'assets', 'nested'), { recursive: true }),
+        mkdir(path.join(second, 'assets', 'nested'), { recursive: true }),
+      ]);
+      await writeFile(path.join(first, 'assets', 'z.txt'), 'z\n');
+      await writeFile(path.join(first, 'assets', 'nested', 'a.txt'), 'a\n');
+      await writeFile(path.join(second, 'assets', 'nested', 'a.txt'), 'a\n');
+      await writeFile(path.join(second, 'assets', 'z.txt'), 'z\n');
+
+      const [left, right] = await Promise.all([
+        writeRuntimeCacheManifest(first, identity),
+        writeRuntimeCacheManifest(second, identity),
+      ]);
+      assert.equal(left.manifest.files_hash, right.manifest.files_hash);
+      assert.equal(left.manifest.root_hash, right.manifest.root_hash);
+      assert.deepEqual(left.files.map((entry) => entry.path), ['nested/a.txt', 'z.txt']);
+
+      await assert.rejects(
+        verifyRuntimeCache(first, {
+          project_ref: identity.project_ref,
+          tree: identity.tree,
+          image_reference: image,
+          image_id: 'sha256:different',
+        }),
+        /身份不匹配/,
+      );
+      await verifyRuntimeCache(first, {
+        project_ref: identity.project_ref,
+        tree: identity.tree,
+        image_reference: image,
+        image_id: identity.image.id,
+      });
+      await writeFile(path.join(first, 'assets', 'z.txt'), 'tampered\n');
+      await assert.rejects(verifyRuntimeCache(first), /files\.jsonl 不一致/);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('runtime cache 拒绝指向 assets 外部的符号链接', async () => {
+    if (process.platform === 'win32') return;
+    const root = await mkdtemp(path.join(tmpdir(), 'ptkg-runtime-symlink-'));
+    const assets = path.join(root, 'assets');
+    const outside = path.join(root, 'outside.txt');
+    const image = 'example.invalid/ptkg@sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+    try {
+      await mkdir(assets, { recursive: true });
+      await writeFile(outside, 'outside\n');
+      await symlink(outside, path.join(assets, 'escape'));
+      await assert.rejects(
+        writeRuntimeCacheManifest(root, {
+          project_ref: {
+            repo: 'https://example.invalid/source',
+            commit: '1111111111111111111111111111111111111111',
+          },
+          tree: '2222222222222222222222222222222222222222',
+          image: { reference: image, id: 'sha256:bbbbbbbb', repo_digests: [image] },
+          prepare_command_hash: hashRuntimePrepareCommand('cargo test'),
+        }),
+        /路径越界/,
+      );
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('runtime workspace overlay 只允许增加未跟踪文件，禁止覆盖固定源码', async () => {
+    const root = await mkdtemp(path.join(tmpdir(), 'ptkg-runtime-overlay-'));
+    const cache = path.join(root, 'runtime');
+    const source = await createWorkerRepository(root);
+    const image = 'example.invalid/ptkg@sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc';
+    const identity: RuntimeCacheIdentity = {
+      project_ref: { repo: 'https://example.invalid/source', commit: source.commit },
+      tree: source.tree,
+      image: { reference: image, id: 'sha256:cccccccc', repo_digests: [image] },
+      prepare_command_hash: hashRuntimePrepareCommand('prepare'),
+    };
+    try {
+      await mkdir(path.join(cache, 'assets', 'workspace', 'generated'), { recursive: true });
+      await writeFile(path.join(cache, 'assets', 'workspace', 'generated', 'firmware.bin'), 'firmware\n');
+      let verified = await writeRuntimeCacheManifest(cache, identity);
+      assert.deepEqual(
+        await verifyRuntimeWorkspaceOverlay(verified, path.join(source.repository, '.git'), source.commit),
+        ['generated/firmware.bin'],
+      );
+
+      await writeFile(path.join(cache, 'assets', 'workspace', 'README.md'), 'replacement\n');
+      verified = await writeRuntimeCacheManifest(cache, identity);
+      await assert.rejects(
+        verifyRuntimeWorkspaceOverlay(verified, path.join(source.repository, '.git'), source.commit),
+        /禁止覆盖固定源码：README\.md/,
+      );
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('runtime workspace overlay 的内部 cache 符号链接也不得逃出 overlay', async () => {
+    if (process.platform === 'win32') return;
+    const root = await mkdtemp(path.join(tmpdir(), 'ptkg-runtime-overlay-link-'));
+    const source = await createWorkerRepository(root);
+    const image = 'example.invalid/ptkg@sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd';
+    try {
+      await mkdir(path.join(root, 'runtime', 'assets', 'workspace'), { recursive: true });
+      await mkdir(path.join(root, 'runtime', 'assets', 'cargo'), { recursive: true });
+      await writeFile(path.join(root, 'runtime', 'assets', 'cargo', 'tool'), 'tool\n');
+      await symlink('../cargo/tool', path.join(root, 'runtime', 'assets', 'workspace', 'escape'));
+      const verified = await writeRuntimeCacheManifest(path.join(root, 'runtime'), {
+        project_ref: { repo: 'https://example.invalid/source', commit: source.commit },
+        tree: source.tree,
+        image: { reference: image, id: 'sha256:dddddddd', repo_digests: [image] },
+        prepare_command_hash: hashRuntimePrepareCommand('prepare'),
+      });
+      await assert.rejects(
+        verifyRuntimeWorkspaceOverlay(verified, path.join(source.repository, '.git'), source.commit),
+        /overlay 符号链接越界/,
+      );
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('execution-result Schema 接受可审计 runtime cache，但不接受未声明字段', async () => {
+    const root = await mkdtemp(path.join(tmpdir(), 'ptkg-runtime-schema-'));
+    try {
+      await cp(GOLDEN, root, { recursive: true });
+      const resultPath = path.join(root, '06-execution', 'execution-results.jsonl');
+      const results = (await readFile(resultPath, 'utf8')).trim().split(/\r?\n/)
+        .map((line) => JSON.parse(line) as Record<string, unknown>);
+      const target = results[0];
+      assert.ok(target);
+      target.runtime_cache = {
+        spec_version: 'ptkg-runtime@1',
+        root_hash: '1'.repeat(64),
+        files_hash: '2'.repeat(64),
+        prepare_command_hash: '3'.repeat(64),
+        file_count: 1,
+        total_bytes: 1,
+        verified_unchanged: true,
+      };
+      target.content_hash = computeContentHash(target);
+      await writeFile(resultPath, `${results.map((item) => JSON.stringify(item)).join('\n')}\n`, 'utf8');
+      const valid = await validateAuthoringRun(root, 'authoring');
+      assert.equal(valid.findings.some((finding) => finding.subject === target.id && finding.code === 'CANDIDATE-CONTRACT-001'), false);
+
+      (target.runtime_cache as Record<string, unknown>).cache_path = 'D:/private/cache';
+      target.content_hash = computeContentHash(target);
+      await writeFile(resultPath, `${results.map((item) => JSON.stringify(item)).join('\n')}\n`, 'utf8');
+      const invalid = await validateAuthoringRun(root, 'authoring');
+      assert.equal(invalid.findings.some((finding) => finding.subject === target.id && finding.code === 'CANDIDATE-CONTRACT-001'), true);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it('seeded fault 需要非零退出和精确检测标记，注入脚本报错不能冒充命中', () => {
     const ref = 'fault.starryos.cgroup.pids-bypass-v1';
     assert.equal(hasSeededFaultEvidence(1, false, '', 'sed: pattern not found', ref), false);
@@ -256,7 +476,10 @@ describe('P2 Worker 安全合同', () => {
   it('固定镜像不可用时仍落盘可审计结果，并清理 disposable worktree', async () => {
     const temp = await mkdtemp(path.join(tmpdir(), 'ptkg-execution-failure-'));
     const root = path.join(temp, 'run');
+    const workerBase = path.join(temp, 'workers');
+    const originalWorkerDir = process.env.PTKG_WORKER_DIR;
     try {
+      process.env.PTKG_WORKER_DIR = workerBase;
       await cp(GOLDEN, root, { recursive: true });
       const source = await createWorkerRepository(temp);
       const cacheDir = path.join(temp, 'cache');
@@ -320,8 +543,9 @@ describe('P2 Worker 安全合同', () => {
         cache_repo: string;
       };
       const registry = await git(verification.cache_repo, ['worktree', 'list', '--porcelain']);
-      assert.equal((await readdir(path.join(root, '.ptkg', 'workers'))).length, 0);
-      assert.doesNotMatch(registry.replaceAll('\\', '/'), /\/\.ptkg\/workers\//);
+      assert.equal(resolveWorkerBase(root), workerBase);
+      assert.equal((await readdir(workerBase)).filter((entry) => entry.startsWith('worker-')).length, 0);
+      assert.doesNotMatch(registry.replaceAll('\\', '/'), /\/workers\/worker-/);
 
       const serialized = JSON.stringify(result.result);
       assert.equal(serialized.includes('.ptkg'), false);
@@ -335,6 +559,8 @@ describe('P2 Worker 安全合同', () => {
         .map((line) => JSON.parse(line) as { id: string });
       assert.equal(stored.filter((item) => item.id === result.result.id).length, 1);
     } finally {
+      if (originalWorkerDir === undefined) delete process.env.PTKG_WORKER_DIR;
+      else process.env.PTKG_WORKER_DIR = originalWorkerDir;
       await rm(temp, { recursive: true, force: true });
     }
   });

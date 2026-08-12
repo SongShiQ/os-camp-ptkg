@@ -6,6 +6,13 @@ import { promisify } from 'node:util';
 
 import { computeContentHash } from './hash.ts';
 import { loadAuthoringRun } from './loader.ts';
+import {
+  hashRuntimePrepareCommand,
+  verifyRuntimeCache,
+  writeRuntimeCacheManifest,
+  type RuntimeCacheIdentity,
+  type VerifiedRuntimeCache,
+} from './runtime.ts';
 import type { AuthoringObject, AuthoringRun } from './types.ts';
 import { verifyAuthoringWorkspace } from './workspace.ts';
 
@@ -33,12 +40,34 @@ export interface ExecutionOptions {
   memoryMb?: number;
   processes?: number;
   cacheDir?: string;
+  runtimeCache?: string;
 }
 
 export interface ExecutionRunResult {
   result: AuthoringObject;
   stdout: string;
   stderr: string;
+}
+
+export interface RuntimePreparationOptions {
+  image: string;
+  command: string;
+  outDir: string;
+  timeoutSeconds?: number;
+  memoryMb?: number;
+  processes?: number;
+  cacheDir?: string;
+}
+
+export interface RuntimePreparationResult {
+  status: 'ready' | 'failed';
+  exit_code: number;
+  cache_dir: string;
+  root_hash?: string;
+  file_count?: number;
+  total_bytes?: number;
+  stdout_file: string;
+  stderr_file: string;
 }
 
 interface CommandResult {
@@ -62,6 +91,44 @@ interface DisposableWorktree {
 interface ResetStep {
   succeeded: boolean;
   log: string;
+}
+
+interface VerifiedImage {
+  id: string;
+  repoDigests: string[];
+}
+
+interface DockerRuntimeMounts {
+  readOnlyAssets: string;
+  writableAssets: string;
+  initialize: boolean;
+}
+
+const GIT_RUNTIME_OPTIONS = ['-c', 'core.longpaths=true'];
+
+/**
+ * Windows has a 260-character compatibility boundary in parts of the Git and
+ * Node toolchain. Keep disposable workers near the drive root there, while
+ * allowing an explicit absolute override for controlled CI environments.
+ */
+export function resolveWorkerBase(
+  rootDir: string,
+  environment: NodeJS.ProcessEnv = process.env,
+  platform: NodeJS.Platform = process.platform,
+): string {
+  const paths = platform === 'win32' ? path.win32 : path.posix;
+  const configured = environment.PTKG_WORKER_DIR;
+  if (configured) {
+    if (!paths.isAbsolute(configured)) throw new Error('PTKG_WORKER_DIR 必须是绝对路径。');
+    return paths.resolve(configured);
+  }
+  if (platform === 'win32') return paths.join(paths.parse(paths.resolve(rootDir)).root, 'ptkg-workers');
+  return paths.join(paths.resolve(rootDir), '.ptkg', 'workers');
+}
+
+/** Worktree materialization must preserve LF bytes from the frozen Git tree. */
+export function frozenCheckoutGitOptions(): string[] {
+  return ['-c', 'core.autocrlf=false', '-c', 'core.eol=lf'];
 }
 
 function sha256(value: string | Uint8Array): string {
@@ -110,8 +177,12 @@ async function capture(command: string, args: string[], options: { cwd?: string;
   }
 }
 
+async function captureGit(args: string[], options: { cwd?: string; timeoutMs?: number } = {}): Promise<CommandResult> {
+  return capture('git', [...GIT_RUNTIME_OPTIONS, ...args], options);
+}
+
 async function git(args: string[], cwd?: string): Promise<string> {
-  const output = await capture('git', args, { cwd, timeoutMs: 120_000 });
+  const output = await captureGit(args, { cwd, timeoutMs: 120_000 });
   if (output.exitCode !== 0) throw new Error(output.stderr.trim() || `git ${args.join(' ')} failed`);
   return output.stdout.trim();
 }
@@ -155,7 +226,11 @@ async function createWorktree(snapshot: VerifiedSnapshot, commit: string, worker
   const source = path.join(root, 'source');
   let registered = false;
   try {
-    await git([`--git-dir=${snapshot.cacheRepo}`, 'worktree', 'add', '--detach', source, commit]);
+    await git([
+      ...frozenCheckoutGitOptions(),
+      `--git-dir=${snapshot.cacheRepo}`,
+      'worktree', 'add', '--detach', source, commit,
+    ]);
     registered = true;
     const [actualCommit, actualTree] = await Promise.all([
       git(['rev-parse', 'HEAD'], source),
@@ -167,8 +242,8 @@ async function createWorktree(snapshot: VerifiedSnapshot, commit: string, worker
     return { root, source, cacheRepo: snapshot.cacheRepo };
   } catch (error) {
     if (registered) {
-      await capture('git', [`--git-dir=${snapshot.cacheRepo}`, 'worktree', 'remove', '--force', source], { timeoutMs: 120_000 });
-      await capture('git', [`--git-dir=${snapshot.cacheRepo}`, 'worktree', 'prune'], { timeoutMs: 120_000 });
+      await captureGit([`--git-dir=${snapshot.cacheRepo}`, 'worktree', 'remove', '--force', source], { timeoutMs: 120_000 });
+      await captureGit([`--git-dir=${snapshot.cacheRepo}`, 'worktree', 'prune'], { timeoutMs: 120_000 });
     }
     await rm(root, { recursive: true, force: true });
     throw error;
@@ -210,13 +285,12 @@ async function removeWorktree(worktree: DisposableWorktree | null): Promise<Rese
   } catch (error) {
     messages.push(`status unavailable: ${(error as Error).message}`);
   }
-  const removal = await capture(
-    'git',
+  const removal = await captureGit(
     [`--git-dir=${worktree.cacheRepo}`, 'worktree', 'remove', '--force', worktree.source],
     { timeoutMs: 120_000 },
   );
   messages.push(removal.exitCode === 0 ? 'git worktree registration removed' : `git worktree remove failed: ${removal.stderr}`);
-  const prune = await capture('git', [`--git-dir=${worktree.cacheRepo}`, 'worktree', 'prune'], { timeoutMs: 120_000 });
+  const prune = await captureGit([`--git-dir=${worktree.cacheRepo}`, 'worktree', 'prune'], { timeoutMs: 120_000 });
   messages.push(prune.exitCode === 0 ? 'git worktree registry pruned' : `git worktree prune failed: ${prune.stderr}`);
   try {
     await rm(worktree.root, { recursive: true, force: true });
@@ -249,27 +323,142 @@ async function removeWorktree(worktree: DisposableWorktree | null): Promise<Rese
   return { succeeded: rootRemoved && registrationRemoved, log: messages.join('\n') };
 }
 
-function dockerArgs(image: string, worktree: string, command: string, memoryMb: number, processes: number): string[] {
+function runtimeEnvironment(offline: boolean): string[] {
+  return [
+    '--env', 'RUSTUP_HOME=/runtime/rustup',
+    '--env', 'CARGO_HOME=/runtime/cargo',
+    '--env', 'CARGO_TARGET_DIR=/runtime/target',
+    '--env', 'TGOS_IMAGE_LOCAL_STORAGE=/runtime/images',
+    '--env', 'PTKG_WORKSPACE_OVERLAY=/runtime/workspace',
+    ...(offline ? [
+      '--env', 'CARGO_NET_OFFLINE=true',
+      '--env', 'RUSTUP_SKIP_UPDATE_CHECK=1',
+    ] : []),
+  ];
+}
+
+export function runtimeShellCommand(command: string, initialize: boolean): string {
+  const initializeCache = initialize ? 'cp -a /runtime-ro/. /runtime/ && ' : '';
+  const restoreOverlay = 'if [ -d /runtime/workspace ]; then cp -a /runtime/workspace/. /workspace/; fi && ';
+  return `${initializeCache}${restoreOverlay}export PATH="/runtime/cargo/bin:$PATH"; ${command}`;
+}
+
+/**
+ * axbuild explicitly writes to <workspace>/target, bypassing CARGO_TARGET_DIR.
+ * Bind that ignored directory to the writable runtime copy so a preparation
+ * build survives its disposable worktree and formal runs can reuse it.
+ */
+export function runtimeTargetMountArgs(runtimeTarget: string): string[] {
+  return ['--mount', `type=bind,src=${runtimeTarget},dst=/workspace/target`];
+}
+
+function dockerArgs(
+  image: string,
+  worktree: string,
+  command: string,
+  memoryMb: number,
+  processes: number,
+  runtime?: DockerRuntimeMounts,
+): string[] {
   const user = typeof process.getuid === 'function' && typeof process.getgid === 'function'
     ? ['--user', `${process.getuid()}:${process.getgid()}`]
     : [];
+  const runtimeMounts = runtime ? [
+    '--mount', `type=bind,src=${runtime.readOnlyAssets},dst=/runtime-ro,readonly`,
+    '--mount', `type=bind,src=${runtime.writableAssets},dst=/runtime`,
+    ...runtimeTargetMountArgs(path.join(runtime.writableAssets, 'target')),
+    ...runtimeEnvironment(true),
+  ] : [];
+  const effectiveCommand = runtime ? runtimeShellCommand(command, runtime.initialize) : command;
   return [
     'run', '--rm', '--network', 'none', '--pull', 'never',
     '--memory', `${memoryMb}m`, '--pids-limit', String(processes),
     '--read-only', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges',
     ...user,
     '--mount', `type=bind,src=${worktree},dst=/workspace`,
+    ...runtimeMounts,
     '--tmpfs', '/tmp:rw,nosuid,nodev,size=268435456',
     '--workdir', '/workspace', '--entrypoint', 'sh',
-    image, '-lc', command,
+    image, '-lc', effectiveCommand,
+  ];
+}
+
+function runtimePrepareDockerArgs(
+  image: string,
+  worktree: string,
+  assets: string,
+  command: string,
+  memoryMb: number,
+  processes: number,
+): string[] {
+  const user = typeof process.getuid === 'function' && typeof process.getgid === 'function'
+    ? ['--user', `${process.getuid()}:${process.getgid()}`]
+    : [];
+  return [
+    'run', '--rm', '--network', 'bridge', '--pull', 'never',
+    '--memory', `${memoryMb}m`, '--pids-limit', String(processes),
+    '--read-only', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges',
+    ...user,
+    '--mount', `type=bind,src=${worktree},dst=/workspace`,
+    '--mount', `type=bind,src=${assets},dst=/runtime`,
+    ...runtimeTargetMountArgs(path.join(assets, 'target')),
+    ...runtimeEnvironment(false),
+    '--tmpfs', '/tmp:rw,nosuid,nodev,size=1073741824',
+    '--workdir', '/workspace', '--entrypoint', 'sh',
+    image, '-lc', runtimeShellCommand(command, false),
   ];
 }
 
 function displayedDockerCommand(args: string[]): string {
-  const sanitized = args.map((value) => value.startsWith('type=bind,src=')
-    ? 'type=bind,src=<disposable-worktree>,dst=/workspace'
-    : value);
+  const sanitized = args.map((value) => {
+    if (!value.startsWith('type=bind,src=')) return value;
+    const destination = value.split(',').find((part) => part.startsWith('dst=')) ?? 'dst=<container-path>';
+    const readOnly = value.endsWith(',readonly') ? ',readonly' : '';
+    return `type=bind,src=<host-path>,${destination}${readOnly}`;
+  });
   return ['docker', ...sanitized].map((value) => /\s/.test(value) ? JSON.stringify(value) : value).join(' ');
+}
+
+async function inspectFixedImage(image: string): Promise<VerifiedImage> {
+  const inspect = await capture('docker', ['image', 'inspect', image, '--format', '{{json .}}'], { timeoutMs: 60_000 });
+  if (inspect.exitCode !== 0) throw new Error(inspect.stderr.trim() || `fixed image is unavailable: ${image}`);
+  const value = JSON.parse(inspect.stdout) as { Id?: string; RepoDigests?: string[] };
+  const id = value.Id ?? '';
+  const repoDigests = Array.isArray(value.RepoDigests) ? value.RepoDigests : [];
+  if (!id || !repoDigests.includes(image)) throw new Error(`image inspect did not confirm requested digest: ${image}`);
+  return { id, repoDigests };
+}
+
+/** Runtime overlays may add generated inputs, but must never replace frozen source. */
+export async function verifyRuntimeWorkspaceOverlay(
+  runtimeCache: VerifiedRuntimeCache,
+  cacheRepo: string,
+  commit: string,
+): Promise<string[]> {
+  const overlayEntries = runtimeCache.files.filter((entry) => entry.path.startsWith('workspace/'));
+  const paths: string[] = [];
+  for (const entry of overlayEntries) {
+    const relative = entry.path.slice('workspace/'.length);
+    if (!relative || relative === '.git' || relative.startsWith('.git/')) {
+      throw new Error(`runtime workspace overlay 禁止写入 Git 元数据：${entry.path}`);
+    }
+    if (entry.kind === 'symlink') {
+      const target = entry.target ?? '';
+      const resolved = path.posix.resolve('/workspace', path.posix.dirname(relative), target);
+      if (!resolved.startsWith('/workspace/')) {
+        throw new Error(`runtime workspace overlay 符号链接越界：${entry.path} -> ${target}`);
+      }
+    }
+    const tracked = await git([
+      `--git-dir=${cacheRepo}`,
+      'ls-tree', '-r', '--name-only', commit, '--', relative,
+    ]);
+    if (tracked.split(/\r?\n/).some((value) => value === relative)) {
+      throw new Error(`runtime workspace overlay 禁止覆盖固定源码：${relative}`);
+    }
+    paths.push(relative);
+  }
+  return paths.sort();
 }
 
 function inheritedClaimRefs(run: AuthoringRun, slice: AuthoringObject): { sourceRefs: string[]; anchorRefs: string[] } {
@@ -303,6 +492,136 @@ export function hasSeededFaultEvidence(
   if (exitCode <= 0 || timedOut) return false;
   const expected = `${FAULT_DETECTED_PREFIX}${faultRef}`;
   return `${stdout}\n${stderr}`.split(/\r?\n/).some((line) => line.trim() === expected);
+}
+
+async function readJsonIfPresent(file: string): Promise<Record<string, unknown> | null> {
+  try {
+    return JSON.parse(await readFile(file, 'utf8')) as Record<string, unknown>;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+/**
+ * Populate a local runtime cache in a network-enabled preparation phase. The
+ * resulting cache is source/image-bound and must be re-verified before a
+ * network-disabled evidence run consumes it.
+ */
+export async function prepareAuthoringRuntime(
+  runDir: string,
+  options: RuntimePreparationOptions,
+): Promise<RuntimePreparationResult> {
+  if (!IMAGE_DIGEST.test(options.image)) throw new Error('--image 必须是 name@sha256:<64位 digest>，禁止浮动 tag。');
+  const rootDir = path.resolve(runDir);
+  const output = path.resolve(options.outDir);
+  const assets = path.join(output, 'assets');
+  const logs = path.join(output, 'logs');
+  const stdoutFile = path.join(logs, 'prepare.stdout.log');
+  const stderrFile = path.join(logs, 'prepare.stderr.log');
+  const timeoutSeconds = options.timeoutSeconds ?? 7_200;
+  const memoryMb = options.memoryMb ?? 8_192;
+  const processes = options.processes ?? 512;
+  if (![timeoutSeconds, memoryMb, processes].every((value) => Number.isInteger(value) && value > 0)) {
+    throw new Error('资源限制必须是正整数。');
+  }
+
+  const loaded = await loadAuthoringRun(rootDir);
+  if (!loaded.run) throw new Error(`无法载入作者运行：${loaded.findings.map((item) => item.message).join('；')}`);
+  const run = loaded.run;
+  const snapshot = await readVerifiedSnapshot(rootDir, run, options.cacheDir);
+  const image = await inspectFixedImage(options.image);
+  const identity: RuntimeCacheIdentity = {
+    project_ref: run.sourceContract.project_ref,
+    tree: snapshot.tree,
+    image: { reference: options.image, id: image.id, repo_digests: [...image.repoDigests].sort() },
+    prepare_command_hash: hashRuntimePrepareCommand(options.command),
+  };
+  const inputRecord = {
+    spec_version: 'ptkg-runtime-input@1',
+    ...identity,
+  };
+
+  await Promise.all([
+    mkdir(path.join(assets, 'rustup'), { recursive: true }),
+    mkdir(path.join(assets, 'cargo'), { recursive: true }),
+    mkdir(path.join(assets, 'target'), { recursive: true }),
+    mkdir(path.join(assets, 'images'), { recursive: true }),
+    mkdir(path.join(assets, 'workspace'), { recursive: true }),
+    mkdir(logs, { recursive: true }),
+  ]);
+  const inputFile = path.join(output, 'prepare-input.json');
+  const existingInput = await readJsonIfPresent(inputFile);
+  if (existingInput && JSON.stringify(existingInput) !== JSON.stringify(inputRecord)) {
+    throw new Error('runtime cache 已包含不同的源码、镜像或准备命令，拒绝混用。');
+  }
+  await writeFile(inputFile, `${JSON.stringify(inputRecord, null, 2)}\n`, 'utf8');
+
+  try {
+    await stat(path.join(output, 'runtime-manifest.json'));
+    const verified = await verifyRuntimeCache(output, {
+      project_ref: identity.project_ref,
+      tree: identity.tree,
+      image_reference: identity.image.reference,
+      image_id: identity.image.id,
+    });
+    if (verified.manifest.prepare_command_hash !== identity.prepare_command_hash) {
+      throw new Error('runtime cache 的准备命令 hash 与请求不一致。');
+    }
+    return {
+      status: 'ready',
+      exit_code: 0,
+      cache_dir: output,
+      root_hash: verified.manifest.root_hash,
+      file_count: verified.manifest.file_count,
+      total_bytes: verified.manifest.total_bytes,
+      stdout_file: stdoutFile,
+      stderr_file: stderrFile,
+    };
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+  }
+
+  let worktree: DisposableWorktree | null = null;
+  let commandResult: CommandResult = { exitCode: -1, stdout: '', stderr: '', timedOut: false };
+  let setupError = '';
+  try {
+    worktree = await createWorktree(snapshot, run.sourceContract.project_ref.commit, resolveWorkerBase(rootDir));
+    await mkdir(path.join(worktree.source, 'target'), { recursive: true });
+    const args = runtimePrepareDockerArgs(options.image, worktree.source, assets, options.command, memoryMb, processes);
+    commandResult = await capture('docker', args, { cwd: rootDir, timeoutMs: timeoutSeconds * 1_000 });
+  } catch (error) {
+    setupError = (error as Error).message;
+  }
+  const cleanup = await removeWorktree(worktree);
+  const stderr = [commandResult.stderr, setupError ? `[setup]\n${setupError}` : '', cleanup.log]
+    .filter(Boolean)
+    .join('\n');
+  await Promise.all([
+    writeFile(stdoutFile, commandResult.stdout, 'utf8'),
+    writeFile(stderrFile, stderr, 'utf8'),
+  ]);
+  if (commandResult.exitCode !== 0 || commandResult.timedOut || setupError || !cleanup.succeeded) {
+    return {
+      status: 'failed',
+      exit_code: commandResult.exitCode,
+      cache_dir: output,
+      stdout_file: stdoutFile,
+      stderr_file: stderrFile,
+    };
+  }
+
+  const verified = await writeRuntimeCacheManifest(output, identity);
+  return {
+    status: 'ready',
+    exit_code: 0,
+    cache_dir: output,
+    root_hash: verified.manifest.root_hash,
+    file_count: verified.manifest.file_count,
+    total_bytes: verified.manifest.total_bytes,
+    stdout_file: stdoutFile,
+    stderr_file: stderrFile,
+  };
 }
 
 async function upsertExecutionResult(file: string, result: AuthoringObject): Promise<void> {
@@ -356,6 +675,9 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
   let fault: CommandResult | null = null;
   let setupError = '';
   let beforeFaultReset: ResetStep | null = null;
+  let runtimeCache: VerifiedRuntimeCache | null = null;
+  let runtimeWorking: string | null = null;
+  let runtimeUnchanged = true;
 
   try {
     const snapshot = await readVerifiedSnapshot(rootDir, run, options.cacheDir);
@@ -363,19 +685,41 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
     worktree = await createWorktree(
       snapshot,
       run.sourceContract.project_ref.commit,
-      path.join(rootDir, '.ptkg', 'workers'),
+      resolveWorkerBase(rootDir),
     );
     commands.push(displayedDockerCommand(['image', 'inspect', options.image, '--format', '{{json .}}']));
-    const inspect = await capture('docker', ['image', 'inspect', options.image, '--format', '{{json .}}'], { timeoutMs: 60_000 });
-    if (inspect.exitCode !== 0) throw new Error(inspect.stderr.trim() || `fixed image is unavailable: ${options.image}`);
-    const image = JSON.parse(inspect.stdout) as { Id?: string; RepoDigests?: string[] };
-    imageId = image.Id ?? null;
-    imageDigests = Array.isArray(image.RepoDigests) ? image.RepoDigests : [];
-    if (!imageId || !imageDigests.includes(options.image)) {
-      throw new Error(`image inspect did not confirm requested digest: ${options.image}`);
+    const image = await inspectFixedImage(options.image);
+    imageId = image.id;
+    imageDigests = image.repoDigests;
+    if (options.runtimeCache) {
+      runtimeCache = await verifyRuntimeCache(options.runtimeCache, {
+        project_ref: run.sourceContract.project_ref,
+        tree: snapshot.tree,
+        image_reference: options.image,
+        image_id: image.id,
+      });
+      await verifyRuntimeWorkspaceOverlay(runtimeCache, snapshot.cacheRepo, run.sourceContract.project_ref.commit);
+      runtimeUnchanged = false;
+      runtimeWorking = path.join(worktree.root, 'runtime');
+      await Promise.all([
+        mkdir(runtimeWorking, { recursive: true }),
+        mkdir(path.join(runtimeWorking, 'target'), { recursive: true }),
+        mkdir(path.join(worktree.source, 'target'), { recursive: true }),
+      ]);
     }
 
-    const baselineArgs = dockerArgs(options.image, worktree.source, options.command, memoryMb, processes);
+    const baselineArgs = dockerArgs(
+      options.image,
+      worktree.source,
+      options.command,
+      memoryMb,
+      processes,
+      runtimeCache && runtimeWorking ? {
+        readOnlyAssets: runtimeCache.assets,
+        writableAssets: runtimeWorking,
+        initialize: true,
+      } : undefined,
+    );
     commands.push(displayedDockerCommand(baselineArgs));
     baseline = await capture('docker', baselineArgs, { cwd: rootDir, timeoutMs: timeoutSeconds * 1000 });
     stdoutParts.push(`[baseline]\n${baseline.stdout}`);
@@ -385,7 +729,19 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
     if (baseline.exitCode === 0 && baseline.timedOut === false && options.faultCommand && options.faultRef) {
       beforeFaultReset = await resetWorktree(worktree, run.sourceContract.project_ref.commit, snapshot.tree);
       if (!beforeFaultReset.succeeded) throw new Error(`seeded fault 前无法恢复固定源码：${beforeFaultReset.log}`);
-      const faultArgs = dockerArgs(options.image, worktree.source, options.faultCommand, memoryMb, processes);
+      if (runtimeWorking) await mkdir(path.join(worktree.source, 'target'), { recursive: true });
+      const faultArgs = dockerArgs(
+        options.image,
+        worktree.source,
+        options.faultCommand,
+        memoryMb,
+        processes,
+        runtimeCache && runtimeWorking ? {
+          readOnlyAssets: runtimeCache.assets,
+          writableAssets: runtimeWorking,
+          initialize: false,
+        } : undefined,
+      );
       commands.push(displayedDockerCommand(faultArgs));
       fault = await capture('docker', faultArgs, { cwd: rootDir, timeoutMs: timeoutSeconds * 1000 });
       stdoutParts.push(`[fault]\n${fault.stdout}`);
@@ -397,6 +753,16 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
         expected: `non-zero test exit and marker ${FAULT_DETECTED_PREFIX}${options.faultRef}`,
       });
     }
+    if (runtimeCache) {
+      const after = await verifyRuntimeCache(runtimeCache.root, {
+        project_ref: run.sourceContract.project_ref,
+        tree: snapshot.tree,
+        image_reference: options.image,
+        image_id: image.id,
+      });
+      runtimeUnchanged = after.manifest.root_hash === runtimeCache.manifest.root_hash;
+      if (!runtimeUnchanged) throw new Error('正式执行后 runtime cache root hash 发生变化。');
+    }
   } catch (error) {
     setupError = (error as Error).message;
     stderrParts.push(`[setup]\n${setupError}`);
@@ -405,6 +771,9 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
   const cleanup = await removeWorktree(worktree);
   const resetEvidence = {
     ...(beforeFaultReset ? { before_fault: beforeFaultReset } : {}),
+    ...(runtimeCache ? {
+      runtime_cache: { root_hash: runtimeCache.manifest.root_hash, unchanged: runtimeUnchanged },
+    } : {}),
     cleanup,
   };
   const baselinePassed = baseline?.exitCode === 0 && baseline.timedOut === false;
@@ -417,7 +786,7 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
   );
   const refs = inheritedClaimRefs(run, slice);
   const evidenceBound = refs.sourceRefs.length + refs.anchorRefs.length > 0;
-  const resetSucceeded = cleanup.succeeded && (!beforeFaultReset || beforeFaultReset.succeeded);
+  const resetSucceeded = cleanup.succeeded && (!beforeFaultReset || beforeFaultReset.succeeded) && runtimeUnchanged;
   const succeeded = Boolean(baselinePassed && (!options.faultCommand || faultFailed) && resetSucceeded && !setupError && evidenceBound);
   const resultStatus: 'succeeded' | 'failed' = succeeded ? 'succeeded' : 'failed';
   const stdout = stdoutParts.join('\n');
@@ -428,6 +797,17 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
     source: sourceSnapshot ?? { ...run.sourceContract.project_ref, tree: null, verified: false },
     sandbox,
     limits: { timeout_seconds: timeoutSeconds, memory_mb: memoryMb, processes },
+    ...(runtimeCache ? {
+      runtime_cache: {
+        spec_version: runtimeCache.manifest.spec_version,
+        root_hash: runtimeCache.manifest.root_hash,
+        files_hash: runtimeCache.manifest.files_hash,
+        prepare_command_hash: runtimeCache.manifest.prepare_command_hash,
+        file_count: runtimeCache.manifest.file_count,
+        total_bytes: runtimeCache.manifest.total_bytes,
+        verified_unchanged: runtimeUnchanged,
+      },
+    } : {}),
   };
   const actual = setupError
     ? '执行环境未就绪；原始错误仅保存在本地 stderr artifact。'
@@ -474,7 +854,12 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
     slice_ref: options.sliceId,
     result_status: resultStatus,
     environment_hash: sha256(JSON.stringify(environment)),
-    toolchain_hash: sha256(JSON.stringify({ requested_image: options.image, image_id: imageId, commands })),
+    toolchain_hash: sha256(JSON.stringify({
+      requested_image: options.image,
+      image_id: imageId,
+      runtime_root: runtimeCache?.manifest.root_hash ?? null,
+      commands,
+    })),
     commands,
     exit_code: succeeded ? 0 : (baseline?.exitCode || fault?.exitCode || -1),
     artifact_hashes: [sha256(stdout), sha256(stderr), sha256(environmentText), sha256(phasesText), sha256(resetText)],
@@ -490,6 +875,17 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
     sandbox,
     ...(sourceSnapshot ? { source_snapshot: sourceSnapshot } : {}),
     ...(imageId ? { image: { reference: options.image, id: imageId, repo_digests: imageDigests } } : {}),
+    ...(runtimeCache ? {
+      runtime_cache: {
+        spec_version: runtimeCache.manifest.spec_version,
+        root_hash: runtimeCache.manifest.root_hash,
+        files_hash: runtimeCache.manifest.files_hash,
+        prepare_command_hash: runtimeCache.manifest.prepare_command_hash,
+        file_count: runtimeCache.manifest.file_count,
+        total_bytes: runtimeCache.manifest.total_bytes,
+        verified_unchanged: runtimeUnchanged,
+      },
+    } : {}),
     phase_results: phases,
     expected: options.expected ?? (options.faultCommand
       ? '基线测试通过，seeded fault 运行被同一测试以非零退出识别'

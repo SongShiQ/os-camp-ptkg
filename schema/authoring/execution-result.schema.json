@@ -93,6 +93,20 @@
             "repo_digests": { "type": "array", "items": { "type": "string" } }
           }
         },
+        "runtime_cache": {
+          "type": "object",
+          "required": ["spec_version", "root_hash", "files_hash", "prepare_command_hash", "file_count", "total_bytes", "verified_unchanged"],
+          "additionalProperties": false,
+          "properties": {
+            "spec_version": { "const": "ptkg-runtime@1" },
+            "root_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+            "files_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+            "prepare_command_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+            "file_count": { "type": "integer", "minimum": 1 },
+            "total_bytes": { "type": "integer", "minimum": 0 },
+            "verified_unchanged": { "type": "boolean" }
+          }
+        },
         "phase_results": {
           "type": "array",
           "items": {
