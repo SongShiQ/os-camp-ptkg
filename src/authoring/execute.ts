@@ -326,6 +326,7 @@ async function removeWorktree(worktree: DisposableWorktree | null): Promise<Rese
 function runtimeEnvironment(offline: boolean): string[] {
   return [
     '--env', 'RUSTUP_HOME=/runtime/rustup',
+    '--env', 'RUSTUP_TOOLCHAIN=nightly-2026-05-28-x86_64-unknown-linux-gnu',
     '--env', 'CARGO_HOME=/runtime/cargo',
     '--env', 'CARGO_TARGET_DIR=/runtime/target',
     '--env', 'TGOS_IMAGE_LOCAL_STORAGE=/runtime/images',
@@ -338,9 +339,11 @@ function runtimeEnvironment(offline: boolean): string[] {
 }
 
 export function runtimeShellCommand(command: string, initialize: boolean): string {
-  const initializeCache = initialize ? 'cp -a /runtime-ro/. /runtime/ && ' : '';
+  // Runtime assets are mounted individually below. Keeping this parameter
+  // preserves the call contract while preventing an 8+ GB cache copy.
+  void initialize;
   const restoreOverlay = 'if [ -d /runtime/workspace ]; then cp -a /runtime/workspace/. /workspace/; fi && ';
-  return `${initializeCache}${restoreOverlay}export PATH="/runtime/cargo/bin:$PATH"; ${command}`;
+  return `${restoreOverlay}export PATH="/runtime/cargo/bin:$PATH"; ${command}`;
 }
 
 /**
@@ -364,8 +367,12 @@ function dockerArgs(
     ? ['--user', `${process.getuid()}:${process.getgid()}`]
     : [];
   const runtimeMounts = runtime ? [
-    '--mount', `type=bind,src=${runtime.readOnlyAssets},dst=/runtime-ro,readonly`,
-    '--mount', `type=bind,src=${runtime.writableAssets},dst=/runtime`,
+    '--mount', `type=bind,src=${path.join(runtime.readOnlyAssets, 'cargo')},dst=/runtime/cargo,readonly`,
+    '--mount', `type=bind,src=${path.join(runtime.readOnlyAssets, 'rustup')},dst=/runtime/rustup,readonly`,
+    '--mount', `type=bind,src=${path.join(runtime.readOnlyAssets, 'images')},dst=/runtime/images,readonly`,
+    '--mount', `type=bind,src=${path.join(runtime.readOnlyAssets, 'workspace')},dst=/runtime/workspace,readonly`,
+    '--mount', `type=bind,src=${path.join(runtime.readOnlyAssets, 'firmware.sha256')},dst=/runtime/firmware.sha256,readonly`,
+    '--mount', `type=bind,src=${path.join(runtime.writableAssets, 'target')},dst=/runtime/target`,
     ...runtimeTargetMountArgs(path.join(runtime.writableAssets, 'target')),
     ...runtimeEnvironment(true),
   ] : [];

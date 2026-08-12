@@ -242,10 +242,10 @@ describe('P2 Worker 安全合同', () => {
     assert.deepEqual(frozenCheckoutGitOptions(), ['-c', 'core.autocrlf=false', '-c', 'core.eol=lf']);
   });
 
-  it('fault 阶段重放 workspace overlay，但不重复初始化离线依赖', () => {
+  it('baseline 与 fault 阶段都重放 overlay，且不复制整套 runtime cache', () => {
     const baseline = runtimeShellCommand('cargo test', true);
     const fault = runtimeShellCommand('cargo test', false);
-    assert.match(baseline, /^cp -a \/runtime-ro\/\. \/runtime\//);
+    assert.doesNotMatch(baseline, /runtime-ro/);
     assert.doesNotMatch(fault, /runtime-ro/);
     assert.match(baseline, /cp -a \/runtime\/workspace\/\. \/workspace\//);
     assert.match(fault, /cp -a \/runtime\/workspace\/\. \/workspace\//);
