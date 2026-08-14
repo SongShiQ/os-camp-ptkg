@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -245,7 +245,7 @@ async function createWorktree(snapshot: VerifiedSnapshot, commit: string, worker
       await captureGit([`--git-dir=${snapshot.cacheRepo}`, 'worktree', 'remove', '--force', source], { timeoutMs: 120_000 });
       await captureGit([`--git-dir=${snapshot.cacheRepo}`, 'worktree', 'prune'], { timeoutMs: 120_000 });
     }
-    await rm(root, { recursive: true, force: true });
+    await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 500 });
     throw error;
   }
 }
@@ -293,7 +293,7 @@ async function removeWorktree(worktree: DisposableWorktree | null): Promise<Rese
   const prune = await captureGit([`--git-dir=${worktree.cacheRepo}`, 'worktree', 'prune'], { timeoutMs: 120_000 });
   messages.push(prune.exitCode === 0 ? 'git worktree registry pruned' : `git worktree prune failed: ${prune.stderr}`);
   try {
-    await rm(worktree.root, { recursive: true, force: true });
+    await rm(worktree.root, { recursive: true, force: true, maxRetries: 8, retryDelay: 500 });
   } catch (error) {
     messages.push(`worker root removal failed: ${(error as Error).message}`);
   }
@@ -355,6 +355,21 @@ export function runtimeTargetMountArgs(runtimeTarget: string): string[] {
   return ['--mount', `type=bind,src=${runtimeTarget},dst=/workspace/target`];
 }
 
+/** Seed only assets that need writes; toolchains and source overlays stay read-only. */
+export async function seedRuntimeWritableAssets(readOnlyAssets: string, writableAssets: string): Promise<void> {
+  await mkdir(writableAssets, { recursive: true });
+  await Promise.all(['target', 'images'].map((entry) => cp(
+    path.join(readOnlyAssets, entry),
+    path.join(writableAssets, entry),
+    {
+      recursive: true,
+      // A new Git worktree has fresh source mtimes. Refresh target mtimes so
+      // Cargo can reuse the verified artifacts instead of rebuilding them.
+      preserveTimestamps: entry !== 'target',
+    },
+  )));
+}
+
 function dockerArgs(
   image: string,
   worktree: string,
@@ -369,7 +384,7 @@ function dockerArgs(
   const runtimeMounts = runtime ? [
     '--mount', `type=bind,src=${path.join(runtime.readOnlyAssets, 'cargo')},dst=/runtime/cargo,readonly`,
     '--mount', `type=bind,src=${path.join(runtime.readOnlyAssets, 'rustup')},dst=/runtime/rustup,readonly`,
-    '--mount', `type=bind,src=${path.join(runtime.readOnlyAssets, 'images')},dst=/runtime/images,readonly`,
+    '--mount', `type=bind,src=${path.join(runtime.writableAssets, 'images')},dst=/runtime/images`,
     '--mount', `type=bind,src=${path.join(runtime.readOnlyAssets, 'workspace')},dst=/runtime/workspace,readonly`,
     '--mount', `type=bind,src=${path.join(runtime.readOnlyAssets, 'firmware.sha256')},dst=/runtime/firmware.sha256,readonly`,
     '--mount', `type=bind,src=${path.join(runtime.writableAssets, 'target')},dst=/runtime/target`,
@@ -708,11 +723,8 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
       await verifyRuntimeWorkspaceOverlay(runtimeCache, snapshot.cacheRepo, run.sourceContract.project_ref.commit);
       runtimeUnchanged = false;
       runtimeWorking = path.join(worktree.root, 'runtime');
-      await Promise.all([
-        mkdir(runtimeWorking, { recursive: true }),
-        mkdir(path.join(runtimeWorking, 'target'), { recursive: true }),
-        mkdir(path.join(worktree.source, 'target'), { recursive: true }),
-      ]);
+      await seedRuntimeWritableAssets(runtimeCache.assets, runtimeWorking);
+      await mkdir(path.join(worktree.source, 'target'), { recursive: true });
     }
 
     const baselineArgs = dockerArgs(

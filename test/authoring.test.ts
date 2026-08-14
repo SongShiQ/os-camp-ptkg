@@ -19,6 +19,7 @@ import {
   resolveWorkerBase,
   runtimeShellCommand,
   runtimeTargetMountArgs,
+  seedRuntimeWritableAssets,
   verifyRuntimeWorkspaceOverlay,
 } from '../src/authoring/execute.ts';
 import { computeContentHash } from '../src/authoring/hash.ts';
@@ -256,6 +257,28 @@ describe('P2 Worker 安全合同', () => {
       runtimeTargetMountArgs('D:/runtime-copy/target'),
       ['--mount', 'type=bind,src=D:/runtime-copy/target,dst=/workspace/target'],
     );
+  });
+
+  it('一次性 runtime 只复制需要写锁的 target 和镜像', async () => {
+    const root = await mkdtemp(path.join(tmpdir(), 'ptkg-runtime-seed-'));
+    const assets = path.join(root, 'assets');
+    const writable = path.join(root, 'writable');
+    try {
+      await Promise.all([
+        mkdir(path.join(assets, 'target'), { recursive: true }),
+        mkdir(path.join(assets, 'images'), { recursive: true }),
+        mkdir(path.join(assets, 'cargo'), { recursive: true }),
+      ]);
+      await writeFile(path.join(assets, 'target', 'kernel.bin'), 'compiled\n');
+      await writeFile(path.join(assets, 'images', 'rootfs.img'), 'rootfs\n');
+      await writeFile(path.join(assets, 'cargo', 'registry.bin'), 'dependency\n');
+      await seedRuntimeWritableAssets(assets, writable);
+      assert.equal(await readFile(path.join(writable, 'target', 'kernel.bin'), 'utf8'), 'compiled\n');
+      assert.equal(await readFile(path.join(writable, 'images', 'rootfs.img'), 'utf8'), 'rootfs\n');
+      await assert.rejects(readFile(path.join(writable, 'cargo', 'registry.bin')));
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
   });
 
   it('runtime cache 对文件顺序确定、绑定源码镜像，并拒绝篡改', async () => {
