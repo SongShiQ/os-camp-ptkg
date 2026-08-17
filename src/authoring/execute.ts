@@ -20,6 +20,16 @@ const execFileAsync = promisify(execFile);
 const IMAGE_DIGEST = /^[^@\s]+@sha256:[0-9a-f]{64}$/;
 const SHA40 = /^[0-9a-f]{40}$/;
 const FAULT_DETECTED_PREFIX = 'PTKG_SEEDED_FAULT_DETECTED:';
+const WORKER_CLEANUP_TIMEOUT_MS = 300_000;
+const WORKER_CLEANUP_SCRIPT = String.raw`
+const { rm } = require('node:fs/promises');
+const target = process.argv[1];
+rm(target, { recursive: true, force: true, maxRetries: 20, retryDelay: 500 })
+  .catch((error) => {
+    console.error(error && error.stack ? error.stack : String(error));
+    process.exitCode = 1;
+  });
+`;
 
 type TestClasses = {
   positive: boolean;
@@ -86,6 +96,7 @@ interface DisposableWorktree {
   root: string;
   source: string;
   cacheRepo: string;
+  workerBase: string;
 }
 
 interface ResetStep {
@@ -239,7 +250,7 @@ async function createWorktree(snapshot: VerifiedSnapshot, commit: string, worker
     if (actualCommit !== commit || actualTree !== snapshot.tree) {
       throw new Error(`disposable worktree identity mismatch: ${actualCommit}/${actualTree}`);
     }
-    return { root, source, cacheRepo: snapshot.cacheRepo };
+    return { root, source, cacheRepo: snapshot.cacheRepo, workerBase };
   } catch (error) {
     if (registered) {
       await captureGit([`--git-dir=${snapshot.cacheRepo}`, 'worktree', 'remove', '--force', source], { timeoutMs: 120_000 });
@@ -276,6 +287,52 @@ async function resetWorktree(worktree: DisposableWorktree, commit: string, tree:
   }
 }
 
+function assertDisposableWorkerRoot(root: string, workerBase: string): void {
+  const resolvedRoot = path.resolve(root);
+  const resolvedBase = path.resolve(workerBase);
+  const relative = path.relative(resolvedBase, resolvedRoot);
+  if (
+    relative === ''
+    || path.isAbsolute(relative)
+    || relative === '..'
+    || relative.startsWith(`..${path.sep}`)
+    || !path.basename(resolvedRoot).startsWith('worker-')
+  ) {
+    throw new Error(`拒绝清理 worker 根目录之外的路径：${resolvedRoot}`);
+  }
+}
+
+export async function removeDisposableWorkerRoot(
+  root: string,
+  workerBase: string,
+  timeoutMs = WORKER_CLEANUP_TIMEOUT_MS,
+): Promise<ResetStep> {
+  assertDisposableWorkerRoot(root, workerBase);
+  const removal = await capture(
+    process.execPath,
+    ['--input-type=commonjs', '-e', WORKER_CLEANUP_SCRIPT, root],
+    { timeoutMs },
+  );
+  let rootRemoved = false;
+  try {
+    await stat(root);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') rootRemoved = true;
+    else return { succeeded: false, log: `cleanup verification failed: ${(error as Error).message}` };
+  }
+  const detail = removal.stderr.trim() || removal.stdout.trim();
+  if (removal.timedOut) {
+    return { succeeded: false, log: `worker root removal timed out after ${timeoutMs}ms${detail ? `: ${detail}` : ''}` };
+  }
+  if (removal.exitCode !== 0 || !rootRemoved) {
+    return {
+      succeeded: false,
+      log: detail || (rootRemoved ? `worker cleanup exited ${removal.exitCode}` : 'worker root still exists'),
+    };
+  }
+  return { succeeded: true, log: 'worker root removed by bounded cleanup process' };
+}
+
 async function removeWorktree(worktree: DisposableWorktree | null): Promise<ResetStep> {
   if (!worktree) return { succeeded: true, log: 'worktree was not created' };
   const messages: string[] = [];
@@ -292,21 +349,13 @@ async function removeWorktree(worktree: DisposableWorktree | null): Promise<Rese
   messages.push(removal.exitCode === 0 ? 'git worktree registration removed' : `git worktree remove failed: ${removal.stderr}`);
   const prune = await captureGit([`--git-dir=${worktree.cacheRepo}`, 'worktree', 'prune'], { timeoutMs: 120_000 });
   messages.push(prune.exitCode === 0 ? 'git worktree registry pruned' : `git worktree prune failed: ${prune.stderr}`);
-  try {
-    await rm(worktree.root, { recursive: true, force: true, maxRetries: 8, retryDelay: 500 });
-  } catch (error) {
-    messages.push(`worker root removal failed: ${(error as Error).message}`);
-  }
   let rootRemoved = false;
   try {
-    await stat(worktree.root);
-    messages.push('worker root still exists');
+    const rootCleanup = await removeDisposableWorkerRoot(worktree.root, worktree.workerBase);
+    rootRemoved = rootCleanup.succeeded;
+    messages.push(rootCleanup.log);
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-      messages.push(`cleanup verification failed: ${(error as Error).message}`);
-    } else {
-      rootRemoved = true;
-    }
+    messages.push(`worker root removal failed: ${(error as Error).message}`);
   }
   let registrationRemoved = false;
   try {

@@ -16,6 +16,7 @@ import {
   executeAuthoringSlice,
   frozenCheckoutGitOptions,
   hasSeededFaultEvidence,
+  removeDisposableWorkerRoot,
   resolveWorkerBase,
   runtimeShellCommand,
   runtimeTargetMountArgs,
@@ -237,6 +238,31 @@ describe('P2 Worker 安全合同', () => {
     assert.equal(resolveWorkerBase('D:\\course\\run', { PTKG_WORKER_DIR: 'D:\\isolated-workers' }, 'win32'), 'D:\\isolated-workers');
     assert.equal(resolveWorkerBase('/tmp/course/run', {}, 'linux'), '/tmp/course/run/.ptkg/workers');
     assert.throws(() => resolveWorkerBase('D:\\course\\run', { PTKG_WORKER_DIR: 'relative-workers' }, 'win32'), /必须是绝对路径/);
+  });
+
+  it('bounded cleanup 只删除指定 worker 根目录内的 disposable 目录', async () => {
+    const root = await mkdtemp(path.join(tmpdir(), 'ptkg-worker-cleanup-'));
+    const workerBase = path.join(root, 'workers');
+    const worker = path.join(workerBase, 'worker-safe');
+    const outside = path.join(root, 'outside');
+    try {
+      await Promise.all([
+        mkdir(path.join(worker, 'nested'), { recursive: true }),
+        mkdir(outside, { recursive: true }),
+      ]);
+      await writeFile(path.join(worker, 'nested', 'artifact.bin'), 'temporary\n');
+      await writeFile(path.join(outside, 'keep.txt'), 'keep\n');
+      const cleanup = await removeDisposableWorkerRoot(worker, workerBase, 10_000);
+      assert.equal(cleanup.succeeded, true);
+      await assert.rejects(readFile(path.join(worker, 'nested', 'artifact.bin')));
+      assert.equal(await readFile(path.join(outside, 'keep.txt'), 'utf8'), 'keep\n');
+      await assert.rejects(
+        removeDisposableWorkerRoot(outside, workerBase, 10_000),
+        /拒绝清理 worker 根目录之外的路径/,
+      );
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
   });
 
   it('固定源码 checkout 显式禁用 CRLF 转换', () => {
