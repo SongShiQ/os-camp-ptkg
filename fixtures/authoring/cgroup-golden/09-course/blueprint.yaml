@@ -1,6 +1,6 @@
 spec_version: course-blueprint@1
 course_id: oscamp.starryos.cgroup
-version: 0.2.0
+version: 0.3.0
 title: StarryOS cgroup 项目先导课程
 language: zh-CN
 stages:
@@ -10,6 +10,7 @@ stages:
     title: 固定源码、构建与全景观察
     required: true
     unit_ids:
+      - unit.starryos.cgroup.source-navigation
       - unit.starryos.cgroup.build-test-debug
     prerequisite_stage_ids: []
     status: candidate
@@ -57,8 +58,9 @@ stages:
     layer: project_reference
     order: 30
     title: 完整项目上下文与准备度出口
-    required: false
-    unit_ids: []
+    required: true
+    unit_ids:
+      - unit.starryos.cgroup.project-context
     prerequisite_stage_ids:
       - stage.starryos.cgroup.pre-project
     status: candidate

@@ -99,7 +99,7 @@ async function createSigningIdentity(temp: string, actor: string): Promise<{ key
 }
 
 describe('G2/G3 Course Package', () => {
-  it('G5 cgroup 黄金课程覆盖 14 个源码单元并止于项目准备度门', async () => {
+  it('G5 cgroup 黄金课程以 16 个单元贯通源码导航、系统纵切与完整项目上下文', async () => {
     const { packageDir } = await compileFixture('g5-cgroup-coverage');
     const stages = await readCourseJsonl<CourseStage>(packageDir, 'course/stages.jsonl');
     const units = await readCourseJsonl<CourseUnit>(packageDir, 'course/units.jsonl');
@@ -115,12 +115,31 @@ describe('G2/G3 Course Package', () => {
       'pre_project',
       'project_reference',
     ]);
-    assert.equal(units.length, 14);
-    assert.equal(cardFiles.length, 14);
-    assert.equal(questions.length, 56);
-    assert.equal(practices.length, 14);
-    assert.equal(gates.length, 15);
-    assert.ok(stages.find((stage) => stage.layer === 'project_reference')?.unit_ids.length === 0);
+    assert.equal(units.length, 16);
+    assert.equal(cardFiles.length, 16);
+    assert.equal(questions.length, 64);
+    assert.equal(practices.length, 16);
+    assert.equal(gates.length, 17);
+
+    const tutorial = stages.find((stage) => stage.layer === 'tutorial');
+    const projectReference = stages.find((stage) => stage.layer === 'project_reference');
+    assert.deepEqual(tutorial?.unit_ids, [
+      'unit.starryos.cgroup.source-navigation',
+      'unit.starryos.cgroup.build-test-debug',
+    ]);
+    assert.equal(projectReference?.required, true);
+    assert.deepEqual(projectReference?.unit_ids, ['unit.starryos.cgroup.project-context']);
+
+    const build = units.find((unit) => unit.id === 'unit.starryos.cgroup.build-test-debug');
+    const context = units.find((unit) => unit.id === 'unit.starryos.cgroup.project-context');
+    const contextPractice = practices.find((item) => item.id === 'course-practice.starryos.cgroup.project-context');
+    assert.deepEqual(build?.prerequisite_unit_ids, ['unit.starryos.cgroup.source-navigation']);
+    assert.equal(units.find((unit) => unit.id === 'unit.starryos.cgroup.source-navigation')?.dependency_depth, 0);
+    assert.equal(build?.dependency_depth, 1);
+    assert.equal(context?.dependency_depth, 7);
+    assert.equal(context?.stage_id, projectReference?.id);
+    assert.equal(contextPractice?.kind, 'review');
+    assert.match(contextPractice?.instructions.join('\n') ?? '', /不提出真实 issue、PR 或个人贡献安排/);
 
     for (const unit of units) {
       const unitQuestions = questions.filter((question) => question.unit_ids.includes(unit.id));
@@ -134,6 +153,7 @@ describe('G2/G3 Course Package', () => {
     const readiness = gates.find((gate) => gate.id === 'gate.starryos.cgroup.project-readiness');
     assert.ok(readiness);
     assert.equal(readiness.trusted_evidence, true);
+    assert.equal(readiness.stage_id, projectReference?.id);
     assert.deepEqual([...readiness.unit_ids].sort(), units.map((unit) => unit.id).sort());
     assert.deepEqual(
       [...readiness.prerequisite_gate_ids].sort(),
