@@ -73,7 +73,7 @@ async function bindRunToWorkerRepository(runRoot: string, source: { repository: 
   await rm(path.join(runRoot, '02-facts', 'workspace-verification.json'), { force: true });
 }
 
-describe('作者链 golden：cgroup 五条行为链', () => {
+describe('作者链 golden：cgroup 七条行为链', () => {
   it('authoring profile 零 blocker', async () => {
     const result = await validateAuthoringRun(GOLDEN, 'authoring');
 
@@ -81,17 +81,17 @@ describe('作者链 golden：cgroup 五条行为链', () => {
     assert.equal(result.summary.blocker, 0);
     assert.deepEqual(result.findings, []);
     // code_facts 覆盖固定 commit 的全项目锚点索引（含未做深分支的来源事实），
-    // 27 个锚点全部经 authoring-verify-workspace 对固定 commit 核验；
-    // mount 与 pids 保留可执行纵切，core、membership、controller framework
-    // 先进入带固定 rubric 的 S1 设计审核，避免在真实执行前伪造 succeeded 证据。
+    // 38 个锚点全部经 authoring-verify-workspace 对固定 commit 核验；
+    // mount 与 pids 保留可执行纵切，core、membership、controller framework、
+    // provider 和 delegation 先进入带固定 rubric 的 S1 设计审核。
     assert.deepEqual(result.summary.counts, {
-      code_facts: 15,
-      behavior_chains: 5,
-      learning_slices: 6,
+      code_facts: 17,
+      behavior_chains: 7,
+      learning_slices: 8,
       execution_results: 3,
       review_events: 0,
       exception_events: 0,
-      anchor_verifications: 27,
+      anchor_verifications: 38,
     });
   });
 
@@ -102,7 +102,7 @@ describe('作者链 golden：cgroup 五条行为链', () => {
     const designReviews = result.run.learningSlices.filter(
       (slice) => slice.activity_kind === 'design_review',
     );
-    assert.equal(designReviews.length, 3);
+    assert.equal(designReviews.length, 5);
     for (const slice of designReviews) {
       assert.deepEqual(slice.execution_refs, []);
       assert.ok(Array.isArray(slice.evidence_refs) && slice.evidence_refs.length > 0);
@@ -110,7 +110,7 @@ describe('作者链 golden：cgroup 五条行为链', () => {
     }
   });
 
-  it('完整项目覆盖骨架存在，但五条行为链不冒充 complete course', async () => {
+  it('完整项目覆盖骨架存在，但七条行为链不冒充 complete course', async () => {
     const result = await validateAuthoringRun(GOLDEN, 'authoring');
     assert.ok(result.run);
 
@@ -118,10 +118,9 @@ describe('作者链 golden：cgroup 五条行为链', () => {
     assert.equal(coverage.release_level, 'author_preview');
     assert.ok(Array.isArray(coverage.required_unit_ids));
     assert.ok(coverage.required_unit_ids.length >= 12);
-    assert.ok(
-      (coverage.units as Array<{ status: string }>).some((unit) => unit.status === 'skeleton'),
-      '未做深的完整项目分支必须诚实保留为 skeleton',
-    );
+    const units = coverage.units as Array<{ implementation_state: string }>;
+    assert.ok(units.some((unit) => unit.implementation_state === 'partial'));
+    assert.ok(!units.every((unit) => unit.implementation_state === 'present'));
   });
 
   it('review profile 接受候选产物，publishing profile 要求可信发布事件', async () => {

@@ -8,6 +8,11 @@
       "content_hash": "8570ccb464827c4622e6121237467f09b9e958e6a218e42cedeed5390e6dabf2"
     },
     {
+      "id": "anchor.starryos.can-delegate-write",
+      "kind": "anchor",
+      "content_hash": "f6b28bd3f684ba1618c2d107434921444bd22e171459e8bcd91f20e06a468458"
+    },
+    {
       "id": "anchor.starryos.cgroup-basic-test",
       "kind": "anchor",
       "content_hash": "49834e6cd25e157455bc12f079785bd2090ddb7d4c8de03195807d5cb759b92e"
@@ -16,6 +21,11 @@
       "id": "anchor.starryos.cgroup-pids-test",
       "kind": "anchor",
       "content_hash": "9a37518ee9ff6e2946628c5c4c158024564b6d4ee578096c01568a3c592ad805"
+    },
+    {
+      "id": "anchor.starryos.cgroup-provider-trait",
+      "kind": "anchor",
+      "content_hash": "8d54693fd0631ce5387bf0e2ccaf8d924a5869443d685b2c1af804b633eac96d"
     },
     {
       "id": "anchor.starryos.cgroup-remove-child",
@@ -48,6 +58,16 @@
       "content_hash": "f2e142c42d149e092a0c71d0b9d1f086b19a8534c93554191e1c528503c666c7"
     },
     {
+      "id": "anchor.starryos.check-delegation",
+      "kind": "anchor",
+      "content_hash": "da33f07d821204c75ed8f59b32184f3a79c3e0065b1e772787c0b0ffd1a89840"
+    },
+    {
+      "id": "anchor.starryos.delegation-test",
+      "kind": "anchor",
+      "content_hash": "24b09cc8c0cdad1cc6ad75886a076280964839af81c06df6a4bbc00c9b289fd5"
+    },
+    {
       "id": "anchor.starryos.exit-process",
       "kind": "anchor",
       "content_hash": "9f012ce8ff092ae82def3eee8c416a28903fcb998d6de5c118372c51ad8eeb89"
@@ -56,6 +76,16 @@
       "id": "anchor.starryos.fork-guard-commit",
       "kind": "anchor",
       "content_hash": "00332999038c92bf39d1bd3c44d9b0d16fd916277d46c26713ec693a093ceff4"
+    },
+    {
+      "id": "anchor.starryos.kernel-cgroup-init",
+      "kind": "anchor",
+      "content_hash": "f7e3f6d2c10764f25d5f09b65c6889c253ef387776619435bbf5a620afb10139"
+    },
+    {
+      "id": "anchor.starryos.kernel-provider",
+      "kind": "anchor",
+      "content_hash": "b6cc28d761d2f40263d964b26f1edd90a39310ad415a332e6511ea0a226feffb"
     },
     {
       "id": "anchor.starryos.kernel.cgroup-cpu-rs",
@@ -108,6 +138,16 @@
       "content_hash": "0460024879304febbbd14c4ae892d12c2a16fe7be61a7d9e31067e046418257b"
     },
     {
+      "id": "anchor.starryos.provider-cell-get",
+      "kind": "anchor",
+      "content_hash": "f249d6cb5454c62ac498cc12f0bf9fb5f48252513c586d81107413e199d6df1f"
+    },
+    {
+      "id": "anchor.starryos.provider-cell-set",
+      "kind": "anchor",
+      "content_hash": "ff25e81c5461340a5dfc080dea82e65867f850c94faf1ac74dbad0b32557237c"
+    },
+    {
       "id": "anchor.starryos.read-attr-at",
       "kind": "anchor",
       "content_hash": "c58cb214fab6414768716dfeaec46de7ffebccab78713fe1052c4b6040dc1940"
@@ -116,6 +156,16 @@
       "id": "anchor.starryos.register-factory",
       "kind": "anchor",
       "content_hash": "1efda003b807fce1ac5b8f4c39b23a43aaad263a1c9ff2cd58468841a669ed14"
+    },
+    {
+      "id": "anchor.starryos.register-provider",
+      "kind": "anchor",
+      "content_hash": "63e69a72a75d08cae1735ef99d9fc3ce5f7219b5e34c50ba55acfe259df7db1d"
+    },
+    {
+      "id": "anchor.starryos.set-delegated-to",
+      "kind": "anchor",
+      "content_hash": "d5cc53e7fdd6fac42f812421a8aaa6c12c6ab2b1660b13f2fd99b6fedae23d09"
     },
     {
       "id": "anchor.starryos.sys-mount",
@@ -133,6 +183,11 @@
       "content_hash": "8efee95f5d46fe04fcdb463764de6137926c107b49d7ed321a9b7fd514619e8b"
     },
     {
+      "id": "anchor.starryos.write-subtree-control",
+      "kind": "anchor",
+      "content_hash": "2fc34b1970ba8b3b922136bd7fba38585e329142451db3e6b4acc69968b6fac4"
+    },
+    {
       "id": "anchor.starryos.xtask-main",
       "kind": "anchor",
       "content_hash": "8f105bad823c2e6f519dd631caa0a6a9f819a460cbd5897a152370ee9fdccaae"
@@ -146,6 +201,11 @@
       "id": "behavior.starryos.cgroup.core-hierarchy-lifecycle",
       "kind": "behavior",
       "content_hash": "886569df06a24379dc612f6b821abefd96635f6740ea49a1c5475a859ef5dd24"
+    },
+    {
+      "id": "behavior.starryos.cgroup.delegation-write-boundary",
+      "kind": "behavior",
+      "content_hash": "eca46c8555beda62245b615a62f85dcd025557b4d1995e783dfc3ea6aa41080f"
     },
     {
       "id": "behavior.starryos.cgroup.membership-transaction",
@@ -163,9 +223,14 @@
       "content_hash": "0ddac2a11f7dbf8f5a9b94bf87ab026172cc7bae8bb82c808a3b0fe97fbe5628"
     },
     {
+      "id": "behavior.starryos.cgroup.provider-registration-boundary",
+      "kind": "behavior",
+      "content_hash": "aa6ab23c9ff1765f4acc6c889ec9a65b7476e65eb434184a2a59ff2e2d6b536e"
+    },
+    {
       "id": "coverage.starryos.cgroup",
       "kind": "coverage",
-      "content_hash": "b2b12439db2c83b7b0f5242a7eef4008c561eba5cd51a0ddd2cb3d3aebb92cf1"
+      "content_hash": "30a875311f97b55d666bd33499523f6666c21983fa53bcd6309eeaca56e20b58"
     },
     {
       "id": "exec.starryos.cgroup.mount-s0",
@@ -208,6 +273,11 @@
       "content_hash": "05a62462c607e712ba7aa8672ca365828dc3ba62e6b57085ec650bc820550aaa"
     },
     {
+      "id": "fact.starryos.cgroup.delegation-boundary",
+      "kind": "fact",
+      "content_hash": "ad347fefd560337a4e0c281905055734ed11eaf2229d9f12d662c325bf8cd4af"
+    },
+    {
       "id": "fact.starryos.cgroup.io-file",
       "kind": "fact",
       "content_hash": "b2d2adedf05770addf644c0a6ee7ebb85c77a74ee3b19edda5d01de31997be44"
@@ -236,6 +306,11 @@
       "id": "fact.starryos.cgroup.pids-charge",
       "kind": "fact",
       "content_hash": "fe9157d68e215a6b49159af6560c11029ad360dbfb5d06b526c3fc66041c9b65"
+    },
+    {
+      "id": "fact.starryos.cgroup.provider-decoupling",
+      "kind": "fact",
+      "content_hash": "ffbe562cf83f9047b78dc1b474fbe8c521359509cf27a9fa80b2488066c0d1ad"
     },
     {
       "id": "fact.starryos.platform.process",
@@ -268,6 +343,11 @@
       "content_hash": "013a947a68963a18caf84141f3535149e807ae59a1d9add10f64c564e31980bb"
     },
     {
+      "id": "slice.starryos.cgroup.delegation-boundary-s1",
+      "kind": "slice",
+      "content_hash": "f70b9f44fcc9c85e7fa651a581fb6a846783297cebfeda19adf1426dad2f75fd"
+    },
+    {
       "id": "slice.starryos.cgroup.membership-transaction-s1",
       "kind": "slice",
       "content_hash": "2b474d6685515be11e8b3d47044240794c76decce0e30adc1977efe4a457a863"
@@ -286,6 +366,11 @@
       "id": "slice.starryos.cgroup.pids-s3",
       "kind": "slice",
       "content_hash": "7541c89cdd1fe65cec3c84e3698e66653bda635ee3577708999526ca35213162"
+    },
+    {
+      "id": "slice.starryos.cgroup.provider-boundary-s1",
+      "kind": "slice",
+      "content_hash": "1f36ada7b2affc3647e9129c493b2dd2535407deeba401fd99cb17896b914a2b"
     },
     {
       "id": "source-contract.starryos.cgroup",
@@ -337,6 +422,41 @@
     {
       "from": "behavior.starryos.cgroup.core-hierarchy-lifecycle",
       "to": "fact.starryos.cgroup.core-layout",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.delegation-write-boundary",
+      "to": "anchor.starryos.check-delegation",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.delegation-write-boundary",
+      "to": "anchor.starryos.delegation-test",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.delegation-write-boundary",
+      "to": "anchor.starryos.set-delegated-to",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.delegation-write-boundary",
+      "to": "anchor.starryos.write-subtree-control",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.delegation-write-boundary",
+      "to": "fact.starryos.cgroup.controller-framework",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.delegation-write-boundary",
+      "to": "fact.starryos.cgroup.delegation-boundary",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.delegation-write-boundary",
+      "to": "fact.starryos.cgroup.membership",
       "relation": "references"
     },
     {
@@ -410,6 +530,36 @@
       "relation": "references"
     },
     {
+      "from": "behavior.starryos.cgroup.provider-registration-boundary",
+      "to": "anchor.starryos.cgroup-provider-trait",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.provider-registration-boundary",
+      "to": "anchor.starryos.kernel-cgroup-init",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.provider-registration-boundary",
+      "to": "anchor.starryos.provider-cell-get",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.provider-registration-boundary",
+      "to": "anchor.starryos.provider-cell-set",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.provider-registration-boundary",
+      "to": "anchor.starryos.register-provider",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.provider-registration-boundary",
+      "to": "fact.starryos.cgroup.provider-decoupling",
+      "relation": "references"
+    },
+    {
       "from": "coverage.starryos.cgroup",
       "to": "behavior.starryos.cgroup.controller-registry-dispatch",
       "relation": "projection"
@@ -417,6 +567,11 @@
     {
       "from": "coverage.starryos.cgroup",
       "to": "behavior.starryos.cgroup.core-hierarchy-lifecycle",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "behavior.starryos.cgroup.delegation-write-boundary",
       "relation": "projection"
     },
     {
@@ -432,6 +587,11 @@
     {
       "from": "coverage.starryos.cgroup",
       "to": "behavior.starryos.cgroup.pids-fork-exit",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "behavior.starryos.cgroup.provider-registration-boundary",
       "relation": "projection"
     },
     {
@@ -457,6 +617,11 @@
     {
       "from": "coverage.starryos.cgroup",
       "to": "fact.starryos.cgroup.cpuset-file",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "fact.starryos.cgroup.delegation-boundary",
       "relation": "projection"
     },
     {
@@ -487,6 +652,11 @@
     {
       "from": "coverage.starryos.cgroup",
       "to": "fact.starryos.cgroup.pids-charge",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "fact.starryos.cgroup.provider-decoupling",
       "relation": "projection"
     },
     {
@@ -620,6 +790,36 @@
       "relation": "references"
     },
     {
+      "from": "fact.starryos.cgroup.delegation-boundary",
+      "to": "anchor.starryos.can-delegate-write",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.delegation-boundary",
+      "to": "anchor.starryos.check-delegation",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.delegation-boundary",
+      "to": "anchor.starryos.delegation-test",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.delegation-boundary",
+      "to": "anchor.starryos.set-delegated-to",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.delegation-boundary",
+      "to": "anchor.starryos.write-subtree-control",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.delegation-boundary",
+      "to": "source-contract.starryos.cgroup",
+      "relation": "references"
+    },
+    {
       "from": "fact.starryos.cgroup.io-file",
       "to": "anchor.starryos.cgroup.io-rs",
       "relation": "anchors"
@@ -696,6 +896,41 @@
     },
     {
       "from": "fact.starryos.cgroup.pids-charge",
+      "to": "source-contract.starryos.cgroup",
+      "relation": "references"
+    },
+    {
+      "from": "fact.starryos.cgroup.provider-decoupling",
+      "to": "anchor.starryos.cgroup-provider-trait",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.provider-decoupling",
+      "to": "anchor.starryos.kernel-cgroup-init",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.provider-decoupling",
+      "to": "anchor.starryos.kernel-provider",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.provider-decoupling",
+      "to": "anchor.starryos.provider-cell-get",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.provider-decoupling",
+      "to": "anchor.starryos.provider-cell-set",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.provider-decoupling",
+      "to": "anchor.starryos.register-provider",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.provider-decoupling",
       "to": "source-contract.starryos.cgroup",
       "relation": "references"
     },
@@ -795,6 +1030,36 @@
       "relation": "input"
     },
     {
+      "from": "slice.starryos.cgroup.delegation-boundary-s1",
+      "to": "anchor.starryos.check-delegation",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.delegation-boundary-s1",
+      "to": "anchor.starryos.delegation-test",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.delegation-boundary-s1",
+      "to": "anchor.starryos.set-delegated-to",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.delegation-boundary-s1",
+      "to": "anchor.starryos.write-subtree-control",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.delegation-boundary-s1",
+      "to": "behavior.starryos.cgroup.delegation-write-boundary",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.delegation-boundary-s1",
+      "to": "fact.starryos.cgroup.delegation-boundary",
+      "relation": "input"
+    },
+    {
       "from": "slice.starryos.cgroup.membership-transaction-s1",
       "to": "anchor.starryos.begin-fork",
       "relation": "anchors"
@@ -858,6 +1123,36 @@
       "from": "slice.starryos.cgroup.pids-s3",
       "to": "exec.starryos.cgroup.pids-s3",
       "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.provider-boundary-s1",
+      "to": "anchor.starryos.cgroup-provider-trait",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.provider-boundary-s1",
+      "to": "anchor.starryos.kernel-cgroup-init",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.provider-boundary-s1",
+      "to": "anchor.starryos.provider-cell-get",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.provider-boundary-s1",
+      "to": "anchor.starryos.provider-cell-set",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.provider-boundary-s1",
+      "to": "behavior.starryos.cgroup.provider-registration-boundary",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.provider-boundary-s1",
+      "to": "fact.starryos.cgroup.provider-decoupling",
+      "relation": "input"
     }
   ],
   "reverse_dependencies": {
@@ -883,6 +1178,7 @@
     ],
     "fact.starryos.cgroup.controller-framework": [
       "behavior.starryos.cgroup.controller-registry-dispatch",
+      "behavior.starryos.cgroup.delegation-write-boundary",
       "coverage.starryos.cgroup",
       "slice.starryos.cgroup.controller-registry-s1"
     ],
@@ -903,6 +1199,37 @@
       "fact.starryos.cgroup.core-layout",
       "slice.starryos.cgroup.core-hierarchy-s1"
     ],
+    "anchor.starryos.check-delegation": [
+      "behavior.starryos.cgroup.delegation-write-boundary",
+      "fact.starryos.cgroup.delegation-boundary",
+      "slice.starryos.cgroup.delegation-boundary-s1"
+    ],
+    "anchor.starryos.delegation-test": [
+      "behavior.starryos.cgroup.delegation-write-boundary",
+      "fact.starryos.cgroup.delegation-boundary",
+      "slice.starryos.cgroup.delegation-boundary-s1"
+    ],
+    "anchor.starryos.set-delegated-to": [
+      "behavior.starryos.cgroup.delegation-write-boundary",
+      "fact.starryos.cgroup.delegation-boundary",
+      "slice.starryos.cgroup.delegation-boundary-s1"
+    ],
+    "anchor.starryos.write-subtree-control": [
+      "behavior.starryos.cgroup.delegation-write-boundary",
+      "fact.starryos.cgroup.delegation-boundary",
+      "slice.starryos.cgroup.delegation-boundary-s1"
+    ],
+    "fact.starryos.cgroup.delegation-boundary": [
+      "behavior.starryos.cgroup.delegation-write-boundary",
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.delegation-boundary-s1"
+    ],
+    "fact.starryos.cgroup.membership": [
+      "behavior.starryos.cgroup.delegation-write-boundary",
+      "behavior.starryos.cgroup.membership-transaction",
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.membership-transaction-s1"
+    ],
     "anchor.starryos.begin-fork": [
       "behavior.starryos.cgroup.membership-transaction",
       "behavior.starryos.cgroup.pids-fork-exit",
@@ -922,11 +1249,6 @@
     "anchor.starryos.migrate-process": [
       "behavior.starryos.cgroup.membership-transaction",
       "fact.starryos.cgroup.membership",
-      "slice.starryos.cgroup.membership-transaction-s1"
-    ],
-    "fact.starryos.cgroup.membership": [
-      "behavior.starryos.cgroup.membership-transaction",
-      "coverage.starryos.cgroup",
       "slice.starryos.cgroup.membership-transaction-s1"
     ],
     "fact.starryos.cgroup.pids-charge": [
@@ -959,6 +1281,35 @@
       "behavior.starryos.cgroup.pids-fork-exit",
       "slice.starryos.cgroup.pids-s2"
     ],
+    "anchor.starryos.cgroup-provider-trait": [
+      "behavior.starryos.cgroup.provider-registration-boundary",
+      "fact.starryos.cgroup.provider-decoupling",
+      "slice.starryos.cgroup.provider-boundary-s1"
+    ],
+    "anchor.starryos.kernel-cgroup-init": [
+      "behavior.starryos.cgroup.provider-registration-boundary",
+      "fact.starryos.cgroup.provider-decoupling",
+      "slice.starryos.cgroup.provider-boundary-s1"
+    ],
+    "anchor.starryos.provider-cell-get": [
+      "behavior.starryos.cgroup.provider-registration-boundary",
+      "fact.starryos.cgroup.provider-decoupling",
+      "slice.starryos.cgroup.provider-boundary-s1"
+    ],
+    "anchor.starryos.provider-cell-set": [
+      "behavior.starryos.cgroup.provider-registration-boundary",
+      "fact.starryos.cgroup.provider-decoupling",
+      "slice.starryos.cgroup.provider-boundary-s1"
+    ],
+    "anchor.starryos.register-provider": [
+      "behavior.starryos.cgroup.provider-registration-boundary",
+      "fact.starryos.cgroup.provider-decoupling"
+    ],
+    "fact.starryos.cgroup.provider-decoupling": [
+      "behavior.starryos.cgroup.provider-registration-boundary",
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.provider-boundary-s1"
+    ],
     "behavior.starryos.cgroup.controller-registry-dispatch": [
       "coverage.starryos.cgroup",
       "slice.starryos.cgroup.controller-registry-s1"
@@ -966,6 +1317,10 @@
     "behavior.starryos.cgroup.core-hierarchy-lifecycle": [
       "coverage.starryos.cgroup",
       "slice.starryos.cgroup.core-hierarchy-s1"
+    ],
+    "behavior.starryos.cgroup.delegation-write-boundary": [
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.delegation-boundary-s1"
     ],
     "behavior.starryos.cgroup.membership-transaction": [
       "coverage.starryos.cgroup",
@@ -979,6 +1334,10 @@
       "coverage.starryos.cgroup",
       "slice.starryos.cgroup.pids-s2",
       "slice.starryos.cgroup.pids-s3"
+    ],
+    "behavior.starryos.cgroup.provider-registration-boundary": [
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.provider-boundary-s1"
     ],
     "fact.starryos.cgroup.build-tests": [
       "coverage.starryos.cgroup"
@@ -1017,12 +1376,14 @@
       "fact.starryos.cgroup.core-layout",
       "fact.starryos.cgroup.cpu-files",
       "fact.starryos.cgroup.cpuset-file",
+      "fact.starryos.cgroup.delegation-boundary",
       "fact.starryos.cgroup.io-file",
       "fact.starryos.cgroup.kernel-integration",
       "fact.starryos.cgroup.membership",
       "fact.starryos.cgroup.memory-file",
       "fact.starryos.cgroup.mount-entry",
       "fact.starryos.cgroup.pids-charge",
+      "fact.starryos.cgroup.provider-decoupling",
       "fact.starryos.platform.process",
       "fact.starryos.platform.rust-no-std",
       "fact.starryos.platform.sync",
@@ -1058,6 +1419,9 @@
     "anchor.starryos.cgroup.cpuset-rs": [
       "fact.starryos.cgroup.cpuset-file"
     ],
+    "anchor.starryos.can-delegate-write": [
+      "fact.starryos.cgroup.delegation-boundary"
+    ],
     "anchor.starryos.cgroup.io-rs": [
       "fact.starryos.cgroup.io-file"
     ],
@@ -1066,6 +1430,9 @@
     ],
     "anchor.starryos.cgroup.memory-rs": [
       "fact.starryos.cgroup.memory-file"
+    ],
+    "anchor.starryos.kernel-provider": [
+      "fact.starryos.cgroup.provider-decoupling"
     ],
     "anchor.starryos.platform.task-mod": [
       "fact.starryos.platform.process"

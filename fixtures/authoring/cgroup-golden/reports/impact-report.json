@@ -126,6 +126,20 @@
       "invalidates": []
     },
     {
+      "id": "fact.starryos.cgroup.provider-decoupling",
+      "kind": "fact",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "fact.starryos.cgroup.delegation-boundary",
+      "kind": "fact",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
       "id": "coverage.starryos.cgroup",
       "kind": "coverage",
       "classification": "non_semantic",
@@ -168,6 +182,20 @@
       "invalidates": []
     },
     {
+      "id": "behavior.starryos.cgroup.provider-registration-boundary",
+      "kind": "behavior",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "behavior.starryos.cgroup.delegation-write-boundary",
+      "kind": "behavior",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
       "id": "slice.starryos.cgroup.mount-s0",
       "kind": "slice",
       "classification": "non_semantic",
@@ -204,6 +232,20 @@
     },
     {
       "id": "slice.starryos.cgroup.controller-registry-s1",
+      "kind": "slice",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "slice.starryos.cgroup.provider-boundary-s1",
+      "kind": "slice",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "slice.starryos.cgroup.delegation-boundary-s1",
       "kind": "slice",
       "classification": "non_semantic",
       "reason": "对象 hash 未变化，继承旧运行结果。",

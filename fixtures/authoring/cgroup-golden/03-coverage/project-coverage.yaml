@@ -12,6 +12,8 @@ input_refs:
   - fact.starryos.cgroup.core-layout
   - fact.starryos.cgroup.membership
   - fact.starryos.cgroup.controller-framework
+  - fact.starryos.cgroup.provider-decoupling
+  - fact.starryos.cgroup.delegation-boundary
 claims:
   - id: claim.starryos.cgroup.coverage-plan
     statement: 完整 cgroup 覆盖必须包含 core、接口、成员、控制器、内核连接点和工程验证
@@ -27,7 +29,7 @@ claims:
 created_by:
   actor_type: agent
   actor_id: codex
-content_hash: b2b12439db2c83b7b0f5242a7eef4008c561eba5cd51a0ddd2cb3d3aebb92cf1
+content_hash: 30a875311f97b55d666bd33499523f6666c21983fa53bcd6309eeaca56e20b58
 created_at: 2026-07-27T00:00:00+08:00
 release_level: author_preview
 required_unit_ids:
@@ -156,16 +158,22 @@ units:
     title: provider 抽象与内核解耦
     required: true
     critical: true
-    status: skeleton
+    status: teachable
     implementation_state: present
-    source_refs: []
+    source_refs:
+      - fact.starryos.cgroup.provider-decoupling
+    behavior_refs:
+      - behavior.starryos.cgroup.provider-registration-boundary
   - id: coverage.cgroup.delegation
     title: 层级委派与权限边界
     required: true
     critical: false
-    status: skeleton
-    implementation_state: present
-    source_refs: []
+    status: teachable
+    implementation_state: partial
+    source_refs:
+      - fact.starryos.cgroup.delegation-boundary
+    behavior_refs:
+      - behavior.starryos.cgroup.delegation-write-boundary
 platform_family:
   id: platform.starryos
   shared_trunk_refs:

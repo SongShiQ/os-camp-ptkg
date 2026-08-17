@@ -31,6 +31,21 @@
       "snippet_hash": "f380afb2c67776d17cd330434ee5c7c80694ed3ff460938084cb404a8d92280e"
     },
     {
+      "anchor_id": "anchor.starryos.can-delegate-write",
+      "project_ref": {
+        "repo": "https://github.com/rcore-os/tgoskits",
+        "commit": "fc80b868fb3640efe8997994de42c1aee8fd74cb"
+      },
+      "path": "components/ax-cgroup/src/lib.rs",
+      "symbol": "can_delegate_write",
+      "status": "verified",
+      "parser": "rust-declaration-v1",
+      "blob_oid": "2239d9b330e5d5957dfe9a41c0cbb909a63cb517",
+      "symbol_start_line": 520,
+      "symbol_end_line": 520,
+      "snippet_hash": "dafad1bdb6fd7517b839957689f398f03c0d8134df9e83759b396ea72fd46847"
+    },
+    {
       "anchor_id": "anchor.starryos.cgroup-basic-test",
       "project_ref": {
         "repo": "https://github.com/rcore-os/tgoskits",
@@ -53,6 +68,21 @@
       "status": "verified",
       "parser": "git-path",
       "blob_oid": "05338030456447385f0c071bfb0daf86f5e29454"
+    },
+    {
+      "anchor_id": "anchor.starryos.cgroup-provider-trait",
+      "project_ref": {
+        "repo": "https://github.com/rcore-os/tgoskits",
+        "commit": "fc80b868fb3640efe8997994de42c1aee8fd74cb"
+      },
+      "path": "components/ax-cgroup/src/provider.rs",
+      "symbol": "CgroupProvider",
+      "status": "verified",
+      "parser": "rust-declaration-v1",
+      "blob_oid": "7181ff3e07004b9c43ba6abaac26f0fe20d1ca7b",
+      "symbol_start_line": 15,
+      "symbol_end_line": 15,
+      "snippet_hash": "9299cd596c3312ccea22b1a632d553e98ae5cbc7c02b6051e8bf4f0fadb3f71b"
     },
     {
       "anchor_id": "anchor.starryos.cgroup-remove-child",
@@ -130,6 +160,33 @@
       "blob_oid": "1389947af0a0ec79be24492fad5f862abefecc5f"
     },
     {
+      "anchor_id": "anchor.starryos.check-delegation",
+      "project_ref": {
+        "repo": "https://github.com/rcore-os/tgoskits",
+        "commit": "fc80b868fb3640efe8997994de42c1aee8fd74cb"
+      },
+      "path": "components/ax-cgroup/src/lib.rs",
+      "symbol": "check_delegation",
+      "status": "verified",
+      "parser": "rust-declaration-v1",
+      "blob_oid": "2239d9b330e5d5957dfe9a41c0cbb909a63cb517",
+      "symbol_start_line": 531,
+      "symbol_end_line": 531,
+      "snippet_hash": "8cfc52fa97b5c8ad7000243568d6b6258fdf499680e34af7de291dcef903aeb4"
+    },
+    {
+      "anchor_id": "anchor.starryos.delegation-test",
+      "project_ref": {
+        "repo": "https://github.com/rcore-os/tgoskits",
+        "commit": "fc80b868fb3640efe8997994de42c1aee8fd74cb"
+      },
+      "path": "components/ax-cgroup/src/tests/delegation.rs",
+      "symbol": null,
+      "status": "verified",
+      "parser": "git-path",
+      "blob_oid": "c8907d75f23f8d3a607db13c7097d92d80cc1f00"
+    },
+    {
       "anchor_id": "anchor.starryos.exit-process",
       "project_ref": {
         "repo": "https://github.com/rcore-os/tgoskits",
@@ -158,6 +215,36 @@
       "symbol_start_line": 602,
       "symbol_end_line": 602,
       "snippet_hash": "d417742639e8297157d6664de8ffd93bda706876ea0037c664d15b04f4f35aff"
+    },
+    {
+      "anchor_id": "anchor.starryos.kernel-cgroup-init",
+      "project_ref": {
+        "repo": "https://github.com/rcore-os/tgoskits",
+        "commit": "fc80b868fb3640efe8997994de42c1aee8fd74cb"
+      },
+      "path": "os/StarryOS/kernel/src/cgroup/mod.rs",
+      "symbol": "init",
+      "status": "verified",
+      "parser": "rust-declaration-v1",
+      "blob_oid": "22336e8ec62665dbcd545d4d3d3d5c0ac3d7a54d",
+      "symbol_start_line": 69,
+      "symbol_end_line": 69,
+      "snippet_hash": "3f36dbab13afb770486aa05f0f4c543444f54d82aeaf2b5ccaac53a581c17ce2"
+    },
+    {
+      "anchor_id": "anchor.starryos.kernel-provider",
+      "project_ref": {
+        "repo": "https://github.com/rcore-os/tgoskits",
+        "commit": "fc80b868fb3640efe8997994de42c1aee8fd74cb"
+      },
+      "path": "os/StarryOS/kernel/src/cgroup/mod.rs",
+      "symbol": "KernelCgroupProvider",
+      "status": "verified",
+      "parser": "rust-declaration-v1",
+      "blob_oid": "22336e8ec62665dbcd545d4d3d3d5c0ac3d7a54d",
+      "symbol_start_line": 20,
+      "symbol_end_line": 20,
+      "snippet_hash": "9c44243558b3d34ae52bd6ad4d061873934b32a0fb2a2c66d807d166756cbeea"
     },
     {
       "anchor_id": "anchor.starryos.kernel.cgroup-cpu-rs",
@@ -292,6 +379,36 @@
       "blob_oid": "5de13b8b27e563dd9ec9bfe3021d47cf744c9e0c"
     },
     {
+      "anchor_id": "anchor.starryos.provider-cell-get",
+      "project_ref": {
+        "repo": "https://github.com/rcore-os/tgoskits",
+        "commit": "fc80b868fb3640efe8997994de42c1aee8fd74cb"
+      },
+      "path": "components/ax-cgroup/src/provider.rs",
+      "symbol": "ProviderCell::get",
+      "status": "verified",
+      "parser": "rust-declaration-v1",
+      "blob_oid": "7181ff3e07004b9c43ba6abaac26f0fe20d1ca7b",
+      "symbol_start_line": 77,
+      "symbol_end_line": 77,
+      "snippet_hash": "f4ef3b37fcb3f471522af006da39b424253c097ae26a175961b636a693b2507e"
+    },
+    {
+      "anchor_id": "anchor.starryos.provider-cell-set",
+      "project_ref": {
+        "repo": "https://github.com/rcore-os/tgoskits",
+        "commit": "fc80b868fb3640efe8997994de42c1aee8fd74cb"
+      },
+      "path": "components/ax-cgroup/src/provider.rs",
+      "symbol": "ProviderCell::set",
+      "status": "verified",
+      "parser": "rust-declaration-v1",
+      "blob_oid": "7181ff3e07004b9c43ba6abaac26f0fe20d1ca7b",
+      "symbol_start_line": 71,
+      "symbol_end_line": 71,
+      "snippet_hash": "c29f7c65ac8f47be5d27cdb78098dc564fd99713078a2e64ff86cab1c09ce86d"
+    },
+    {
       "anchor_id": "anchor.starryos.read-attr-at",
       "project_ref": {
         "repo": "https://github.com/rcore-os/tgoskits",
@@ -320,6 +437,36 @@
       "symbol_start_line": 84,
       "symbol_end_line": 84,
       "snippet_hash": "6743839554b8f7e45d160d3790f0c0bde3262479b9aa531fd24c17aa610048b6"
+    },
+    {
+      "anchor_id": "anchor.starryos.register-provider",
+      "project_ref": {
+        "repo": "https://github.com/rcore-os/tgoskits",
+        "commit": "fc80b868fb3640efe8997994de42c1aee8fd74cb"
+      },
+      "path": "components/ax-cgroup/src/lib.rs",
+      "symbol": "register_provider",
+      "status": "verified",
+      "parser": "rust-declaration-v1",
+      "blob_oid": "2239d9b330e5d5957dfe9a41c0cbb909a63cb517",
+      "symbol_start_line": 89,
+      "symbol_end_line": 89,
+      "snippet_hash": "3ae66aec3f2dd778d16b01b6cb6ffb5b255523911792a5401b2d675cc98077d8"
+    },
+    {
+      "anchor_id": "anchor.starryos.set-delegated-to",
+      "project_ref": {
+        "repo": "https://github.com/rcore-os/tgoskits",
+        "commit": "fc80b868fb3640efe8997994de42c1aee8fd74cb"
+      },
+      "path": "components/ax-cgroup/src/lib.rs",
+      "symbol": "set_delegated_to",
+      "status": "verified",
+      "parser": "rust-declaration-v1",
+      "blob_oid": "2239d9b330e5d5957dfe9a41c0cbb909a63cb517",
+      "symbol_start_line": 541,
+      "symbol_end_line": 541,
+      "snippet_hash": "e959c46c40815b4fcb59cc40aeed3af694acffcbdaa7b54a30eb276e29cf9f42"
     },
     {
       "anchor_id": "anchor.starryos.sys-mount",
@@ -362,6 +509,21 @@
       "symbol_start_line": 328,
       "symbol_end_line": 328,
       "snippet_hash": "edf7ad4d86d0caf7102b9761563fd0f4a8f9ca0467fa15c53523400ed0d38701"
+    },
+    {
+      "anchor_id": "anchor.starryos.write-subtree-control",
+      "project_ref": {
+        "repo": "https://github.com/rcore-os/tgoskits",
+        "commit": "fc80b868fb3640efe8997994de42c1aee8fd74cb"
+      },
+      "path": "components/ax-cgroup/src/lib.rs",
+      "symbol": "write_subtree_control",
+      "status": "verified",
+      "parser": "rust-declaration-v1",
+      "blob_oid": "2239d9b330e5d5957dfe9a41c0cbb909a63cb517",
+      "symbol_start_line": 218,
+      "symbol_end_line": 218,
+      "snippet_hash": "41e557d9b8dd64c7729aeff247304a4c3a462930fae0c44db77bd2409eea40ce"
     },
     {
       "anchor_id": "anchor.starryos.xtask-main",

@@ -21,3 +21,5 @@ content_hash: ""
 `cgroup.controllers` 描述可用控制器，`cgroup.subtree_control` 决定向子层级启用哪些控制器；no-internal-process 等规则约束域控制器如何委派。
 
 Linux 文档是 canonical 语义来源，StarryOS 固定源码是项目 binding。每条规则都应记录 `present/partial/absent/conflicting/unresolved`、对应代码和验证方法，不能用规范默认补齐实现空白。
+
+固定 commit 已在 `write_subtree_control` 中检查 root/精确 delegated uid，并有宿主正负测试；但 `set_delegated_to` 只有声明和测试调用，没有生产 VFS/chown 调用者。当前状态必须标为 `partial`：权限判定存在，完整的文件所有权委派入口尚未形成证据闭环。
