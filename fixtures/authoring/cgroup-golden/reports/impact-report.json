@@ -147,6 +147,27 @@
       "invalidates": []
     },
     {
+      "id": "behavior.starryos.cgroup.core-hierarchy-lifecycle",
+      "kind": "behavior",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "behavior.starryos.cgroup.membership-transaction",
+      "kind": "behavior",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "behavior.starryos.cgroup.controller-registry-dispatch",
+      "kind": "behavior",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
       "id": "slice.starryos.cgroup.mount-s0",
       "kind": "slice",
       "classification": "non_semantic",
@@ -162,6 +183,27 @@
     },
     {
       "id": "slice.starryos.cgroup.pids-s3",
+      "kind": "slice",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "slice.starryos.cgroup.core-hierarchy-s1",
+      "kind": "slice",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "slice.starryos.cgroup.membership-transaction-s1",
+      "kind": "slice",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "slice.starryos.cgroup.controller-registry-s1",
       "kind": "slice",
       "classification": "non_semantic",
       "reason": "对象 hash 未变化，继承旧运行结果。",

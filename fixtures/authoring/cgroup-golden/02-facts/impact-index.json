@@ -18,9 +18,9 @@
       "content_hash": "9a37518ee9ff6e2946628c5c4c158024564b6d4ee578096c01568a3c592ad805"
     },
     {
-      "id": "anchor.starryos.cgroup.controller-rs",
+      "id": "anchor.starryos.cgroup-remove-child",
       "kind": "anchor",
-      "content_hash": "9d9578ee75c3e75c66c5aeb4d32020f9b01c8694c4e3b58a5802054c715903be"
+      "content_hash": "0a9ffe10fcfba2a809d72b3d4c4a4fb0e95f7c64c35d658e90ba3973a2966115"
     },
     {
       "id": "anchor.starryos.cgroup.core-rs",
@@ -43,14 +43,19 @@
       "content_hash": "f5b89aeb729fcbad36a715cd51f805426a8187e96ca8271685ba9c77ea56d991"
     },
     {
-      "id": "anchor.starryos.cgroup.membership-lib",
-      "kind": "anchor",
-      "content_hash": "3ee5657c423b97714bd0d015fa2373e8396a0ce6b3415a107ed3a97180c7afcf"
-    },
-    {
       "id": "anchor.starryos.cgroup.memory-rs",
       "kind": "anchor",
       "content_hash": "f2e142c42d149e092a0c71d0b9d1f086b19a8534c93554191e1c528503c666c7"
+    },
+    {
+      "id": "anchor.starryos.exit-process",
+      "kind": "anchor",
+      "content_hash": "9f012ce8ff092ae82def3eee8c416a28903fcb998d6de5c118372c51ad8eeb89"
+    },
+    {
+      "id": "anchor.starryos.fork-guard-commit",
+      "kind": "anchor",
+      "content_hash": "00332999038c92bf39d1bd3c44d9b0d16fd916277d46c26713ec693a093ceff4"
     },
     {
       "id": "anchor.starryos.kernel.cgroup-cpu-rs",
@@ -63,9 +68,19 @@
       "content_hash": "709a8e4c7bb5aff33f44b54573aff41998b661b3a1689bdc1eb98c3d3af1a5f5"
     },
     {
+      "id": "anchor.starryos.migrate-process",
+      "kind": "anchor",
+      "content_hash": "05881aee7ce0e1a03fe9e276c977aa19638f12f461853685c87bef2536f2f121"
+    },
+    {
       "id": "anchor.starryos.new-cgroup2fs",
       "kind": "anchor",
       "content_hash": "b6143ebfd25a7228d55f6469e6ac66eb7412c7a1d5f10d5f2a926efaa59cad6c"
+    },
+    {
+      "id": "anchor.starryos.parse-attr-name",
+      "kind": "anchor",
+      "content_hash": "6d6820d08febd52c55b2c2d8355e3d2c067ed538935dee541b011f3ae46687ee"
     },
     {
       "id": "anchor.starryos.pids-try-charge",
@@ -93,6 +108,16 @@
       "content_hash": "0460024879304febbbd14c4ae892d12c2a16fe7be61a7d9e31067e046418257b"
     },
     {
+      "id": "anchor.starryos.read-attr-at",
+      "kind": "anchor",
+      "content_hash": "c58cb214fab6414768716dfeaec46de7ffebccab78713fe1052c4b6040dc1940"
+    },
+    {
+      "id": "anchor.starryos.register-factory",
+      "kind": "anchor",
+      "content_hash": "1efda003b807fce1ac5b8f4c39b23a43aaad263a1c9ff2cd58468841a669ed14"
+    },
+    {
       "id": "anchor.starryos.sys-mount",
       "kind": "anchor",
       "content_hash": "7b34229a6c8ff2ab70c042af162f1524b7496a0ac0f006bfced7c19f6c22a966"
@@ -103,9 +128,29 @@
       "content_hash": "d083dfe8721a2160eeff411e4c380b619cbf5619e0304a33b6f2b8b3be77e6ff"
     },
     {
+      "id": "anchor.starryos.write-attr",
+      "kind": "anchor",
+      "content_hash": "8efee95f5d46fe04fcdb463764de6137926c107b49d7ed321a9b7fd514619e8b"
+    },
+    {
       "id": "anchor.starryos.xtask-main",
       "kind": "anchor",
       "content_hash": "8f105bad823c2e6f519dd631caa0a6a9f819a460cbd5897a152370ee9fdccaae"
+    },
+    {
+      "id": "behavior.starryos.cgroup.controller-registry-dispatch",
+      "kind": "behavior",
+      "content_hash": "b80269da5326ddbe226842bae680bd2c13a36b68a8da757f4e9266d51b49662a"
+    },
+    {
+      "id": "behavior.starryos.cgroup.core-hierarchy-lifecycle",
+      "kind": "behavior",
+      "content_hash": "886569df06a24379dc612f6b821abefd96635f6740ea49a1c5475a859ef5dd24"
+    },
+    {
+      "id": "behavior.starryos.cgroup.membership-transaction",
+      "kind": "behavior",
+      "content_hash": "a9931d66ea6394dcc3ffe9af869b823abad3b93196a65af4dee274e973eedfb8"
     },
     {
       "id": "behavior.starryos.cgroup.mount-observe",
@@ -120,7 +165,7 @@
     {
       "id": "coverage.starryos.cgroup",
       "kind": "coverage",
-      "content_hash": "ed233840e553f53e29f62e6454114632286068f56b9723af21994a458913078f"
+      "content_hash": "b2b12439db2c83b7b0f5242a7eef4008c561eba5cd51a0ddd2cb3d3aebb92cf1"
     },
     {
       "id": "exec.starryos.cgroup.mount-s0",
@@ -145,12 +190,12 @@
     {
       "id": "fact.starryos.cgroup.controller-framework",
       "kind": "fact",
-      "content_hash": "1c7ad3036bc835f2acce4e13a8a65e60e5d5ab395f0e7957a479103ea79aeb67"
+      "content_hash": "43d600f0224d0c55235bf979696b6fdff2b88fce759d87c1bcf913bdd755e8a6"
     },
     {
       "id": "fact.starryos.cgroup.core-layout",
       "kind": "fact",
-      "content_hash": "3b6cf404a319723ecf9cc010c664cca6c8e4195f3c0fdb34ccfa53f5e39de5c3"
+      "content_hash": "867bfe27be2b70082fc39f332232c662184de2aa719067e0d86920f050e36557"
     },
     {
       "id": "fact.starryos.cgroup.cpu-files",
@@ -175,7 +220,7 @@
     {
       "id": "fact.starryos.cgroup.membership",
       "kind": "fact",
-      "content_hash": "f227186f39e7447161c31ebc9f4dc3016e569d944cd1e5432dec5107faf594bf"
+      "content_hash": "b9d12d4ac28715a3c854276d602e7686c52d396d03373fc0d67a3b01c90ac9ab"
     },
     {
       "id": "fact.starryos.cgroup.memory-file",
@@ -190,7 +235,7 @@
     {
       "id": "fact.starryos.cgroup.pids-charge",
       "kind": "fact",
-      "content_hash": "82b9eccb7415f83ac22a34a9780f6b6f2308a8074737bae3e0b106eedee6261d"
+      "content_hash": "fe9157d68e215a6b49159af6560c11029ad360dbfb5d06b526c3fc66041c9b65"
     },
     {
       "id": "fact.starryos.platform.process",
@@ -211,6 +256,21 @@
       "id": "fact.starryos.platform.vfs",
       "kind": "fact",
       "content_hash": "fac2798d7f18a626de31fb9fa3b21065031680001e9a55be9d4833516ed7dedc"
+    },
+    {
+      "id": "slice.starryos.cgroup.controller-registry-s1",
+      "kind": "slice",
+      "content_hash": "c0dad6d155c5b4868450b9ba663c3e767d399dd43eab3473099b8cfe725a608e"
+    },
+    {
+      "id": "slice.starryos.cgroup.core-hierarchy-s1",
+      "kind": "slice",
+      "content_hash": "013a947a68963a18caf84141f3535149e807ae59a1d9add10f64c564e31980bb"
+    },
+    {
+      "id": "slice.starryos.cgroup.membership-transaction-s1",
+      "kind": "slice",
+      "content_hash": "2b474d6685515be11e8b3d47044240794c76decce0e30adc1977efe4a457a863"
     },
     {
       "id": "slice.starryos.cgroup.mount-s0",
@@ -234,6 +294,81 @@
     }
   ],
   "edges": [
+    {
+      "from": "behavior.starryos.cgroup.controller-registry-dispatch",
+      "to": "anchor.starryos.parse-attr-name",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.controller-registry-dispatch",
+      "to": "anchor.starryos.read-attr-at",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.controller-registry-dispatch",
+      "to": "anchor.starryos.register-factory",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.controller-registry-dispatch",
+      "to": "anchor.starryos.write-attr",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.controller-registry-dispatch",
+      "to": "fact.starryos.cgroup.controller-framework",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.controller-registry-dispatch",
+      "to": "fact.starryos.cgroup.core-layout",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.core-hierarchy-lifecycle",
+      "to": "anchor.starryos.cgroup-remove-child",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.core-hierarchy-lifecycle",
+      "to": "anchor.starryos.cgroup.core-rs",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.core-hierarchy-lifecycle",
+      "to": "fact.starryos.cgroup.core-layout",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.membership-transaction",
+      "to": "anchor.starryos.begin-fork",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.membership-transaction",
+      "to": "anchor.starryos.exit-process",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.membership-transaction",
+      "to": "anchor.starryos.fork-guard-commit",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.membership-transaction",
+      "to": "anchor.starryos.migrate-process",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.membership-transaction",
+      "to": "fact.starryos.cgroup.membership",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.membership-transaction",
+      "to": "fact.starryos.cgroup.pids-charge",
+      "relation": "references"
+    },
     {
       "from": "behavior.starryos.cgroup.mount-observe",
       "to": "anchor.starryos.new-cgroup2fs",
@@ -273,6 +408,21 @@
       "from": "behavior.starryos.cgroup.pids-fork-exit",
       "to": "fact.starryos.cgroup.pids-charge",
       "relation": "references"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "behavior.starryos.cgroup.controller-registry-dispatch",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "behavior.starryos.cgroup.core-hierarchy-lifecycle",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "behavior.starryos.cgroup.membership-transaction",
+      "relation": "projection"
     },
     {
       "from": "coverage.starryos.cgroup",
@@ -406,13 +556,33 @@
     },
     {
       "from": "fact.starryos.cgroup.controller-framework",
-      "to": "anchor.starryos.cgroup.controller-rs",
+      "to": "anchor.starryos.parse-attr-name",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.controller-framework",
+      "to": "anchor.starryos.read-attr-at",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.controller-framework",
+      "to": "anchor.starryos.register-factory",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.controller-framework",
+      "to": "anchor.starryos.write-attr",
       "relation": "anchors"
     },
     {
       "from": "fact.starryos.cgroup.controller-framework",
       "to": "source-contract.starryos.cgroup",
       "relation": "references"
+    },
+    {
+      "from": "fact.starryos.cgroup.core-layout",
+      "to": "anchor.starryos.cgroup-remove-child",
+      "relation": "anchors"
     },
     {
       "from": "fact.starryos.cgroup.core-layout",
@@ -471,7 +641,17 @@
     },
     {
       "from": "fact.starryos.cgroup.membership",
-      "to": "anchor.starryos.cgroup.membership-lib",
+      "to": "anchor.starryos.exit-process",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.membership",
+      "to": "anchor.starryos.fork-guard-commit",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.membership",
+      "to": "anchor.starryos.migrate-process",
       "relation": "anchors"
     },
     {
@@ -560,6 +740,96 @@
       "relation": "references"
     },
     {
+      "from": "slice.starryos.cgroup.controller-registry-s1",
+      "to": "anchor.starryos.parse-attr-name",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.controller-registry-s1",
+      "to": "anchor.starryos.read-attr-at",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.controller-registry-s1",
+      "to": "anchor.starryos.register-factory",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.controller-registry-s1",
+      "to": "anchor.starryos.write-attr",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.controller-registry-s1",
+      "to": "behavior.starryos.cgroup.controller-registry-dispatch",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.controller-registry-s1",
+      "to": "fact.starryos.cgroup.controller-framework",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.controller-registry-s1",
+      "to": "fact.starryos.cgroup.core-layout",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.core-hierarchy-s1",
+      "to": "anchor.starryos.cgroup-remove-child",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.core-hierarchy-s1",
+      "to": "anchor.starryos.cgroup.core-rs",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.core-hierarchy-s1",
+      "to": "behavior.starryos.cgroup.core-hierarchy-lifecycle",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.core-hierarchy-s1",
+      "to": "fact.starryos.cgroup.core-layout",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.membership-transaction-s1",
+      "to": "anchor.starryos.begin-fork",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.membership-transaction-s1",
+      "to": "anchor.starryos.exit-process",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.membership-transaction-s1",
+      "to": "anchor.starryos.fork-guard-commit",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.membership-transaction-s1",
+      "to": "anchor.starryos.migrate-process",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.membership-transaction-s1",
+      "to": "behavior.starryos.cgroup.membership-transaction",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.membership-transaction-s1",
+      "to": "fact.starryos.cgroup.membership",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.membership-transaction-s1",
+      "to": "fact.starryos.cgroup.pids-charge",
+      "relation": "input"
+    },
+    {
       "from": "slice.starryos.cgroup.mount-s0",
       "to": "behavior.starryos.cgroup.mount-observe",
       "relation": "input"
@@ -591,6 +861,80 @@
     }
   ],
   "reverse_dependencies": {
+    "anchor.starryos.parse-attr-name": [
+      "behavior.starryos.cgroup.controller-registry-dispatch",
+      "fact.starryos.cgroup.controller-framework",
+      "slice.starryos.cgroup.controller-registry-s1"
+    ],
+    "anchor.starryos.read-attr-at": [
+      "behavior.starryos.cgroup.controller-registry-dispatch",
+      "fact.starryos.cgroup.controller-framework",
+      "slice.starryos.cgroup.controller-registry-s1"
+    ],
+    "anchor.starryos.register-factory": [
+      "behavior.starryos.cgroup.controller-registry-dispatch",
+      "fact.starryos.cgroup.controller-framework",
+      "slice.starryos.cgroup.controller-registry-s1"
+    ],
+    "anchor.starryos.write-attr": [
+      "behavior.starryos.cgroup.controller-registry-dispatch",
+      "fact.starryos.cgroup.controller-framework",
+      "slice.starryos.cgroup.controller-registry-s1"
+    ],
+    "fact.starryos.cgroup.controller-framework": [
+      "behavior.starryos.cgroup.controller-registry-dispatch",
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.controller-registry-s1"
+    ],
+    "fact.starryos.cgroup.core-layout": [
+      "behavior.starryos.cgroup.controller-registry-dispatch",
+      "behavior.starryos.cgroup.core-hierarchy-lifecycle",
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.controller-registry-s1",
+      "slice.starryos.cgroup.core-hierarchy-s1"
+    ],
+    "anchor.starryos.cgroup-remove-child": [
+      "behavior.starryos.cgroup.core-hierarchy-lifecycle",
+      "fact.starryos.cgroup.core-layout",
+      "slice.starryos.cgroup.core-hierarchy-s1"
+    ],
+    "anchor.starryos.cgroup.core-rs": [
+      "behavior.starryos.cgroup.core-hierarchy-lifecycle",
+      "fact.starryos.cgroup.core-layout",
+      "slice.starryos.cgroup.core-hierarchy-s1"
+    ],
+    "anchor.starryos.begin-fork": [
+      "behavior.starryos.cgroup.membership-transaction",
+      "behavior.starryos.cgroup.pids-fork-exit",
+      "fact.starryos.cgroup.pids-charge",
+      "slice.starryos.cgroup.membership-transaction-s1"
+    ],
+    "anchor.starryos.exit-process": [
+      "behavior.starryos.cgroup.membership-transaction",
+      "fact.starryos.cgroup.membership",
+      "slice.starryos.cgroup.membership-transaction-s1"
+    ],
+    "anchor.starryos.fork-guard-commit": [
+      "behavior.starryos.cgroup.membership-transaction",
+      "fact.starryos.cgroup.membership",
+      "slice.starryos.cgroup.membership-transaction-s1"
+    ],
+    "anchor.starryos.migrate-process": [
+      "behavior.starryos.cgroup.membership-transaction",
+      "fact.starryos.cgroup.membership",
+      "slice.starryos.cgroup.membership-transaction-s1"
+    ],
+    "fact.starryos.cgroup.membership": [
+      "behavior.starryos.cgroup.membership-transaction",
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.membership-transaction-s1"
+    ],
+    "fact.starryos.cgroup.pids-charge": [
+      "behavior.starryos.cgroup.membership-transaction",
+      "behavior.starryos.cgroup.pids-fork-exit",
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.membership-transaction-s1"
+    ],
     "anchor.starryos.new-cgroup2fs": [
       "behavior.starryos.cgroup.mount-observe",
       "fact.starryos.cgroup.mount-entry"
@@ -607,10 +951,6 @@
       "behavior.starryos.cgroup.mount-observe",
       "coverage.starryos.cgroup"
     ],
-    "anchor.starryos.begin-fork": [
-      "behavior.starryos.cgroup.pids-fork-exit",
-      "fact.starryos.cgroup.pids-charge"
-    ],
     "anchor.starryos.pids-try-charge": [
       "behavior.starryos.cgroup.pids-fork-exit",
       "fact.starryos.cgroup.pids-charge"
@@ -619,9 +959,17 @@
       "behavior.starryos.cgroup.pids-fork-exit",
       "slice.starryos.cgroup.pids-s2"
     ],
-    "fact.starryos.cgroup.pids-charge": [
-      "behavior.starryos.cgroup.pids-fork-exit",
-      "coverage.starryos.cgroup"
+    "behavior.starryos.cgroup.controller-registry-dispatch": [
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.controller-registry-s1"
+    ],
+    "behavior.starryos.cgroup.core-hierarchy-lifecycle": [
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.core-hierarchy-s1"
+    ],
+    "behavior.starryos.cgroup.membership-transaction": [
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.membership-transaction-s1"
     ],
     "behavior.starryos.cgroup.mount-observe": [
       "coverage.starryos.cgroup",
@@ -635,12 +983,6 @@
     "fact.starryos.cgroup.build-tests": [
       "coverage.starryos.cgroup"
     ],
-    "fact.starryos.cgroup.controller-framework": [
-      "coverage.starryos.cgroup"
-    ],
-    "fact.starryos.cgroup.core-layout": [
-      "coverage.starryos.cgroup"
-    ],
     "fact.starryos.cgroup.cpu-files": [
       "coverage.starryos.cgroup"
     ],
@@ -651,9 +993,6 @@
       "coverage.starryos.cgroup"
     ],
     "fact.starryos.cgroup.kernel-integration": [
-      "coverage.starryos.cgroup"
-    ],
-    "fact.starryos.cgroup.membership": [
       "coverage.starryos.cgroup"
     ],
     "fact.starryos.cgroup.memory-file": [
@@ -710,12 +1049,6 @@
     "anchor.starryos.xtask-main": [
       "fact.starryos.cgroup.build-tests"
     ],
-    "anchor.starryos.cgroup.controller-rs": [
-      "fact.starryos.cgroup.controller-framework"
-    ],
-    "anchor.starryos.cgroup.core-rs": [
-      "fact.starryos.cgroup.core-layout"
-    ],
     "anchor.starryos.cgroup.cpu-rs": [
       "fact.starryos.cgroup.cpu-files"
     ],
@@ -730,9 +1063,6 @@
     ],
     "anchor.starryos.kernel.cgroup-mod-rs": [
       "fact.starryos.cgroup.kernel-integration"
-    ],
-    "anchor.starryos.cgroup.membership-lib": [
-      "fact.starryos.cgroup.membership"
     ],
     "anchor.starryos.cgroup.memory-rs": [
       "fact.starryos.cgroup.memory-file"

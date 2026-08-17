@@ -9,6 +9,9 @@ input_refs:
   - source-contract.starryos.cgroup
   - fact.starryos.cgroup.mount-entry
   - fact.starryos.cgroup.pids-charge
+  - fact.starryos.cgroup.core-layout
+  - fact.starryos.cgroup.membership
+  - fact.starryos.cgroup.controller-framework
 claims:
   - id: claim.starryos.cgroup.coverage-plan
     statement: 完整 cgroup 覆盖必须包含 core、接口、成员、控制器、内核连接点和工程验证
@@ -24,7 +27,7 @@ claims:
 created_by:
   actor_type: agent
   actor_id: codex
-content_hash: ed233840e553f53e29f62e6454114632286068f56b9723af21994a458913078f
+content_hash: b2b12439db2c83b7b0f5242a7eef4008c561eba5cd51a0ddd2cb3d3aebb92cf1
 created_at: 2026-07-27T00:00:00+08:00
 release_level: author_preview
 required_unit_ids:
@@ -47,10 +50,12 @@ units:
     title: core 与层级
     required: true
     critical: true
-    status: source_verified
+    status: teachable
     implementation_state: present
     source_refs:
       - fact.starryos.cgroup.core-layout
+    behavior_refs:
+      - behavior.starryos.cgroup.core-hierarchy-lifecycle
   - id: coverage.cgroup.cgroupfs
     title: cgroupfs 与用户接口
     required: true
@@ -65,18 +70,22 @@ units:
     title: 成员迁移与生命周期
     required: true
     critical: true
-    status: source_verified
+    status: teachable
     implementation_state: present
     source_refs:
       - fact.starryos.cgroup.membership
+    behavior_refs:
+      - behavior.starryos.cgroup.membership-transaction
   - id: coverage.cgroup.controller-framework
     title: controller 框架
     required: true
     critical: true
-    status: source_verified
+    status: teachable
     implementation_state: present
     source_refs:
       - fact.starryos.cgroup.controller-framework
+    behavior_refs:
+      - behavior.starryos.cgroup.controller-registry-dispatch
   - id: coverage.cgroup.pids
     title: pids controller
     required: true
