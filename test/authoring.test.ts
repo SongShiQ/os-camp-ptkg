@@ -19,6 +19,8 @@ import {
   removeDisposableWorkerRoot,
   resolveWorkerBase,
   runtimeShellCommand,
+  runtimeStagingCleanupCommand,
+  runtimeStagingCleanupDockerArgs,
   runtimeTargetMountArgs,
   seedRuntimeWritableAssets,
   verifyRuntimeWorkspaceOverlay,
@@ -309,6 +311,35 @@ describe('P2 Worker 安全合同', () => {
     assert.doesNotMatch(fault, /runtime-ro/);
     assert.match(baseline, /cp -a \/runtime\/workspace\/\. \/workspace\//);
     assert.match(fault, /cp -a \/runtime\/workspace\/\. \/workspace\//);
+  });
+
+  it('QEMU staging 清理只触及 runtime target 下的 qemu-cases runs', () => {
+    const command = runtimeStagingCleanupCommand();
+    assert.match(command, /find \/runtime\/target -type d -name runs/);
+    assert.match(command, /-path '\*\/qemu-cases\/\*'/);
+    assert.match(command, /-exec rm -rf -- \{\} \+/);
+    assert.doesNotMatch(command, /\/workspace|\/runtime\/cargo|\/runtime\/images/);
+
+    const shell = runtimeShellCommand('cargo test', true);
+    assert.match(shell, /trap .*EXIT/);
+    assert.match(shell, /trap .*HUP INT TERM/);
+    assert.match(shell, /ptkg_cleanup_runtime_staging/);
+  });
+
+  it('超时兜底清理容器禁网且只挂载可写 target', () => {
+    const args = runtimeStagingCleanupDockerArgs(
+      'example.invalid/ptkg@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      'D:/runtime-copy/target',
+    );
+    assert.equal(args[0], 'run');
+    assert.ok(args.includes('--network') && args[args.indexOf('--network') + 1] === 'none');
+    assert.ok(args.includes('--read-only'));
+    assert.ok(args.includes('--cap-drop') && args[args.indexOf('--cap-drop') + 1] === 'ALL');
+    assert.deepEqual(
+      args.filter((value) => value.startsWith('type=bind,')),
+      ['type=bind,src=D:/runtime-copy/target,dst=/runtime/target'],
+    );
+    assert.equal(args.at(-1), runtimeStagingCleanupCommand());
   });
 
   it('runtime target 缓存挂载到 axbuild 实际使用的 workspace 目录', () => {
@@ -633,6 +664,7 @@ describe('P2 Worker 安全合同', () => {
       assert.equal(serialized.includes('.ptkg'), false);
       assert.equal(serialized.includes(source.repository), false);
       assert.equal(serialized.includes(cacheDir), false);
+      assert.equal(serialized.includes(workerBase), false);
 
       await executeAuthoringSlice(root, options);
       const stored = (await readFile(path.join(root, '06-execution', 'execution-results.jsonl'), 'utf8'))

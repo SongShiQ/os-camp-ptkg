@@ -21,6 +21,8 @@ const IMAGE_DIGEST = /^[^@\s]+@sha256:[0-9a-f]{64}$/;
 const SHA40 = /^[0-9a-f]{40}$/;
 const FAULT_DETECTED_PREFIX = 'PTKG_SEEDED_FAULT_DETECTED:';
 const WORKER_CLEANUP_TIMEOUT_MS = 300_000;
+const RUNTIME_STAGING_CLEANUP_TIMEOUT_MS = 120_000;
+const RUNTIME_STAGING_CLEANUP_SHELL = "if [ -d /runtime/target ]; then find /runtime/target -type d -name runs -path '*/qemu-cases/*' -prune -exec rm -rf -- {} +; fi";
 const WORKER_CLEANUP_SCRIPT = String.raw`
 const { rm } = require('node:fs/promises');
 const target = process.argv[1];
@@ -392,7 +394,39 @@ export function runtimeShellCommand(command: string, initialize: boolean): strin
   // preserves the call contract while preventing an 8+ GB cache copy.
   void initialize;
   const restoreOverlay = 'if [ -d /runtime/workspace ]; then cp -a /runtime/workspace/. /workspace/; fi && ';
-  return `${restoreOverlay}export PATH="/runtime/cargo/bin:$PATH"; ${command}`;
+  const cleanup = runtimeStagingCleanupCommand();
+  return [
+    `ptkg_cleanup_runtime_staging() { ${cleanup}; }`,
+    "trap 'ptkg_exit=$?; trap - EXIT HUP INT TERM; ptkg_cleanup_runtime_staging; exit \"$ptkg_exit\"' EXIT",
+    "trap 'exit 143' HUP INT TERM",
+    `${restoreOverlay}export PATH="/runtime/cargo/bin:$PATH"; ${command}`,
+  ].join('\n');
+}
+
+/**
+ * QEMU rootfs preparation creates Linux symlinks below target descendants
+ * whose path contains qemu-cases and ends in a disposable runs directory.
+ * Windows Node cannot reliably remove those WSL-backed NTFS reparse points, so
+ * the fixed Linux image must remove only these disposable run directories.
+ */
+export function runtimeStagingCleanupCommand(): string {
+  return RUNTIME_STAGING_CLEANUP_SHELL;
+}
+
+/** Fallback cleanup used after the evidence container exits or is force-stopped. */
+export function runtimeStagingCleanupDockerArgs(image: string, runtimeTarget: string): string[] {
+  const user = typeof process.getuid === 'function' && typeof process.getgid === 'function'
+    ? ['--user', `${process.getuid()}:${process.getgid()}`]
+    : [];
+  return [
+    'run', '--rm', '--network', 'none', '--pull', 'never',
+    '--memory', '256m', '--pids-limit', '32',
+    '--read-only', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges',
+    ...user,
+    '--mount', `type=bind,src=${runtimeTarget},dst=/runtime/target`,
+    '--tmpfs', '/tmp:rw,nosuid,nodev,size=16777216',
+    '--entrypoint', 'sh', image, '-lc', runtimeStagingCleanupCommand(),
+  ];
 }
 
 /**
@@ -426,6 +460,7 @@ function dockerArgs(
   memoryMb: number,
   processes: number,
   runtime?: DockerRuntimeMounts,
+  cidFile?: string,
 ): string[] {
   const user = typeof process.getuid === 'function' && typeof process.getgid === 'function'
     ? ['--user', `${process.getuid()}:${process.getgid()}`]
@@ -443,6 +478,7 @@ function dockerArgs(
   const effectiveCommand = runtime ? runtimeShellCommand(command, runtime.initialize) : command;
   return [
     'run', '--rm', '--network', 'none', '--pull', 'never',
+    ...(cidFile ? ['--cidfile', cidFile] : []),
     '--memory', `${memoryMb}m`, '--pids-limit', String(processes),
     '--read-only', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges',
     ...user,
@@ -461,12 +497,14 @@ function runtimePrepareDockerArgs(
   command: string,
   memoryMb: number,
   processes: number,
+  cidFile?: string,
 ): string[] {
   const user = typeof process.getuid === 'function' && typeof process.getgid === 'function'
     ? ['--user', `${process.getuid()}:${process.getgid()}`]
     : [];
   return [
     'run', '--rm', '--network', 'bridge', '--pull', 'never',
+    ...(cidFile ? ['--cidfile', cidFile] : []),
     '--memory', `${memoryMb}m`, '--pids-limit', String(processes),
     '--read-only', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges',
     ...user,
@@ -481,13 +519,57 @@ function runtimePrepareDockerArgs(
 }
 
 function displayedDockerCommand(args: string[]): string {
-  const sanitized = args.map((value) => {
+  const sanitized = args.map((value, index) => {
+    if (args[index - 1] === '--cidfile') return '<worker-cidfile>';
     if (!value.startsWith('type=bind,src=')) return value;
     const destination = value.split(',').find((part) => part.startsWith('dst=')) ?? 'dst=<container-path>';
     const readOnly = value.endsWith(',readonly') ? ',readonly' : '';
     return `type=bind,src=<host-path>,${destination}${readOnly}`;
   });
   return ['docker', ...sanitized].map((value) => /\s/.test(value) ? JSON.stringify(value) : value).join(' ');
+}
+
+async function stopTimedOutContainer(cidFile: string, timedOut: boolean): Promise<ResetStep> {
+  if (!timedOut) return { succeeded: true, log: 'evidence container exited before timeout' };
+  let containerId = '';
+  try {
+    containerId = (await readFile(cidFile, 'utf8')).trim();
+  } catch (error) {
+    return { succeeded: false, log: `timed-out container id unavailable: ${(error as Error).message}` };
+  }
+  if (!/^[0-9a-f]{12,64}$/.test(containerId)) {
+    return { succeeded: false, log: 'timed-out container id was malformed' };
+  }
+  const stopped = await capture('docker', ['rm', '--force', containerId], { timeoutMs: 60_000 });
+  const detail = `${stopped.stderr}\n${stopped.stdout}`.trim();
+  if (stopped.exitCode === 0 || /no such container/i.test(detail)) {
+    return { succeeded: true, log: 'timed-out evidence container is stopped' };
+  }
+  return { succeeded: false, log: `failed to stop timed-out evidence container: ${detail || `exit ${stopped.exitCode}`}` };
+}
+
+async function settleDockerPhase(
+  image: string,
+  cidFile: string,
+  timedOut: boolean,
+  runtimeWorking: string | null,
+): Promise<ResetStep> {
+  const stopped = await stopTimedOutContainer(cidFile, timedOut);
+  if (!stopped.succeeded) return stopped;
+  if (!runtimeWorking) return stopped;
+  const cleanup = await capture(
+    'docker',
+    runtimeStagingCleanupDockerArgs(image, path.join(runtimeWorking, 'target')),
+    { timeoutMs: RUNTIME_STAGING_CLEANUP_TIMEOUT_MS },
+  );
+  const detail = cleanup.stderr.trim() || cleanup.stdout.trim();
+  if (cleanup.timedOut) {
+    return { succeeded: false, log: `runtime staging cleanup timed out after ${RUNTIME_STAGING_CLEANUP_TIMEOUT_MS}ms${detail ? `: ${detail}` : ''}` };
+  }
+  if (cleanup.exitCode !== 0) {
+    return { succeeded: false, log: `runtime staging cleanup failed: ${detail || `exit ${cleanup.exitCode}`}` };
+  }
+  return { succeeded: true, log: `${stopped.log}; runtime QEMU staging directories removed by fixed Linux image` };
 }
 
 async function inspectFixedImage(image: string): Promise<VerifiedImage> {
@@ -656,16 +738,20 @@ export async function prepareAuthoringRuntime(
   let worktree: DisposableWorktree | null = null;
   let commandResult: CommandResult = { exitCode: -1, stdout: '', stderr: '', timedOut: false };
   let setupError = '';
+  let preparationCleanup: ResetStep | null = null;
   try {
     worktree = await createWorktree(snapshot, run.sourceContract.project_ref.commit, resolveWorkerBase(rootDir));
     await mkdir(path.join(worktree.source, 'target'), { recursive: true });
-    const args = runtimePrepareDockerArgs(options.image, worktree.source, assets, options.command, memoryMb, processes);
+    const cidFile = path.join(worktree.root, 'prepare.cid');
+    const args = runtimePrepareDockerArgs(options.image, worktree.source, assets, options.command, memoryMb, processes, cidFile);
     commandResult = await capture('docker', args, { cwd: rootDir, timeoutMs: timeoutSeconds * 1_000 });
+    preparationCleanup = await settleDockerPhase(options.image, cidFile, commandResult.timedOut, assets);
+    if (!preparationCleanup.succeeded) throw new Error(`runtime preparation cleanup failed: ${preparationCleanup.log}`);
   } catch (error) {
     setupError = (error as Error).message;
   }
   const cleanup = await removeWorktree(worktree);
-  const stderr = [commandResult.stderr, setupError ? `[setup]\n${setupError}` : '', cleanup.log]
+  const stderr = [commandResult.stderr, setupError ? `[setup]\n${setupError}` : '', preparationCleanup?.log ?? '', cleanup.log]
     .filter(Boolean)
     .join('\n');
   await Promise.all([
@@ -746,6 +832,8 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
   let fault: CommandResult | null = null;
   let setupError = '';
   let beforeFaultReset: ResetStep | null = null;
+  let baselineRuntimeCleanup: ResetStep | null = null;
+  let faultRuntimeCleanup: ResetStep | null = null;
   let runtimeCache: VerifiedRuntimeCache | null = null;
   let runtimeWorking: string | null = null;
   let runtimeUnchanged = true;
@@ -787,12 +875,20 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
         writableAssets: runtimeWorking,
         initialize: true,
       } : undefined,
+      path.join(worktree.root, 'baseline.cid'),
     );
     commands.push(displayedDockerCommand(baselineArgs));
     baseline = await capture('docker', baselineArgs, { cwd: rootDir, timeoutMs: timeoutSeconds * 1000 });
     stdoutParts.push(`[baseline]\n${baseline.stdout}`);
     stderrParts.push(`[baseline]\n${baseline.stderr}`);
     phases.push({ name: 'baseline', exit_code: baseline.exitCode, timed_out: baseline.timedOut, expected: 'exit 0' });
+    baselineRuntimeCleanup = await settleDockerPhase(
+      options.image,
+      path.join(worktree.root, 'baseline.cid'),
+      baseline.timedOut,
+      runtimeWorking,
+    );
+    if (!baselineRuntimeCleanup.succeeded) throw new Error(`baseline runtime cleanup failed: ${baselineRuntimeCleanup.log}`);
 
     if (baseline.exitCode === 0 && baseline.timedOut === false && options.faultCommand && options.faultRef) {
       beforeFaultReset = await resetWorktree(worktree, run.sourceContract.project_ref.commit, snapshot.tree);
@@ -809,6 +905,7 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
           writableAssets: runtimeWorking,
           initialize: false,
         } : undefined,
+        path.join(worktree.root, 'fault.cid'),
       );
       commands.push(displayedDockerCommand(faultArgs));
       fault = await capture('docker', faultArgs, { cwd: rootDir, timeoutMs: timeoutSeconds * 1000 });
@@ -820,6 +917,13 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
         timed_out: fault.timedOut,
         expected: `non-zero test exit and marker ${FAULT_DETECTED_PREFIX}${options.faultRef}`,
       });
+      faultRuntimeCleanup = await settleDockerPhase(
+        options.image,
+        path.join(worktree.root, 'fault.cid'),
+        fault.timedOut,
+        runtimeWorking,
+      );
+      if (!faultRuntimeCleanup.succeeded) throw new Error(`fault runtime cleanup failed: ${faultRuntimeCleanup.log}`);
     }
     if (runtimeCache) {
       const after = await verifyRuntimeCache(runtimeCache.root, {
@@ -839,6 +943,8 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
   const cleanup = await removeWorktree(worktree);
   const resetEvidence = {
     ...(beforeFaultReset ? { before_fault: beforeFaultReset } : {}),
+    ...(baselineRuntimeCleanup ? { baseline_runtime_staging: baselineRuntimeCleanup } : {}),
+    ...(faultRuntimeCleanup ? { fault_runtime_staging: faultRuntimeCleanup } : {}),
     ...(runtimeCache ? {
       runtime_cache: { root_hash: runtimeCache.manifest.root_hash, unchanged: runtimeUnchanged },
     } : {}),
@@ -854,7 +960,11 @@ export async function executeAuthoringSlice(runDir: string, options: ExecutionOp
   );
   const refs = inheritedClaimRefs(run, slice);
   const evidenceBound = refs.sourceRefs.length + refs.anchorRefs.length > 0;
-  const resetSucceeded = cleanup.succeeded && (!beforeFaultReset || beforeFaultReset.succeeded) && runtimeUnchanged;
+  const resetSucceeded = cleanup.succeeded
+    && (!beforeFaultReset || beforeFaultReset.succeeded)
+    && (!baselineRuntimeCleanup || baselineRuntimeCleanup.succeeded)
+    && (!faultRuntimeCleanup || faultRuntimeCleanup.succeeded)
+    && runtimeUnchanged;
   const succeeded = Boolean(baselinePassed && (!options.faultCommand || faultFailed) && resetSucceeded && !setupError && evidenceBound);
   const resultStatus: 'succeeded' | 'failed' = succeeded ? 'succeeded' : 'failed';
   const stdout = stdoutParts.join('\n');
