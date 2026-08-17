@@ -18,6 +18,6 @@ generated_by:
 content_hash: ""
 ---
 
-memory controller 文件存在只证明状态与接口代码对象存在。资源控制还需要页分配 charge、超限拒绝、释放 uncharge 和失败回滚连接到真实内核生命周期。
+固定 commit 已实现 `try_charge_memory` / `uncharge_memory`：它们沿祖先路径计费，用 `MembershipState.charged_mem` 记录 pid 总量，并在超限、迁移和退出时回滚、转移或释放。宿主测试覆盖了计费对称、超限事件、迁移和层级计费。
 
-验证必须同时观察配置、计数、超限失败和释放后重新可分配。通过宿主 OOM 制造失败既不安全，也不能证明 StarryOS cgroup memory enforcement。
+排除测试目录后的 commit-wide 搜索只找到这两个 API 的声明，没有 StarryOS 页分配或释放路径的生产调用者。因此当前只能证明计费机制 API，不能证明应用内存分配受到限制。验证必须同时观察配置、计数、超限失败和释放后恢复；通过宿主 OOM 制造失败既不安全，也不能补上 allocator 接入证据。

@@ -63,6 +63,16 @@
       "content_hash": "da33f07d821204c75ed8f59b32184f3a79c3e0065b1e772787c0b0ffd1a89840"
     },
     {
+      "id": "anchor.starryos.cpu-write-max",
+      "kind": "anchor",
+      "content_hash": "cde0ca89980d84723f691912ec35e54c6249ae432ee84d33c8ce48eecbb99d25"
+    },
+    {
+      "id": "anchor.starryos.cpuset-logic-test",
+      "kind": "anchor",
+      "content_hash": "eec0406b722ada6dcfb471a8354feccc8e00a9e2eef1747b93864c8374a2e361"
+    },
+    {
       "id": "anchor.starryos.delegation-test",
       "kind": "anchor",
       "content_hash": "24b09cc8c0cdad1cc6ad75886a076280964839af81c06df6a4bbc00c9b289fd5"
@@ -76,6 +86,21 @@
       "id": "anchor.starryos.fork-guard-commit",
       "kind": "anchor",
       "content_hash": "00332999038c92bf39d1bd3c44d9b0d16fd916277d46c26713ec693a093ceff4"
+    },
+    {
+      "id": "anchor.starryos.io-roundtrip-test",
+      "kind": "anchor",
+      "content_hash": "e93755e79eeac9c5e93ac7ae5e02f3764a24d38099054befedba3321b36149b8"
+    },
+    {
+      "id": "anchor.starryos.io-upsert",
+      "kind": "anchor",
+      "content_hash": "a8ad400bcd63361f01a89ad9b2278c9ec9dcd0c9a8280134a10f2b3c1f36e83c"
+    },
+    {
+      "id": "anchor.starryos.kernel-bandwidth-tick",
+      "kind": "anchor",
+      "content_hash": "afa2cad5bcf9458c403b4d69a07b9fadc3bcd2eb1ac5b86de90c400742612319"
     },
     {
       "id": "anchor.starryos.kernel-cgroup-init",
@@ -96,6 +121,11 @@
       "id": "anchor.starryos.kernel.cgroup-mod-rs",
       "kind": "anchor",
       "content_hash": "709a8e4c7bb5aff33f44b54573aff41998b661b3a1689bdc1eb98c3d3af1a5f5"
+    },
+    {
+      "id": "anchor.starryos.memory-charge-test",
+      "kind": "anchor",
+      "content_hash": "97b712092fbb20e96d1e7b322022eb06c7f0595b43333d4b73e2473019ad907e"
     },
     {
       "id": "anchor.starryos.migrate-process",
@@ -153,6 +183,11 @@
       "content_hash": "c58cb214fab6414768716dfeaec46de7ffebccab78713fe1052c4b6040dc1940"
     },
     {
+      "id": "anchor.starryos.recompute-cpuset-effective",
+      "kind": "anchor",
+      "content_hash": "34b7269de7aa51e5b68dd7888a0abfef939e1e8faf2426d292d46974b6b3e793"
+    },
+    {
       "id": "anchor.starryos.register-factory",
       "kind": "anchor",
       "content_hash": "1efda003b807fce1ac5b8f4c39b23a43aaad263a1c9ff2cd58468841a669ed14"
@@ -171,6 +206,31 @@
       "id": "anchor.starryos.sys-mount",
       "kind": "anchor",
       "content_hash": "7b34229a6c8ff2ab70c042af162f1524b7496a0ac0f006bfced7c19f6c22a966"
+    },
+    {
+      "id": "anchor.starryos.task-affinity-api",
+      "kind": "anchor",
+      "content_hash": "839ab19067694c4a4586ec7f0ce01e1a2ae352436333b8f436cc4fc50fcd27d4"
+    },
+    {
+      "id": "anchor.starryos.task-is-throttled",
+      "kind": "anchor",
+      "content_hash": "e8f28e3e1b2b0e568168cd9c26abd773d660adbbc661c0219b5907ae9e5829eb"
+    },
+    {
+      "id": "anchor.starryos.task-set-throttled",
+      "kind": "anchor",
+      "content_hash": "06b144c86d8e0c3bc674dff2ead18c696b1665caeba955e4b6478efc58191309"
+    },
+    {
+      "id": "anchor.starryos.try-charge-memory",
+      "kind": "anchor",
+      "content_hash": "acd3140fba9f09422710f89852d6a9f4cab40cc730deae12ec74e84bffeea3a4"
+    },
+    {
+      "id": "anchor.starryos.uncharge-memory",
+      "kind": "anchor",
+      "content_hash": "e4a15e681adde232e4bdc55212bd8dbe836e4b52f48890d36972d6c38b6f65b4"
     },
     {
       "id": "anchor.starryos.workspace-cargo",
@@ -203,14 +263,39 @@
       "content_hash": "886569df06a24379dc612f6b821abefd96635f6740ea49a1c5475a859ef5dd24"
     },
     {
+      "id": "behavior.starryos.cgroup.cpu-enforcement-boundary",
+      "kind": "behavior",
+      "content_hash": "e5d4f85af63a7b466e8238a9f940e2258e47c5aac55350583abcc164e09f6ef2"
+    },
+    {
+      "id": "behavior.starryos.cgroup.cpuset-propagation-boundary",
+      "kind": "behavior",
+      "content_hash": "89dd802f51d8b800c2077e66733bdbde55025a5665631e39ad7d7b176af0ed70"
+    },
+    {
       "id": "behavior.starryos.cgroup.delegation-write-boundary",
       "kind": "behavior",
       "content_hash": "eca46c8555beda62245b615a62f85dcd025557b4d1995e783dfc3ea6aa41080f"
     },
     {
+      "id": "behavior.starryos.cgroup.io-persistence-boundary",
+      "kind": "behavior",
+      "content_hash": "5a6df1855a3874b8b267bafa2c202b7ded1a34f89205b79bcae2b36a56642036"
+    },
+    {
+      "id": "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "kind": "behavior",
+      "content_hash": "ea33e7cd1b6b5a380f8aa8715ed396c47712f0aa89d35644b09fdc3f2380610f"
+    },
+    {
       "id": "behavior.starryos.cgroup.membership-transaction",
       "kind": "behavior",
       "content_hash": "a9931d66ea6394dcc3ffe9af869b823abad3b93196a65af4dee274e973eedfb8"
+    },
+    {
+      "id": "behavior.starryos.cgroup.memory-charge-boundary",
+      "kind": "behavior",
+      "content_hash": "55fa9e289953d7b534c10082ac36f50c688f8aa8dec4f637dc876bf0eeb66a6a"
     },
     {
       "id": "behavior.starryos.cgroup.mount-observe",
@@ -230,7 +315,7 @@
     {
       "id": "coverage.starryos.cgroup",
       "kind": "coverage",
-      "content_hash": "30a875311f97b55d666bd33499523f6666c21983fa53bcd6309eeaca56e20b58"
+      "content_hash": "8c5482432ee5b534eb0e08698ffd6e4ffb8567a8a9db088a6a7bd8a69ce299cf"
     },
     {
       "id": "exec.starryos.cgroup.mount-s0",
@@ -265,12 +350,12 @@
     {
       "id": "fact.starryos.cgroup.cpu-files",
       "kind": "fact",
-      "content_hash": "e9ed75b58b50c338e86082a0e308df7a9e271e2337788c727e4699bc5c6185ed"
+      "content_hash": "3062680309285376ea0e0980ba1fcddd429f8b750f8af14ed3fe967c7422f073"
     },
     {
       "id": "fact.starryos.cgroup.cpuset-file",
       "kind": "fact",
-      "content_hash": "05a62462c607e712ba7aa8672ca365828dc3ba62e6b57085ec650bc820550aaa"
+      "content_hash": "b56e6c45191cf7877235fff631994599bf1a7d9bac447b9a7d327d8beb6ed438"
     },
     {
       "id": "fact.starryos.cgroup.delegation-boundary",
@@ -280,12 +365,12 @@
     {
       "id": "fact.starryos.cgroup.io-file",
       "kind": "fact",
-      "content_hash": "b2d2adedf05770addf644c0a6ee7ebb85c77a74ee3b19edda5d01de31997be44"
+      "content_hash": "e4573b9d8cedd803c2fcde67f9ed9b559dee2d6f4da08869ee5144bbb5b07c58"
     },
     {
       "id": "fact.starryos.cgroup.kernel-integration",
       "kind": "fact",
-      "content_hash": "aa27d035fdf15015f2ea7489eaf4153f1e2eb92d8ebcfded2674b0d3f456a66b"
+      "content_hash": "a38b775f129ad54fc0cfa826ebf2d6640e2480568d6caf58f85e48128b9ae683"
     },
     {
       "id": "fact.starryos.cgroup.membership",
@@ -295,7 +380,7 @@
     {
       "id": "fact.starryos.cgroup.memory-file",
       "kind": "fact",
-      "content_hash": "5ffcab17ae27371cfc8ea69e291e810dfbb90a76229b82d9f10a72f3c2b803d8"
+      "content_hash": "9c7cebd24a35dcb993171017036b8ca792ea4b8caaa4a05cc14c9a76c2cc7135"
     },
     {
       "id": "fact.starryos.cgroup.mount-entry",
@@ -343,14 +428,39 @@
       "content_hash": "013a947a68963a18caf84141f3535149e807ae59a1d9add10f64c564e31980bb"
     },
     {
+      "id": "slice.starryos.cgroup.cpu-enforcement-boundary-s1",
+      "kind": "slice",
+      "content_hash": "0ee35871b73ee7ed61efc72418347f343b66ed163304c2418ae7f9fe1b90b570"
+    },
+    {
+      "id": "slice.starryos.cgroup.cpuset-propagation-boundary-s1",
+      "kind": "slice",
+      "content_hash": "b0e08150244eb7a01d51f0d3be83451cb2cfab89a6f1379a03533dc63deb9392"
+    },
+    {
       "id": "slice.starryos.cgroup.delegation-boundary-s1",
       "kind": "slice",
       "content_hash": "f70b9f44fcc9c85e7fa651a581fb6a846783297cebfeda19adf1426dad2f75fd"
     },
     {
+      "id": "slice.starryos.cgroup.io-persistence-boundary-s1",
+      "kind": "slice",
+      "content_hash": "ab6d953d5eca4bf78bfc0877c4eace25fe17b2dfc9ede72ae111e3e931e7a7fd"
+    },
+    {
+      "id": "slice.starryos.cgroup.kernel-enforcement-matrix-s1",
+      "kind": "slice",
+      "content_hash": "e9595b605be787257c472d6ec864c83f99ccec71ff138273f0ead72621d28ec1"
+    },
+    {
       "id": "slice.starryos.cgroup.membership-transaction-s1",
       "kind": "slice",
       "content_hash": "2b474d6685515be11e8b3d47044240794c76decce0e30adc1977efe4a457a863"
+    },
+    {
+      "id": "slice.starryos.cgroup.memory-charge-boundary-s1",
+      "kind": "slice",
+      "content_hash": "152d5ee5b2d75230c199b6d37b6f0ae7f787e56d31b1c629388a65dd8152bb36"
     },
     {
       "id": "slice.starryos.cgroup.mount-s0",
@@ -425,6 +535,81 @@
       "relation": "references"
     },
     {
+      "from": "behavior.starryos.cgroup.cpu-enforcement-boundary",
+      "to": "anchor.starryos.cpu-write-max",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.cpu-enforcement-boundary",
+      "to": "anchor.starryos.kernel-bandwidth-tick",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.cpu-enforcement-boundary",
+      "to": "anchor.starryos.kernel-cgroup-init",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.cpu-enforcement-boundary",
+      "to": "anchor.starryos.task-is-throttled",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.cpu-enforcement-boundary",
+      "to": "anchor.starryos.task-set-throttled",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.cpu-enforcement-boundary",
+      "to": "fact.starryos.cgroup.controller-framework",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.cpu-enforcement-boundary",
+      "to": "fact.starryos.cgroup.cpu-files",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.cpu-enforcement-boundary",
+      "to": "fact.starryos.cgroup.kernel-integration",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.cpuset-propagation-boundary",
+      "to": "anchor.starryos.cgroup.cpuset-rs",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.cpuset-propagation-boundary",
+      "to": "anchor.starryos.cpuset-logic-test",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.cpuset-propagation-boundary",
+      "to": "anchor.starryos.recompute-cpuset-effective",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.cpuset-propagation-boundary",
+      "to": "anchor.starryos.task-affinity-api",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.cpuset-propagation-boundary",
+      "to": "fact.starryos.cgroup.controller-framework",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.cpuset-propagation-boundary",
+      "to": "fact.starryos.cgroup.cpuset-file",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.cpuset-propagation-boundary",
+      "to": "fact.starryos.cgroup.kernel-integration",
+      "relation": "references"
+    },
+    {
       "from": "behavior.starryos.cgroup.delegation-write-boundary",
       "to": "anchor.starryos.check-delegation",
       "relation": "anchors"
@@ -460,6 +645,106 @@
       "relation": "references"
     },
     {
+      "from": "behavior.starryos.cgroup.io-persistence-boundary",
+      "to": "anchor.starryos.cgroup.io-rs",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.io-persistence-boundary",
+      "to": "anchor.starryos.io-roundtrip-test",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.io-persistence-boundary",
+      "to": "anchor.starryos.io-upsert",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.io-persistence-boundary",
+      "to": "fact.starryos.cgroup.controller-framework",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.io-persistence-boundary",
+      "to": "fact.starryos.cgroup.io-file",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.io-persistence-boundary",
+      "to": "fact.starryos.cgroup.kernel-integration",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "to": "anchor.starryos.cgroup.io-rs",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "to": "anchor.starryos.kernel-bandwidth-tick",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "to": "anchor.starryos.kernel-cgroup-init",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "to": "anchor.starryos.kernel-provider",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "to": "anchor.starryos.recompute-cpuset-effective",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "to": "anchor.starryos.task-affinity-api",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "to": "anchor.starryos.task-is-throttled",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "to": "anchor.starryos.try-charge-memory",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "to": "fact.starryos.cgroup.cpu-files",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "to": "fact.starryos.cgroup.cpuset-file",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "to": "fact.starryos.cgroup.io-file",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "to": "fact.starryos.cgroup.kernel-integration",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "to": "fact.starryos.cgroup.memory-file",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "to": "fact.starryos.cgroup.pids-charge",
+      "relation": "references"
+    },
+    {
       "from": "behavior.starryos.cgroup.membership-transaction",
       "to": "anchor.starryos.begin-fork",
       "relation": "anchors"
@@ -487,6 +772,41 @@
     {
       "from": "behavior.starryos.cgroup.membership-transaction",
       "to": "fact.starryos.cgroup.pids-charge",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.memory-charge-boundary",
+      "to": "anchor.starryos.cgroup.memory-rs",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.memory-charge-boundary",
+      "to": "anchor.starryos.memory-charge-test",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.memory-charge-boundary",
+      "to": "anchor.starryos.try-charge-memory",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.memory-charge-boundary",
+      "to": "anchor.starryos.uncharge-memory",
+      "relation": "anchors"
+    },
+    {
+      "from": "behavior.starryos.cgroup.memory-charge-boundary",
+      "to": "fact.starryos.cgroup.kernel-integration",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.memory-charge-boundary",
+      "to": "fact.starryos.cgroup.membership",
+      "relation": "references"
+    },
+    {
+      "from": "behavior.starryos.cgroup.memory-charge-boundary",
+      "to": "fact.starryos.cgroup.memory-file",
       "relation": "references"
     },
     {
@@ -571,12 +891,37 @@
     },
     {
       "from": "coverage.starryos.cgroup",
+      "to": "behavior.starryos.cgroup.cpu-enforcement-boundary",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "behavior.starryos.cgroup.cpuset-propagation-boundary",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
       "to": "behavior.starryos.cgroup.delegation-write-boundary",
       "relation": "projection"
     },
     {
       "from": "coverage.starryos.cgroup",
+      "to": "behavior.starryos.cgroup.io-persistence-boundary",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
       "to": "behavior.starryos.cgroup.membership-transaction",
+      "relation": "projection"
+    },
+    {
+      "from": "coverage.starryos.cgroup",
+      "to": "behavior.starryos.cgroup.memory-charge-boundary",
       "relation": "projection"
     },
     {
@@ -771,7 +1116,32 @@
     },
     {
       "from": "fact.starryos.cgroup.cpu-files",
+      "to": "anchor.starryos.cpu-write-max",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.cpu-files",
+      "to": "anchor.starryos.kernel-bandwidth-tick",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.cpu-files",
+      "to": "anchor.starryos.kernel-cgroup-init",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.cpu-files",
       "to": "anchor.starryos.kernel.cgroup-cpu-rs",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.cpu-files",
+      "to": "anchor.starryos.task-is-throttled",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.cpu-files",
+      "to": "anchor.starryos.task-set-throttled",
       "relation": "anchors"
     },
     {
@@ -782,6 +1152,21 @@
     {
       "from": "fact.starryos.cgroup.cpuset-file",
       "to": "anchor.starryos.cgroup.cpuset-rs",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.cpuset-file",
+      "to": "anchor.starryos.cpuset-logic-test",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.cpuset-file",
+      "to": "anchor.starryos.recompute-cpuset-effective",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.cpuset-file",
+      "to": "anchor.starryos.task-affinity-api",
       "relation": "anchors"
     },
     {
@@ -826,12 +1211,62 @@
     },
     {
       "from": "fact.starryos.cgroup.io-file",
+      "to": "anchor.starryos.io-roundtrip-test",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.io-file",
+      "to": "anchor.starryos.io-upsert",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.io-file",
       "to": "source-contract.starryos.cgroup",
       "relation": "references"
     },
     {
       "from": "fact.starryos.cgroup.kernel-integration",
+      "to": "anchor.starryos.cgroup.io-rs",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.kernel-integration",
+      "to": "anchor.starryos.kernel-bandwidth-tick",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.kernel-integration",
+      "to": "anchor.starryos.kernel-cgroup-init",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.kernel-integration",
+      "to": "anchor.starryos.kernel-provider",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.kernel-integration",
       "to": "anchor.starryos.kernel.cgroup-mod-rs",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.kernel-integration",
+      "to": "anchor.starryos.recompute-cpuset-effective",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.kernel-integration",
+      "to": "anchor.starryos.task-affinity-api",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.kernel-integration",
+      "to": "anchor.starryos.task-is-throttled",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.kernel-integration",
+      "to": "anchor.starryos.try-charge-memory",
       "relation": "anchors"
     },
     {
@@ -862,6 +1297,21 @@
     {
       "from": "fact.starryos.cgroup.memory-file",
       "to": "anchor.starryos.cgroup.memory-rs",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.memory-file",
+      "to": "anchor.starryos.memory-charge-test",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.memory-file",
+      "to": "anchor.starryos.try-charge-memory",
+      "relation": "anchors"
+    },
+    {
+      "from": "fact.starryos.cgroup.memory-file",
+      "to": "anchor.starryos.uncharge-memory",
       "relation": "anchors"
     },
     {
@@ -1030,6 +1480,71 @@
       "relation": "input"
     },
     {
+      "from": "slice.starryos.cgroup.cpu-enforcement-boundary-s1",
+      "to": "anchor.starryos.cpu-write-max",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.cpu-enforcement-boundary-s1",
+      "to": "anchor.starryos.kernel-bandwidth-tick",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.cpu-enforcement-boundary-s1",
+      "to": "anchor.starryos.kernel-cgroup-init",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.cpu-enforcement-boundary-s1",
+      "to": "anchor.starryos.task-is-throttled",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.cpu-enforcement-boundary-s1",
+      "to": "anchor.starryos.task-set-throttled",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.cpu-enforcement-boundary-s1",
+      "to": "behavior.starryos.cgroup.cpu-enforcement-boundary",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.cpu-enforcement-boundary-s1",
+      "to": "fact.starryos.cgroup.cpu-files",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.cpuset-propagation-boundary-s1",
+      "to": "anchor.starryos.cgroup.cpuset-rs",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.cpuset-propagation-boundary-s1",
+      "to": "anchor.starryos.cpuset-logic-test",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.cpuset-propagation-boundary-s1",
+      "to": "anchor.starryos.recompute-cpuset-effective",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.cpuset-propagation-boundary-s1",
+      "to": "anchor.starryos.task-affinity-api",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.cpuset-propagation-boundary-s1",
+      "to": "behavior.starryos.cgroup.cpuset-propagation-boundary",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.cpuset-propagation-boundary-s1",
+      "to": "fact.starryos.cgroup.cpuset-file",
+      "relation": "input"
+    },
+    {
       "from": "slice.starryos.cgroup.delegation-boundary-s1",
       "to": "anchor.starryos.check-delegation",
       "relation": "anchors"
@@ -1057,6 +1572,101 @@
     {
       "from": "slice.starryos.cgroup.delegation-boundary-s1",
       "to": "fact.starryos.cgroup.delegation-boundary",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.io-persistence-boundary-s1",
+      "to": "anchor.starryos.cgroup.io-rs",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.io-persistence-boundary-s1",
+      "to": "anchor.starryos.io-roundtrip-test",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.io-persistence-boundary-s1",
+      "to": "anchor.starryos.io-upsert",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.io-persistence-boundary-s1",
+      "to": "behavior.starryos.cgroup.io-persistence-boundary",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.io-persistence-boundary-s1",
+      "to": "fact.starryos.cgroup.io-file",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.kernel-enforcement-matrix-s1",
+      "to": "anchor.starryos.cgroup.io-rs",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.kernel-enforcement-matrix-s1",
+      "to": "anchor.starryos.kernel-bandwidth-tick",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.kernel-enforcement-matrix-s1",
+      "to": "anchor.starryos.kernel-cgroup-init",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.kernel-enforcement-matrix-s1",
+      "to": "anchor.starryos.kernel-provider",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.kernel-enforcement-matrix-s1",
+      "to": "anchor.starryos.recompute-cpuset-effective",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.kernel-enforcement-matrix-s1",
+      "to": "anchor.starryos.task-affinity-api",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.kernel-enforcement-matrix-s1",
+      "to": "anchor.starryos.task-is-throttled",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.kernel-enforcement-matrix-s1",
+      "to": "anchor.starryos.try-charge-memory",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.kernel-enforcement-matrix-s1",
+      "to": "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.kernel-enforcement-matrix-s1",
+      "to": "fact.starryos.cgroup.cpu-files",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.kernel-enforcement-matrix-s1",
+      "to": "fact.starryos.cgroup.cpuset-file",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.kernel-enforcement-matrix-s1",
+      "to": "fact.starryos.cgroup.io-file",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.kernel-enforcement-matrix-s1",
+      "to": "fact.starryos.cgroup.kernel-integration",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.kernel-enforcement-matrix-s1",
+      "to": "fact.starryos.cgroup.memory-file",
       "relation": "input"
     },
     {
@@ -1092,6 +1702,41 @@
     {
       "from": "slice.starryos.cgroup.membership-transaction-s1",
       "to": "fact.starryos.cgroup.pids-charge",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.memory-charge-boundary-s1",
+      "to": "anchor.starryos.cgroup.memory-rs",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.memory-charge-boundary-s1",
+      "to": "anchor.starryos.memory-charge-test",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.memory-charge-boundary-s1",
+      "to": "anchor.starryos.try-charge-memory",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.memory-charge-boundary-s1",
+      "to": "anchor.starryos.uncharge-memory",
+      "relation": "anchors"
+    },
+    {
+      "from": "slice.starryos.cgroup.memory-charge-boundary-s1",
+      "to": "behavior.starryos.cgroup.memory-charge-boundary",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.memory-charge-boundary-s1",
+      "to": "fact.starryos.cgroup.membership",
+      "relation": "input"
+    },
+    {
+      "from": "slice.starryos.cgroup.memory-charge-boundary-s1",
+      "to": "fact.starryos.cgroup.memory-file",
       "relation": "input"
     },
     {
@@ -1178,7 +1823,10 @@
     ],
     "fact.starryos.cgroup.controller-framework": [
       "behavior.starryos.cgroup.controller-registry-dispatch",
+      "behavior.starryos.cgroup.cpu-enforcement-boundary",
+      "behavior.starryos.cgroup.cpuset-propagation-boundary",
       "behavior.starryos.cgroup.delegation-write-boundary",
+      "behavior.starryos.cgroup.io-persistence-boundary",
       "coverage.starryos.cgroup",
       "slice.starryos.cgroup.controller-registry-s1"
     ],
@@ -1198,6 +1846,92 @@
       "behavior.starryos.cgroup.core-hierarchy-lifecycle",
       "fact.starryos.cgroup.core-layout",
       "slice.starryos.cgroup.core-hierarchy-s1"
+    ],
+    "anchor.starryos.cpu-write-max": [
+      "behavior.starryos.cgroup.cpu-enforcement-boundary",
+      "fact.starryos.cgroup.cpu-files",
+      "slice.starryos.cgroup.cpu-enforcement-boundary-s1"
+    ],
+    "anchor.starryos.kernel-bandwidth-tick": [
+      "behavior.starryos.cgroup.cpu-enforcement-boundary",
+      "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "fact.starryos.cgroup.cpu-files",
+      "fact.starryos.cgroup.kernel-integration",
+      "slice.starryos.cgroup.cpu-enforcement-boundary-s1",
+      "slice.starryos.cgroup.kernel-enforcement-matrix-s1"
+    ],
+    "anchor.starryos.kernel-cgroup-init": [
+      "behavior.starryos.cgroup.cpu-enforcement-boundary",
+      "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "behavior.starryos.cgroup.provider-registration-boundary",
+      "fact.starryos.cgroup.cpu-files",
+      "fact.starryos.cgroup.kernel-integration",
+      "fact.starryos.cgroup.provider-decoupling",
+      "slice.starryos.cgroup.cpu-enforcement-boundary-s1",
+      "slice.starryos.cgroup.kernel-enforcement-matrix-s1",
+      "slice.starryos.cgroup.provider-boundary-s1"
+    ],
+    "anchor.starryos.task-is-throttled": [
+      "behavior.starryos.cgroup.cpu-enforcement-boundary",
+      "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "fact.starryos.cgroup.cpu-files",
+      "fact.starryos.cgroup.kernel-integration",
+      "slice.starryos.cgroup.cpu-enforcement-boundary-s1",
+      "slice.starryos.cgroup.kernel-enforcement-matrix-s1"
+    ],
+    "anchor.starryos.task-set-throttled": [
+      "behavior.starryos.cgroup.cpu-enforcement-boundary",
+      "fact.starryos.cgroup.cpu-files",
+      "slice.starryos.cgroup.cpu-enforcement-boundary-s1"
+    ],
+    "fact.starryos.cgroup.cpu-files": [
+      "behavior.starryos.cgroup.cpu-enforcement-boundary",
+      "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.cpu-enforcement-boundary-s1",
+      "slice.starryos.cgroup.kernel-enforcement-matrix-s1"
+    ],
+    "fact.starryos.cgroup.kernel-integration": [
+      "behavior.starryos.cgroup.cpu-enforcement-boundary",
+      "behavior.starryos.cgroup.cpuset-propagation-boundary",
+      "behavior.starryos.cgroup.io-persistence-boundary",
+      "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "behavior.starryos.cgroup.memory-charge-boundary",
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.kernel-enforcement-matrix-s1"
+    ],
+    "anchor.starryos.cgroup.cpuset-rs": [
+      "behavior.starryos.cgroup.cpuset-propagation-boundary",
+      "fact.starryos.cgroup.cpuset-file",
+      "slice.starryos.cgroup.cpuset-propagation-boundary-s1"
+    ],
+    "anchor.starryos.cpuset-logic-test": [
+      "behavior.starryos.cgroup.cpuset-propagation-boundary",
+      "fact.starryos.cgroup.cpuset-file",
+      "slice.starryos.cgroup.cpuset-propagation-boundary-s1"
+    ],
+    "anchor.starryos.recompute-cpuset-effective": [
+      "behavior.starryos.cgroup.cpuset-propagation-boundary",
+      "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "fact.starryos.cgroup.cpuset-file",
+      "fact.starryos.cgroup.kernel-integration",
+      "slice.starryos.cgroup.cpuset-propagation-boundary-s1",
+      "slice.starryos.cgroup.kernel-enforcement-matrix-s1"
+    ],
+    "anchor.starryos.task-affinity-api": [
+      "behavior.starryos.cgroup.cpuset-propagation-boundary",
+      "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "fact.starryos.cgroup.cpuset-file",
+      "fact.starryos.cgroup.kernel-integration",
+      "slice.starryos.cgroup.cpuset-propagation-boundary-s1",
+      "slice.starryos.cgroup.kernel-enforcement-matrix-s1"
+    ],
+    "fact.starryos.cgroup.cpuset-file": [
+      "behavior.starryos.cgroup.cpuset-propagation-boundary",
+      "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.cpuset-propagation-boundary-s1",
+      "slice.starryos.cgroup.kernel-enforcement-matrix-s1"
     ],
     "anchor.starryos.check-delegation": [
       "behavior.starryos.cgroup.delegation-write-boundary",
@@ -1227,6 +1961,61 @@
     "fact.starryos.cgroup.membership": [
       "behavior.starryos.cgroup.delegation-write-boundary",
       "behavior.starryos.cgroup.membership-transaction",
+      "behavior.starryos.cgroup.memory-charge-boundary",
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.membership-transaction-s1",
+      "slice.starryos.cgroup.memory-charge-boundary-s1"
+    ],
+    "anchor.starryos.cgroup.io-rs": [
+      "behavior.starryos.cgroup.io-persistence-boundary",
+      "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "fact.starryos.cgroup.io-file",
+      "fact.starryos.cgroup.kernel-integration",
+      "slice.starryos.cgroup.io-persistence-boundary-s1",
+      "slice.starryos.cgroup.kernel-enforcement-matrix-s1"
+    ],
+    "anchor.starryos.io-roundtrip-test": [
+      "behavior.starryos.cgroup.io-persistence-boundary",
+      "fact.starryos.cgroup.io-file",
+      "slice.starryos.cgroup.io-persistence-boundary-s1"
+    ],
+    "anchor.starryos.io-upsert": [
+      "behavior.starryos.cgroup.io-persistence-boundary",
+      "fact.starryos.cgroup.io-file",
+      "slice.starryos.cgroup.io-persistence-boundary-s1"
+    ],
+    "fact.starryos.cgroup.io-file": [
+      "behavior.starryos.cgroup.io-persistence-boundary",
+      "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.io-persistence-boundary-s1",
+      "slice.starryos.cgroup.kernel-enforcement-matrix-s1"
+    ],
+    "anchor.starryos.kernel-provider": [
+      "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "fact.starryos.cgroup.kernel-integration",
+      "fact.starryos.cgroup.provider-decoupling",
+      "slice.starryos.cgroup.kernel-enforcement-matrix-s1"
+    ],
+    "anchor.starryos.try-charge-memory": [
+      "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "behavior.starryos.cgroup.memory-charge-boundary",
+      "fact.starryos.cgroup.kernel-integration",
+      "fact.starryos.cgroup.memory-file",
+      "slice.starryos.cgroup.kernel-enforcement-matrix-s1",
+      "slice.starryos.cgroup.memory-charge-boundary-s1"
+    ],
+    "fact.starryos.cgroup.memory-file": [
+      "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "behavior.starryos.cgroup.memory-charge-boundary",
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.kernel-enforcement-matrix-s1",
+      "slice.starryos.cgroup.memory-charge-boundary-s1"
+    ],
+    "fact.starryos.cgroup.pids-charge": [
+      "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "behavior.starryos.cgroup.membership-transaction",
+      "behavior.starryos.cgroup.pids-fork-exit",
       "coverage.starryos.cgroup",
       "slice.starryos.cgroup.membership-transaction-s1"
     ],
@@ -1251,11 +2040,20 @@
       "fact.starryos.cgroup.membership",
       "slice.starryos.cgroup.membership-transaction-s1"
     ],
-    "fact.starryos.cgroup.pids-charge": [
-      "behavior.starryos.cgroup.membership-transaction",
-      "behavior.starryos.cgroup.pids-fork-exit",
-      "coverage.starryos.cgroup",
-      "slice.starryos.cgroup.membership-transaction-s1"
+    "anchor.starryos.cgroup.memory-rs": [
+      "behavior.starryos.cgroup.memory-charge-boundary",
+      "fact.starryos.cgroup.memory-file",
+      "slice.starryos.cgroup.memory-charge-boundary-s1"
+    ],
+    "anchor.starryos.memory-charge-test": [
+      "behavior.starryos.cgroup.memory-charge-boundary",
+      "fact.starryos.cgroup.memory-file",
+      "slice.starryos.cgroup.memory-charge-boundary-s1"
+    ],
+    "anchor.starryos.uncharge-memory": [
+      "behavior.starryos.cgroup.memory-charge-boundary",
+      "fact.starryos.cgroup.memory-file",
+      "slice.starryos.cgroup.memory-charge-boundary-s1"
     ],
     "anchor.starryos.new-cgroup2fs": [
       "behavior.starryos.cgroup.mount-observe",
@@ -1282,11 +2080,6 @@
       "slice.starryos.cgroup.pids-s2"
     ],
     "anchor.starryos.cgroup-provider-trait": [
-      "behavior.starryos.cgroup.provider-registration-boundary",
-      "fact.starryos.cgroup.provider-decoupling",
-      "slice.starryos.cgroup.provider-boundary-s1"
-    ],
-    "anchor.starryos.kernel-cgroup-init": [
       "behavior.starryos.cgroup.provider-registration-boundary",
       "fact.starryos.cgroup.provider-decoupling",
       "slice.starryos.cgroup.provider-boundary-s1"
@@ -1318,13 +2111,33 @@
       "coverage.starryos.cgroup",
       "slice.starryos.cgroup.core-hierarchy-s1"
     ],
+    "behavior.starryos.cgroup.cpu-enforcement-boundary": [
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.cpu-enforcement-boundary-s1"
+    ],
+    "behavior.starryos.cgroup.cpuset-propagation-boundary": [
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.cpuset-propagation-boundary-s1"
+    ],
     "behavior.starryos.cgroup.delegation-write-boundary": [
       "coverage.starryos.cgroup",
       "slice.starryos.cgroup.delegation-boundary-s1"
     ],
+    "behavior.starryos.cgroup.io-persistence-boundary": [
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.io-persistence-boundary-s1"
+    ],
+    "behavior.starryos.cgroup.kernel-enforcement-matrix": [
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.kernel-enforcement-matrix-s1"
+    ],
     "behavior.starryos.cgroup.membership-transaction": [
       "coverage.starryos.cgroup",
       "slice.starryos.cgroup.membership-transaction-s1"
+    ],
+    "behavior.starryos.cgroup.memory-charge-boundary": [
+      "coverage.starryos.cgroup",
+      "slice.starryos.cgroup.memory-charge-boundary-s1"
     ],
     "behavior.starryos.cgroup.mount-observe": [
       "coverage.starryos.cgroup",
@@ -1340,21 +2153,6 @@
       "slice.starryos.cgroup.provider-boundary-s1"
     ],
     "fact.starryos.cgroup.build-tests": [
-      "coverage.starryos.cgroup"
-    ],
-    "fact.starryos.cgroup.cpu-files": [
-      "coverage.starryos.cgroup"
-    ],
-    "fact.starryos.cgroup.cpuset-file": [
-      "coverage.starryos.cgroup"
-    ],
-    "fact.starryos.cgroup.io-file": [
-      "coverage.starryos.cgroup"
-    ],
-    "fact.starryos.cgroup.kernel-integration": [
-      "coverage.starryos.cgroup"
-    ],
-    "fact.starryos.cgroup.memory-file": [
       "coverage.starryos.cgroup"
     ],
     "fact.starryos.platform.process": [
@@ -1416,23 +2214,11 @@
     "anchor.starryos.kernel.cgroup-cpu-rs": [
       "fact.starryos.cgroup.cpu-files"
     ],
-    "anchor.starryos.cgroup.cpuset-rs": [
-      "fact.starryos.cgroup.cpuset-file"
-    ],
     "anchor.starryos.can-delegate-write": [
       "fact.starryos.cgroup.delegation-boundary"
     ],
-    "anchor.starryos.cgroup.io-rs": [
-      "fact.starryos.cgroup.io-file"
-    ],
     "anchor.starryos.kernel.cgroup-mod-rs": [
       "fact.starryos.cgroup.kernel-integration"
-    ],
-    "anchor.starryos.cgroup.memory-rs": [
-      "fact.starryos.cgroup.memory-file"
-    ],
-    "anchor.starryos.kernel-provider": [
-      "fact.starryos.cgroup.provider-decoupling"
     ],
     "anchor.starryos.platform.task-mod": [
       "fact.starryos.platform.process"

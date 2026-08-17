@@ -18,6 +18,6 @@ generated_by:
 content_hash: ""
 ---
 
-cpuset 要处理集合解析、父子有效集合和配置传播，但最终证据是任务没有运行到集合之外的 CPU。属性写入成功或回读一致都不足以证明亲和性已经下发。
+固定 commit 会解析 `cpuset.cpus/mems`，并由 `recompute_cpuset_effective` 沿子树计算父 effective 与子 request 的交集；宿主测试覆盖父节点收窄和放宽后的传播。这个链路证明配置和 effective 状态能工作。
 
-课程用固定多 vCPU QEMU 观察实际 CPU，并覆盖空集合、越界 CPU 和超出父集合等负例。当前实现状态保持 `partial`，未核实连接点继续标记 unresolved。
+源码中存在 axtask affinity API，但没有发现 cpuset 把 effective mask 下发给现有任务或新任务的生产调用者；配置传播不能证明任务亲和性已经生效。最终证据仍应是任务没有运行到集合之外的 CPU；在桥接补齐前，课程用状态矩阵和验证设计教学，并覆盖空 effective、越界 CPU、父子并发更新等边界，implementation_state 保持 `partial`。

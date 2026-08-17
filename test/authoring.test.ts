@@ -73,7 +73,7 @@ async function bindRunToWorkerRepository(runRoot: string, source: { repository: 
   await rm(path.join(runRoot, '02-facts', 'workspace-verification.json'), { force: true });
 }
 
-describe('作者链 golden：cgroup 七条行为链', () => {
+describe('作者链 golden：cgroup 十二条行为链', () => {
   it('authoring profile 零 blocker', async () => {
     const result = await validateAuthoringRun(GOLDEN, 'authoring');
 
@@ -81,17 +81,18 @@ describe('作者链 golden：cgroup 七条行为链', () => {
     assert.equal(result.summary.blocker, 0);
     assert.deepEqual(result.findings, []);
     // code_facts 覆盖固定 commit 的全项目锚点索引（含未做深分支的来源事实），
-    // 38 个锚点全部经 authoring-verify-workspace 对固定 commit 核验；
+    // 50 个锚点全部经 authoring-verify-workspace 对固定 commit 核验；
     // mount 与 pids 保留可执行纵切，core、membership、controller framework、
-    // provider 和 delegation 先进入带固定 rubric 的 S1 设计审核。
+    // provider、delegation、四个资源 controller 和内核连接矩阵进入
+    // 带固定 rubric 的 S1 设计审核。
     assert.deepEqual(result.summary.counts, {
       code_facts: 17,
-      behavior_chains: 7,
-      learning_slices: 8,
+      behavior_chains: 12,
+      learning_slices: 13,
       execution_results: 3,
       review_events: 0,
       exception_events: 0,
-      anchor_verifications: 38,
+      anchor_verifications: 50,
     });
   });
 
@@ -102,7 +103,7 @@ describe('作者链 golden：cgroup 七条行为链', () => {
     const designReviews = result.run.learningSlices.filter(
       (slice) => slice.activity_kind === 'design_review',
     );
-    assert.equal(designReviews.length, 5);
+    assert.equal(designReviews.length, 10);
     for (const slice of designReviews) {
       assert.deepEqual(slice.execution_refs, []);
       assert.ok(Array.isArray(slice.evidence_refs) && slice.evidence_refs.length > 0);
@@ -110,7 +111,7 @@ describe('作者链 golden：cgroup 七条行为链', () => {
     }
   });
 
-  it('完整项目覆盖骨架存在，但七条行为链不冒充 complete course', async () => {
+  it('完整项目覆盖骨架存在，但十二条行为链不冒充 complete course', async () => {
     const result = await validateAuthoringRun(GOLDEN, 'authoring');
     assert.ok(result.run);
 
@@ -118,9 +119,27 @@ describe('作者链 golden：cgroup 七条行为链', () => {
     assert.equal(coverage.release_level, 'author_preview');
     assert.ok(Array.isArray(coverage.required_unit_ids));
     assert.ok(coverage.required_unit_ids.length >= 12);
-    const units = coverage.units as Array<{ implementation_state: string }>;
+    const units = coverage.units as Array<{
+      id: string;
+      status: string;
+      implementation_state: string;
+      behavior_refs?: string[];
+    }>;
     assert.ok(units.some((unit) => unit.implementation_state === 'partial'));
     assert.ok(!units.every((unit) => unit.implementation_state === 'present'));
+    for (const id of [
+      'coverage.cgroup.cpu',
+      'coverage.cgroup.memory',
+      'coverage.cgroup.cpuset',
+      'coverage.cgroup.io',
+      'coverage.cgroup.kernel-integration',
+    ]) {
+      const unit = units.find((item) => item.id === id);
+      assert.ok(unit, `${id} must remain in the complete cgroup coverage map`);
+      assert.equal(unit.status, 'teachable');
+      assert.equal(unit.implementation_state, 'partial');
+      assert.equal(unit.behavior_refs?.length, 1);
+    }
   });
 
   it('review profile 接受候选产物，publishing profile 要求可信发布事件', async () => {

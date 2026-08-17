@@ -18,6 +18,6 @@ generated_by:
 content_hash: ""
 ---
 
-io controller 的配置接受、统计变化和真实吞吐节流是三层不同事实。块层提交路径必须读取 cgroup 状态并实施限制，才形成可观察的资源控制。
+固定 commit 的 `io.weight` 和 `io.max` 能保存配置；`io.max` 会先解析全部行，再按 major:minor 对 rbps/wbps/riops/wiops 做局部 upsert，宿主测试覆盖 round-trip、多设备和非法输入原子拒绝。
 
-Linux cgroup selftests 目录没有专门的 io/blkio C 用例，课程不能引用不存在的标准测试。应在临时来宾镜像上设计受限对照负载，并明确测试来源和适配边界。
+但源码明确写明 `rdif-block` 没有可安装 token bucket 的队列层，commit-wide 搜索也没有找到 `IoState` 的块层消费者；配置读回不等于真实节流，当前 enforcement 是 absent。Linux cgroup selftests 目录又没有专门的 io/blkio C 用例，所以课程只能把配置持久化作为已核实事实，把吞吐对照负载作为未来连接点补齐后的验证设计。

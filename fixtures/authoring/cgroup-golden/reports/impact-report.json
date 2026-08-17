@@ -196,6 +196,41 @@
       "invalidates": []
     },
     {
+      "id": "behavior.starryos.cgroup.cpu-enforcement-boundary",
+      "kind": "behavior",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "behavior.starryos.cgroup.memory-charge-boundary",
+      "kind": "behavior",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "behavior.starryos.cgroup.cpuset-propagation-boundary",
+      "kind": "behavior",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "behavior.starryos.cgroup.io-persistence-boundary",
+      "kind": "behavior",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "behavior.starryos.cgroup.kernel-enforcement-matrix",
+      "kind": "behavior",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
       "id": "slice.starryos.cgroup.mount-s0",
       "kind": "slice",
       "classification": "non_semantic",
@@ -246,6 +281,41 @@
     },
     {
       "id": "slice.starryos.cgroup.delegation-boundary-s1",
+      "kind": "slice",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "slice.starryos.cgroup.cpu-enforcement-boundary-s1",
+      "kind": "slice",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "slice.starryos.cgroup.memory-charge-boundary-s1",
+      "kind": "slice",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "slice.starryos.cgroup.cpuset-propagation-boundary-s1",
+      "kind": "slice",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "slice.starryos.cgroup.io-persistence-boundary-s1",
+      "kind": "slice",
+      "classification": "non_semantic",
+      "reason": "对象 hash 未变化，继承旧运行结果。",
+      "invalidates": []
+    },
+    {
+      "id": "slice.starryos.cgroup.kernel-enforcement-matrix-s1",
       "kind": "slice",
       "classification": "non_semantic",
       "reason": "对象 hash 未变化，继承旧运行结果。",

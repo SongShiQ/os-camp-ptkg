@@ -29,7 +29,7 @@ claims:
 created_by:
   actor_type: agent
   actor_id: codex
-content_hash: 30a875311f97b55d666bd33499523f6666c21983fa53bcd6309eeaca56e20b58
+content_hash: 8c5482432ee5b534eb0e08698ffd6e4ffb8567a8a9db088a6a7bd8a69ce299cf
 created_at: 2026-07-27T00:00:00+08:00
 release_level: author_preview
 required_unit_ids:
@@ -102,42 +102,52 @@ units:
     title: cpu controller
     required: true
     critical: false
-    status: source_verified
+    status: teachable
     implementation_state: partial
     source_refs:
       - fact.starryos.cgroup.cpu-files
+    behavior_refs:
+      - behavior.starryos.cgroup.cpu-enforcement-boundary
   - id: coverage.cgroup.memory
     title: memory controller
     required: true
     critical: false
-    status: source_verified
+    status: teachable
     implementation_state: partial
     source_refs:
       - fact.starryos.cgroup.memory-file
+    behavior_refs:
+      - behavior.starryos.cgroup.memory-charge-boundary
   - id: coverage.cgroup.cpuset
     title: cpuset controller
     required: true
     critical: false
-    status: source_verified
+    status: teachable
     implementation_state: partial
     source_refs:
       - fact.starryos.cgroup.cpuset-file
+    behavior_refs:
+      - behavior.starryos.cgroup.cpuset-propagation-boundary
   - id: coverage.cgroup.io
     title: io controller
     required: true
     critical: false
-    status: source_verified
+    status: teachable
     implementation_state: partial
     source_refs:
       - fact.starryos.cgroup.io-file
+    behavior_refs:
+      - behavior.starryos.cgroup.io-persistence-boundary
   - id: coverage.cgroup.kernel-integration
     title: 页分配调度块层与亲和性连接点
     required: true
     critical: true
-    status: source_verified
+    status: teachable
     implementation_state: partial
     source_refs:
       - fact.starryos.cgroup.kernel-integration
+    behavior_refs:
+      - behavior.starryos.cgroup.kernel-enforcement-matrix
   - id: coverage.cgroup.concurrency
     title: 并发错误处理与资源回收
     required: true

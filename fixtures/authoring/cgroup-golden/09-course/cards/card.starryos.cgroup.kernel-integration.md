@@ -21,6 +21,6 @@ generated_by:
 content_hash: ""
 ---
 
-五控制器矩阵应同时列出触发事件、controller 状态、内核连接点、失败与清理路径、直接验证证据。pids 对应 fork/exit，cpu 对应调度，memory 对应页分配，cpuset 对应亲和性，io 对应块层。
+固定 commit 的生产连接矩阵并不整齐：成员/provider 与 pids 生命周期链存在；CPU tick 会计存在，但调度器不消费 throttle 标志；memory 有 charge API，但 allocator 不调用；cpuset 有 effective 传播，但 task affinity 不调用；io 只保存配置且明确没有块层节流。
 
-矩阵中的实现状态和教学成熟度必须分开。源码部分存在可以标 `partial`，没有可靠锚点则标 `unresolved`。这些工作包用于倒推课程完整性，不是给学生分配真实项目任务。
+每个控制器都要分别列出配置、状态、生产触发、执行效果和测试证据，再标记 `present/partial/absent/unresolved`。实现状态和教学成熟度必须分开：功能可以是 partial，但其边界审计仍可成为 teachable 的项目先导实践。这些工作包用于倒推课程完整性，不是给学生分配真实项目任务。
