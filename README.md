@@ -23,6 +23,12 @@ The tool plans the complete project from the top down, while the resulting cours
 - Reusable knowledge: canonical nodes are shared; project differences are represented by bindings.
 - Rust first, not Rust only: analyzers use a plugin interface and degrade honestly when symbol analysis is unavailable.
 
+## Final Six-Project Fusion Design
+
+The next product increment is frozen in [docs/FUSION_DESIGN_V1.md](./docs/FUSION_DESIGN_V1.md). It distills the useful teaching patterns from six public OS education projects without merging their repositories or copying unlicensed content. Student learning effect is the admission gate: fixed real source, whole-behavior learning episodes, typed assertions, targeted remediation, and teacher-governed evidence enter the core; prediction/replay and richer UI remain measured experiments.
+
+The design intentionally keeps the implemented `os-camp-course@1` contract unchanged. F1 will add `os-camp-course@2` plus a signed release-set contract for public packages and optional teacher-private overlays; until those schemas and tests exist, the new interfaces are design commitments, not implemented CLI claims.
+
 ## Requirements
 
 - Node.js 24 or later
