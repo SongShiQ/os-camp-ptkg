@@ -51,8 +51,16 @@ import { formatCourseValidation, validateCoursePackage } from './course/validate
 import { signCoursePackage } from './course/sign.ts';
 import { packCoursePackage } from './course/pack.ts';
 import type { CourseProfile } from './course/types.ts';
+import { compileCourseV2Workspace } from './course/v2/workspace.ts';
+import {
+  detectCoursePackageContract,
+  formatCourseV2Validation,
+  validateCourseV2Package,
+} from './course/v2/package.ts';
+import { signCourseV2Release, verifyCourseV2Release } from './course/v2/release-workflow.ts';
+import { inspectCourseV1Migration } from './course/v2/migrate.ts';
 
-const USAGE = `OS Camp PTKG v0.4 — 项目牵引式课程作者与校验工具
+const USAGE = `OS Camp PTKG v0.5 — 项目牵引式课程作者与校验工具
 
 用法：
   ptkg init <dir>                  生成 bundle 骨架（manifest + 四个空文件）
@@ -86,12 +94,16 @@ const USAGE = `OS Camp PTKG v0.4 — 项目牵引式课程作者与校验工具
   ptkg author-recover-lease <dir> --expected-token <token> --confirm-owner-stopped
                                       显式清除已过期且旧进程已停止的协调器锁
   ptkg status <dir>                   显示 checkpoint、未决项与下一步
-  ptkg course-compile <workspace> --out <package-dir>
-                                      编译确定性 os-camp-course@1 课程包
+  ptkg course-compile <workspace> --out <package-dir> [--contract os-camp-course@1|os-camp-course@2]
+                                      编译确定性课程包；默认保留 @1
   ptkg course-validate <package-dir> --profile draft|release
                                       执行 COURSE001-012 质量门
   ptkg course-sign <package-dir> --key <pkcs8-key> --actor <teacher-id>
-                                      使用 Ed25519 教师身份签署 release
+                                      @1 使用课程签名；@2 使用 --out/--overlay 签署 Release Set
+  ptkg release-set-validate <release-set.json> --package <package-dir>
+                                      校验 @2 public package、overlay、roots 和外部信任
+  ptkg course-migrate-v2 <course-v1-dir> --out <report.json>
+                                      生成诚实的 @1→@2 缺口报告，不伪造新证据
   ptkg course-pack <package-dir> [--out <archive.tgz>]
                                       校验并生成确定性 tgz 归档
 
@@ -116,6 +128,10 @@ const USAGE = `OS Camp PTKG v0.4 — 项目牵引式课程作者与校验工具
   --key <文件>            Ed25519 PKCS#8 私钥文件
   --actor <ID>            教师或发布责任人 ID
   --trust-store <文件>    ptkg-trust-store@1 外部可信公钥
+  --contract <版本>       os-camp-course@1 / os-camp-course@2
+  --package <目录>        release-set-validate 的公开 Course Package
+  --overlay <目录>        @2 教师私有 overlay 目录
+  --trust-store-id <ID>   @2 Release Set 中的外部信任库标识
   --fault-command <命令>  基线通过后注入 seeded fault 并运行判别测试
   --fault-ref <ID>        seeded fault 的稳定标识
                           判别命令须输出 PTKG_SEEDED_FAULT_DETECTED:<ID> 并非零退出
@@ -162,7 +178,7 @@ function parseArgs(argv: string[]): ParsedArgs {
 
     const name = arg.slice(2);
     // 带值的选项
-    if (['only', 'skip', 'stale-after', 'max', 'out', 'profile', 'cache-dir', 'runtime-cache', 'slice', 'image', 'run-command', 'prepare-command', 'fault-command', 'fault-ref', 'test-classes', 'expected', 'timeout-seconds', 'memory-mb', 'processes', 'repo', 'goal', 'doc', 'ref', 'agent', 'agents', 'checkpoint', 'shard', 'expected-token', 'key', 'actor', 'trust-store'].includes(name)) {
+    if (['only', 'skip', 'stale-after', 'max', 'out', 'profile', 'contract', 'package', 'overlay', 'trust-store-id', 'cache-dir', 'runtime-cache', 'slice', 'image', 'run-command', 'prepare-command', 'fault-command', 'fault-ref', 'test-classes', 'expected', 'timeout-seconds', 'memory-mb', 'processes', 'repo', 'goal', 'doc', 'ref', 'agent', 'agents', 'checkpoint', 'shard', 'expected-token', 'key', 'actor', 'trust-store'].includes(name)) {
       const value = argv[i + 1];
       if (value === undefined || value.startsWith('--')) {
         throw new Error(`选项 --${name} 需要一个值。`);
@@ -575,6 +591,21 @@ async function main(argv: string[]): Promise<number> {
       if (!workspace || typeof output !== 'string') {
         throw new Error('course-compile 需要 <workspace> 和 --out <package-dir>。');
       }
+      const contract = flags.get('contract');
+      if (contract !== undefined && contract !== 'os-camp-course@1' && contract !== 'os-camp-course@2') {
+        throw new Error('--contract 只接受 os-camp-course@1 / os-camp-course@2。');
+      }
+      if (contract === 'os-camp-course@2') {
+        const compiled = await compileCourseV2Workspace(workspace, output);
+        const validation = await validateCourseV2Package(compiled.package_dir, 'draft');
+        if (asJson) console.log(JSON.stringify({ compiled, validation }, null, 2));
+        else {
+          console.log(`Course v2 已编译：${compiled.package_dir}`);
+          console.log(`public package root：${compiled.checksums.root_hash}`);
+          console.log(formatCourseV2Validation(validation));
+        }
+        return validation.passed ? 0 : 1;
+      }
       const compiled = await compileCourse(workspace, output);
       const validation = await validateCoursePackage(compiled.package_dir, 'draft');
       if (asJson) console.log(JSON.stringify({ compiled, validation }, null, 2));
@@ -590,6 +621,13 @@ async function main(argv: string[]): Promise<number> {
       const directory = positional[0];
       if (!directory) throw new Error('course-validate 需要 <package-dir>。');
       const profile = parseCourseProfile(flags.get('profile'));
+      const contract = await detectCoursePackageContract(directory);
+      if (contract === 'os-camp-course@2') {
+        const result = await validateCourseV2Package(directory, profile);
+        if (asJson) console.log(JSON.stringify(result, null, 2));
+        else console.log(formatCourseV2Validation(result));
+        return result.passed ? 0 : 1;
+      }
       const trustStore = flags.get('trust-store');
       const result = await validateCoursePackage(directory, profile, {
         trustStore: typeof trustStore === 'string' ? trustStore : undefined,
@@ -606,6 +644,29 @@ async function main(argv: string[]): Promise<number> {
       if (!directory || typeof key !== 'string' || typeof actor !== 'string') {
         throw new Error('course-sign 需要 <package-dir>、--key <pkcs8-key> 和 --actor <teacher-id>。');
       }
+      if (await detectCoursePackageContract(directory) === 'os-camp-course@2') {
+        const output = flags.get('out');
+        const overlay = flags.get('overlay');
+        const trustStoreId = flags.get('trust-store-id');
+        if (typeof output !== 'string' || typeof trustStoreId !== 'string') {
+          throw new Error('os-camp-course@2 的 course-sign 需要 --out <release-set.json> 和 --trust-store-id <ID>；--overlay 可选。');
+        }
+        const result = await signCourseV2Release({
+          packageDir: directory,
+          overlayDir: typeof overlay === 'string' ? overlay : undefined,
+          outputFile: output,
+          keyFile: key,
+          actor,
+          trustStoreId,
+        });
+        if (asJson) console.log(JSON.stringify(result, null, 2));
+        else {
+          console.log(`Release Set 已签名：${result.release_set_file}`);
+          console.log(`public root：${result.public_package_root}`);
+          console.log(`overlay root：${result.teacher_overlay_root ?? 'null'}`);
+        }
+        return 0;
+      }
       const result = await signCoursePackage(directory, key, actor);
       if (asJson) console.log(JSON.stringify(result, null, 2));
       else {
@@ -620,6 +681,9 @@ async function main(argv: string[]): Promise<number> {
     case 'course-pack': {
       const directory = positional[0];
       if (!directory) throw new Error('course-pack 需要 <package-dir>。');
+      if (await detectCoursePackageContract(directory) === 'os-camp-course@2') {
+        throw new Error('os-camp-course@2 的归档必须以已验证 Release Set 为入口；请先运行 release-set-validate。');
+      }
       const trustStore = flags.get('trust-store');
       const output = flags.get('out');
       const result = await packCoursePackage(
@@ -632,6 +696,45 @@ async function main(argv: string[]): Promise<number> {
         console.log(`课程归档：${result.archive}`);
         console.log(`bytes：${result.bytes}`);
         console.log(`package root：${result.root_hash}`);
+      }
+      return 0;
+    }
+
+    case 'release-set-validate': {
+      const releaseSetFile = positional[0];
+      const packageDir = flags.get('package');
+      const trustStore = flags.get('trust-store');
+      const overlay = flags.get('overlay');
+      if (!releaseSetFile || typeof packageDir !== 'string' || typeof trustStore !== 'string') {
+        throw new Error('release-set-validate 需要 <release-set.json>、--package <dir> 和 --trust-store <file>。');
+      }
+      const result = await verifyCourseV2Release({
+        releaseSetFile,
+        packageDir,
+        overlayDir: typeof overlay === 'string' ? overlay : undefined,
+        trustStoreFile: trustStore,
+      });
+      if (asJson) console.log(JSON.stringify(result, null, 2));
+      else {
+        console.log(`Release Set 校验：${result.passed ? '通过' : '未通过'}`);
+        for (const item of result.findings) console.log(`- ${item.code} ${item.subject}：${item.message}`);
+      }
+      return result.passed ? 0 : 1;
+    }
+
+    case 'course-migrate-v2': {
+      const directory = positional[0];
+      const output = flags.get('out');
+      if (!directory || typeof output !== 'string') {
+        throw new Error('course-migrate-v2 需要 <course-v1-dir> 和 --out <report.json>。');
+      }
+      const report = await inspectCourseV1Migration(directory);
+      await mkdir(path.dirname(path.resolve(output)), { recursive: true });
+      await writeFile(path.resolve(output), `${JSON.stringify(report, null, 2)}\n`, { encoding: 'utf8', flag: 'wx' });
+      if (asJson) console.log(JSON.stringify(report, null, 2));
+      else {
+        console.log(`迁移缺口报告：${path.resolve(output)}`);
+        console.log(`未决对象：${report.blocker_count}`);
       }
       return 0;
     }

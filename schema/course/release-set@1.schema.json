@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://os-camp.dev/ptkg/course/release-set@1.schema.json",
+  "$defs": {
+    "id": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9][A-Za-z0-9._@-]*$" },
+    "sha64": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "generator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool", "version"],
+      "properties": {
+        "tool": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "agent": { "type": "string", "minLength": 1 }
+      }
+    },
+    "overlayManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "course_id", "version", "public_package_root", "source_composition_root", "hidden_assertion_ids", "harness_ids", "reference_patch_ids", "answer_ids", "generator"],
+      "properties": {
+        "contract": { "const": "os-camp-teacher-overlay@1" },
+        "course_id": { "$ref": "#/$defs/id" },
+        "version": { "type": "string", "minLength": 1 },
+        "public_package_root": { "$ref": "#/$defs/sha64" },
+        "source_composition_root": { "$ref": "#/$defs/sha64" },
+        "hidden_assertion_ids": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+        "harness_ids": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+        "reference_patch_ids": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+        "answer_ids": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+        "generator": { "$ref": "#/$defs/generator" }
+      }
+    },
+    "overlayIndex": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "algorithm", "files", "root_hash"],
+      "properties": {
+        "contract": { "const": "os-camp-teacher-overlay-index@1" },
+        "algorithm": { "const": "sha256" },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "sha256", "bytes"],
+            "properties": {
+              "path": { "type": "string", "minLength": 1, "not": { "pattern": "(^/|^\\.\\./|\\\\)" } },
+              "sha256": { "$ref": "#/$defs/sha64" },
+              "bytes": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "root_hash": { "$ref": "#/$defs/sha64" }
+      }
+    },
+    "attestation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spec_version", "actor", "role", "key_fingerprint", "public_key", "release_set_root", "signature", "signed_at"],
+      "properties": {
+        "spec_version": { "const": "release-set-attestation@1" },
+        "actor": { "type": "string", "minLength": 1 },
+        "role": { "const": "release_set" },
+        "key_fingerprint": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "public_key": { "type": "string", "minLength": 1 },
+        "release_set_root": { "$ref": "#/$defs/sha64" },
+        "signature": { "type": "string", "minLength": 1 },
+        "signed_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "releaseSet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "course_id", "version", "public_package", "teacher_overlay", "schema_versions", "source_composition_root", "trust_policy", "release_set_root", "attestations"],
+      "properties": {
+        "contract": { "const": "os-camp-release-set@1" },
+        "course_id": { "$ref": "#/$defs/id" },
+        "version": { "type": "string", "minLength": 1 },
+        "public_package": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["contract", "root_hash"],
+          "properties": {
+            "contract": { "const": "os-camp-course@2" },
+            "root_hash": { "$ref": "#/$defs/sha64" }
+          }
+        },
+        "teacher_overlay": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["contract", "root_hash"],
+              "properties": {
+                "contract": { "const": "os-camp-teacher-overlay@1" },
+                "root_hash": { "$ref": "#/$defs/sha64" }
+              }
+            }
+          ]
+        },
+        "schema_versions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["course", "release_set", "teacher_overlay", "assertion", "evidence", "source_composition"],
+          "properties": {
+            "course": { "const": "os-camp-course@2" },
+            "release_set": { "const": "os-camp-release-set@1" },
+            "teacher_overlay": { "const": "os-camp-teacher-overlay@1" },
+            "assertion": { "const": "assertion-definition@1" },
+            "evidence": { "const": "evidence-envelope@1" },
+            "source_composition": { "const": "composition-manifest@1" }
+          }
+        },
+        "source_composition_root": { "$ref": "#/$defs/sha64" },
+        "trust_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["trust_store_id", "required_roles", "worker_requires_verified_release_set", "private_material_never_mounted_to_student"],
+          "properties": {
+            "trust_store_id": { "type": "string", "minLength": 1 },
+            "required_roles": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "const": "release_set" } },
+            "worker_requires_verified_release_set": { "const": true },
+            "private_material_never_mounted_to_student": { "const": true }
+          }
+        },
+        "release_set_root": { "$ref": "#/$defs/sha64" },
+        "attestations": { "type": "array", "items": { "$ref": "#/$defs/attestation" } }
+      }
+    }
+  }
+}

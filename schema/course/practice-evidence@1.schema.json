@@ -1,0 +1,288 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://os-camp.dev/ptkg/course/practice-evidence@1.schema.json",
+  "$defs": {
+    "id": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9][A-Za-z0-9._@-]*$" },
+    "sha40": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "sha64": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "nullableSha64": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+    "ids": { "type": "array", "items": { "$ref": "#/$defs/id" }, "uniqueItems": true },
+    "hashes": { "type": "array", "items": { "$ref": "#/$defs/sha64" }, "uniqueItems": true },
+    "strings": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+    "reviewStatus": { "enum": ["candidate", "unresolved", "reviewed"] },
+    "generator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool", "version"],
+      "properties": {
+        "tool": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "agent": { "type": "string", "minLength": 1 }
+      }
+    },
+    "sourceIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_contract_id", "source_contract_root", "repo", "commit", "tree"],
+      "properties": {
+        "source_contract_id": { "$ref": "#/$defs/id" },
+        "source_contract_root": { "$ref": "#/$defs/sha64" },
+        "repo": { "type": "string", "minLength": 1 },
+        "commit": { "$ref": "#/$defs/sha40" },
+        "tree": { "$ref": "#/$defs/sha40" }
+      }
+    },
+    "sourceAnchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["anchor_id", "path", "blob_oid", "symbol", "start_line", "end_line", "snippet_hash"],
+      "properties": {
+        "anchor_id": { "$ref": "#/$defs/id" },
+        "path": { "type": "string", "minLength": 1, "not": { "pattern": "(^/|^\\.\\./|\\\\)" } },
+        "blob_oid": { "$ref": "#/$defs/sha40" },
+        "symbol": { "type": ["string", "null"] },
+        "start_line": { "type": ["integer", "null"], "minimum": 1 },
+        "end_line": { "type": ["integer", "null"], "minimum": 1 },
+        "snippet_hash": { "$ref": "#/$defs/sha64" }
+      }
+    },
+    "changeScope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "path"],
+      "properties": {
+        "kind": { "enum": ["file", "symbol", "range", "glob"] },
+        "path": { "type": "string", "minLength": 1, "not": { "pattern": "(^/|^\\.\\./|\\\\)" } },
+        "symbol": { "type": "string", "minLength": 1 },
+        "start_line": { "type": "integer", "minimum": 1 },
+        "end_line": { "type": "integer", "minimum": 1 }
+      },
+      "allOf": [
+        { "if": { "properties": { "kind": { "const": "symbol" } } }, "then": { "required": ["symbol"] } },
+        { "if": { "properties": { "kind": { "const": "range" } } }, "then": { "required": ["start_line", "end_line"] } }
+      ]
+    },
+    "assertion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spec_version", "id", "practice_id", "assertion_class", "behavior", "invariant", "oracle", "applicable_to", "trusted_producers", "visibility", "harness_id", "not_applicable_reason", "status", "content_hash"],
+      "properties": {
+        "spec_version": { "const": "assertion-definition@1" },
+        "id": { "$ref": "#/$defs/id" },
+        "practice_id": { "$ref": "#/$defs/id" },
+        "assertion_class": { "enum": ["positive", "negative", "concurrency", "regression", "fault_probe"] },
+        "behavior": { "type": "string", "minLength": 1 },
+        "invariant": { "type": "string", "minLength": 1 },
+        "oracle": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "observable", "expected", "evidence_source"],
+          "properties": {
+            "type": { "enum": ["exit_code", "structured_event", "file_state", "process_state", "custom_harness"] },
+            "observable": { "type": "string", "minLength": 1 },
+            "expected": { "type": "string", "minLength": 1 },
+            "evidence_source": { "enum": ["trusted_harness", "worker_observation", "host_inspection"] }
+          }
+        },
+        "applicable_to": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["release_validation", "student_attempt"] } },
+        "trusted_producers": { "$ref": "#/$defs/strings" },
+        "visibility": { "enum": ["public", "teacher_private"] },
+        "harness_id": { "type": ["string", "null"] },
+        "not_applicable_reason": { "type": ["string", "null"] },
+        "status": { "$ref": "#/$defs/reviewStatus" },
+        "content_hash": { "$ref": "#/$defs/sha64" }
+      }
+    },
+    "practice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spec_version", "id", "course_version", "unit_ids", "behavior_ids", "slice_ids", "source", "source_anchors", "source_continuity", "profile", "title", "student_responsibilities", "provided_scaffolding", "hidden_material_ids", "change_policy", "assertion_ids", "execution", "pedagogy", "governance", "status", "generated_by", "content_hash"],
+      "properties": {
+        "spec_version": { "const": "practice-definition@2" },
+        "id": { "$ref": "#/$defs/id" },
+        "course_version": { "type": "string", "minLength": 1 },
+        "unit_ids": { "allOf": [{ "$ref": "#/$defs/ids" }, { "minItems": 1 }] },
+        "behavior_ids": { "allOf": [{ "$ref": "#/$defs/ids" }, { "minItems": 1 }] },
+        "slice_ids": { "allOf": [{ "$ref": "#/$defs/ids" }, { "minItems": 1 }] },
+        "source": { "$ref": "#/$defs/sourceIdentity" },
+        "source_anchors": { "type": "array", "items": { "$ref": "#/$defs/sourceAnchor" }, "minItems": 1 },
+        "source_continuity": { "enum": ["exact", "same_repo_new_ref", "patch_overlay", "high_fidelity_fixture", "reference_only"] },
+        "profile": { "enum": ["observe", "trace", "fill", "debug", "test", "review"] },
+        "title": { "type": "string", "minLength": 1 },
+        "student_responsibilities": { "allOf": [{ "$ref": "#/$defs/strings" }, { "minItems": 1 }] },
+        "provided_scaffolding": { "$ref": "#/$defs/strings" },
+        "hidden_material_ids": { "$ref": "#/$defs/ids" },
+        "change_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "allowed", "forbidden"],
+          "properties": {
+            "mode": { "enum": ["read_only", "structured_diff"] },
+            "allowed": { "type": "array", "items": { "$ref": "#/$defs/changeScope" } },
+            "forbidden": { "type": "array", "items": { "$ref": "#/$defs/changeScope" }, "minItems": 1 }
+          }
+        },
+        "assertion_ids": { "allOf": [{ "$ref": "#/$defs/ids" }, { "minItems": 1 }] },
+        "execution": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["trusted_commands", "environment_digest", "harness_ids", "timeout_seconds", "memory_mb", "processes", "reset_required"],
+          "properties": {
+            "trusted_commands": { "allOf": [{ "$ref": "#/$defs/strings" }, { "minItems": 1 }] },
+            "environment_digest": { "type": "string", "pattern": "^[^@\\s]+@sha256:[0-9a-f]{64}$" },
+            "harness_ids": { "allOf": [{ "$ref": "#/$defs/ids" }, { "minItems": 1 }] },
+            "timeout_seconds": { "type": "integer", "minimum": 1 },
+            "memory_mb": { "type": "integer", "minimum": 1 },
+            "processes": { "type": "integer", "minimum": 1 },
+            "reset_required": { "type": "boolean" }
+          }
+        },
+        "pedagogy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["prediction", "hints", "remediation_ids"],
+          "properties": {
+            "prediction": { "enum": ["none", "optional", "required"] },
+            "hints": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["level", "text", "requires_attempt_count", "requires_failed_assertion_ids"],
+                "properties": {
+                  "level": { "enum": [1, 2, 3] },
+                  "text": { "type": "string", "minLength": 1 },
+                  "requires_attempt_count": { "type": "integer", "minimum": 0 },
+                  "requires_failed_assertion_ids": { "$ref": "#/$defs/ids" }
+                }
+              }
+            },
+            "remediation_ids": { "$ref": "#/$defs/ids" }
+          }
+        },
+        "governance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["risk", "audience", "visibility", "requires_teacher_overlay", "review_event_ids"],
+          "properties": {
+            "risk": { "enum": ["low", "medium", "high"] },
+            "audience": { "enum": ["student", "teacher"] },
+            "visibility": { "enum": ["public", "restricted"] },
+            "requires_teacher_overlay": { "type": "boolean" },
+            "review_event_ids": { "$ref": "#/$defs/ids" }
+          }
+        },
+        "status": { "$ref": "#/$defs/reviewStatus" },
+        "generated_by": { "$ref": "#/$defs/generator" },
+        "content_hash": { "$ref": "#/$defs/sha64" }
+      }
+    },
+    "assertionResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spec_version", "id", "attempt_id", "run_purpose", "practice_id", "practice_hash", "assertion_id", "assertion_hash", "release_set_root", "public_package_root", "teacher_overlay_root", "source_contract_root", "source_commit", "source_tree", "student_diff_hash", "patch_hash", "image_digest", "environment_hash", "harness_hash", "test_hash", "status", "failure_category", "artifact_hashes", "reset", "created_at", "content_hash"],
+      "properties": {
+        "spec_version": { "const": "assertion-result@1" },
+        "id": { "$ref": "#/$defs/id" },
+        "attempt_id": { "$ref": "#/$defs/id" },
+        "run_purpose": { "enum": ["release_validation", "student_attempt"] },
+        "practice_id": { "$ref": "#/$defs/id" },
+        "practice_hash": { "$ref": "#/$defs/sha64" },
+        "assertion_id": { "$ref": "#/$defs/id" },
+        "assertion_hash": { "$ref": "#/$defs/sha64" },
+        "release_set_root": { "$ref": "#/$defs/sha64" },
+        "public_package_root": { "$ref": "#/$defs/sha64" },
+        "teacher_overlay_root": { "$ref": "#/$defs/nullableSha64" },
+        "source_contract_root": { "$ref": "#/$defs/sha64" },
+        "source_commit": { "$ref": "#/$defs/sha40" },
+        "source_tree": { "$ref": "#/$defs/sha40" },
+        "student_diff_hash": { "$ref": "#/$defs/nullableSha64" },
+        "patch_hash": { "$ref": "#/$defs/nullableSha64" },
+        "image_digest": { "type": "string", "pattern": "^[^@\\s]+@sha256:[0-9a-f]{64}$" },
+        "environment_hash": { "$ref": "#/$defs/sha64" },
+        "harness_hash": { "$ref": "#/$defs/sha64" },
+        "test_hash": { "$ref": "#/$defs/sha64" },
+        "status": { "enum": ["passed", "failed", "not_run", "not_applicable", "infrastructure_error"] },
+        "failure_category": { "enum": ["student_error", "test_failure", "toolchain_failure", "worker_failure", null] },
+        "artifact_hashes": { "$ref": "#/$defs/hashes" },
+        "reset": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "log_hash"],
+          "properties": {
+            "status": { "enum": ["succeeded", "failed", "not_required"] },
+            "log_hash": { "$ref": "#/$defs/nullableSha64" }
+          }
+        },
+        "created_at": { "type": "string", "format": "date-time" },
+        "content_hash": { "$ref": "#/$defs/sha64" }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spec_version", "id", "purpose", "producer", "authority", "trust_root", "course_id", "course_version", "release_set_root", "public_package_root", "teacher_overlay_root", "source", "practice_id", "practice_hash", "assertion_ids", "object_hashes", "status", "artifact_hashes", "invalidated_by", "expires_at", "created_at", "content_hash"],
+      "properties": {
+        "spec_version": { "const": "evidence-envelope@1" },
+        "id": { "$ref": "#/$defs/id" },
+        "purpose": { "enum": ["release", "attempt", "mastery"] },
+        "producer": { "type": "string", "minLength": 1 },
+        "authority": { "enum": ["trusted_worker", "teacher", "student", "deterministic_grader"] },
+        "trust_root": { "$ref": "#/$defs/sha64" },
+        "course_id": { "$ref": "#/$defs/id" },
+        "course_version": { "type": "string", "minLength": 1 },
+        "release_set_root": { "$ref": "#/$defs/nullableSha64" },
+        "public_package_root": { "$ref": "#/$defs/nullableSha64" },
+        "teacher_overlay_root": { "$ref": "#/$defs/nullableSha64" },
+        "source": { "$ref": "#/$defs/sourceIdentity" },
+        "practice_id": { "$ref": "#/$defs/id" },
+        "practice_hash": { "$ref": "#/$defs/sha64" },
+        "assertion_ids": { "$ref": "#/$defs/ids" },
+        "object_hashes": { "$ref": "#/$defs/hashes" },
+        "status": { "enum": ["accepted", "rejected", "pending", "infrastructure_error"] },
+        "artifact_hashes": { "$ref": "#/$defs/hashes" },
+        "invalidated_by": { "$ref": "#/$defs/strings" },
+        "expires_at": { "type": ["string", "null"], "format": "date-time" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "content_hash": { "$ref": "#/$defs/sha64" }
+      }
+    },
+    "gatePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spec_version", "id", "stage_id", "unit_ids", "prerequisite_gate_ids", "required_assertion_ids", "allowed_evidence_purposes", "allowed_producers", "trusted_roots", "max_age_seconds", "decision", "status", "generated_by", "content_hash"],
+      "properties": {
+        "spec_version": { "const": "gate-policy@1" },
+        "id": { "$ref": "#/$defs/id" },
+        "stage_id": { "$ref": "#/$defs/id" },
+        "unit_ids": { "$ref": "#/$defs/ids" },
+        "prerequisite_gate_ids": { "$ref": "#/$defs/ids" },
+        "required_assertion_ids": { "allOf": [{ "$ref": "#/$defs/ids" }, { "minItems": 1 }] },
+        "allowed_evidence_purposes": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["release", "attempt", "mastery"] } },
+        "allowed_producers": { "allOf": [{ "$ref": "#/$defs/strings" }, { "minItems": 1 }] },
+        "trusted_roots": { "allOf": [{ "$ref": "#/$defs/hashes" }, { "minItems": 1 }] },
+        "max_age_seconds": { "type": ["integer", "null"], "minimum": 1 },
+        "decision": { "enum": ["deterministic", "teacher_final"] },
+        "status": { "$ref": "#/$defs/reviewStatus" },
+        "generated_by": { "$ref": "#/$defs/generator" },
+        "content_hash": { "$ref": "#/$defs/sha64" }
+      }
+    },
+    "remediation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spec_version", "id", "practice_id", "assertion_ids", "knowledge_node_ids", "card_ids", "retry_practice_id", "status", "content_hash"],
+      "properties": {
+        "spec_version": { "const": "remediation@1" },
+        "id": { "$ref": "#/$defs/id" },
+        "practice_id": { "$ref": "#/$defs/id" },
+        "assertion_ids": { "allOf": [{ "$ref": "#/$defs/ids" }, { "minItems": 1 }] },
+        "knowledge_node_ids": { "allOf": [{ "$ref": "#/$defs/ids" }, { "minItems": 1 }] },
+        "card_ids": { "$ref": "#/$defs/ids" },
+        "retry_practice_id": { "$ref": "#/$defs/id" },
+        "status": { "$ref": "#/$defs/reviewStatus" },
+        "content_hash": { "$ref": "#/$defs/sha64" }
+      }
+    }
+  }
+}

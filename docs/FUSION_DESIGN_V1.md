@@ -278,6 +278,8 @@ status / artifacts / created_at
 invalidated_by / expires_at
 ```
 
+实现校正（2026-08-18）：位于公开 Course Package 内的发布前收据不能反向写入最终 `public_package_root/release_set_root`，否则“root 包含收据、收据又包含 root”会形成不可解的循环 hash。这类 `purpose=release` 收据允许两个最终 root 同时为 `null`，随后由教师签名的 Release Set 对“包含该收据的公开包 + overlay”作最终承诺；`attempt/mastery` 证据必须绑定非空的最终 roots。两个字段不得一空一非空，也不得填写占位 hash。
+
 Gate Policy 引用具体 evidence IDs、允许的 purpose/producer、所需 assertion、trust root 和有效期，不再读取模糊布尔值。`infrastructure_error` 使 mastery 保持 `pending`，既不能 pass 也不能 fail 学生；教师例外只能临时解锁学习路径，不能伪造掌握或发布证据。确定性题和测试可自动裁决，LLM 只能生成候选，高影响 Readiness 由受信规则与教师终裁。
 
 `tutorial/foundation/pre_project` 的必修修改型实践在发布前必须拥有成功的 release receipt；`project_reference` 可以诚实保留 partial/unresolved，但不能替代 executable gate 的发布证据。
@@ -537,7 +539,7 @@ Dream Agent 只消费验证通过的 Release Set，负责不可变课程版本�
 | `knowledge-forest` / `practice-run` / `teacher-review` 独立投影 | 缺 | 下一轮首要契约任务 |
 | 结构化修改范围、typed assertion、提示门、失败归因 | 部分 | Practice Contract 的关键补强 |
 | 公开包与教师私有 overlay 隔离 | 缺 | 防答案泄漏和可信发布所必需 |
-| `os-camp-course@2` 与签名 Release Set | 缺 | 承载新 required 语义，不静默扩展严格的 `@1` |
+| `os-camp-course@2` 与签名 Release Set | F1 已实现（首个真实黄金课程待 F2） | 承载新 required 语义，不静默扩展严格的 `@1` |
 | `source_bridge` 与跨基线证据边界 | 缺 | D8 双源码合同必须补齐 |
 | 一个已合并 StarryOS 纵向课程的真实学生闭环 | 缺 | 判断融合设计是否有效的黄金样例 |
 | 最小教师/学生界面 | 未做，符合原计划 | 等投影契约与黄金课程稳定后建设 |

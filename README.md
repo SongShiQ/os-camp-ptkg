@@ -7,7 +7,8 @@ Git repository + optional goal/doc
   -> fixed source and code facts
   -> project/task/knowledge graph
   -> teacher review
-  -> os-camp-course@1 package
+  -> os-camp-course@1 (legacy) or os-camp-course@2 package
+  -> signed public package + optional teacher overlay Release Set
   -> dry-run / transactional platform import
 ```
 
@@ -27,7 +28,7 @@ The tool plans the complete project from the top down, while the resulting cours
 
 The next product increment is frozen in [docs/FUSION_DESIGN_V1.md](./docs/FUSION_DESIGN_V1.md). It distills the useful teaching patterns from six public OS education projects without merging their repositories or copying unlicensed content. Student learning effect is the admission gate: fixed real source, whole-behavior learning episodes, typed assertions, targeted remediation, and teacher-governed evidence enter the core; prediction/replay and richer UI remain measured experiments.
 
-The design intentionally keeps the implemented `os-camp-course@1` contract unchanged. F1 will add `os-camp-course@2` plus a signed release-set contract for public packages and optional teacher-private overlays; until those schemas and tests exist, the new interfaces are design commitments, not implemented CLI claims.
+The design intentionally keeps `os-camp-course@1` unchanged for historical packages. F1 now implements the separate `os-camp-course@2` contract layer: structured Practice Contracts, typed assertions, Evidence Envelopes, source bridges, deterministic public projections, teacher-private overlays, and `os-camp-release-set@1`. The first real StarryOS `@2` golden course is still F2 work; the new contract should therefore be read as an implemented compiler/release foundation, not as proof that a teacher has approved a production course.
 
 ## Requirements
 
@@ -92,7 +93,7 @@ ptkg author-recover-lease <workspace> --expected-token <token> --confirm-owner-s
 
 Global project contracts, commit/tree selection, source facts, L0-L2 skeletons, course blueprints, cross-unit prerequisites, the Project Readiness Gate, teacher review/signing, and Docker/QEMU execution remain single-writer operations. See [docs/MULTI_AGENT_AUTHORING.md](./docs/MULTI_AGENT_AUTHORING.md) for the exact contract.
 
-## Course Compiler and Release CLI (G2-G3)
+## Course Compiler and Release CLI (G2-G3 and F1)
 
 Course compilation, validation, signing, and deterministic archiving are available:
 
@@ -101,11 +102,21 @@ ptkg course-compile <workspace> --out <package-dir>
 ptkg course-validate <package-dir> --profile draft|release [--trust-store <file>]
 ptkg course-sign <package-dir> --key <ed25519-key> --actor <teacher-id>
 ptkg course-pack <package-dir> [--out <archive.tgz>] [--trust-store <file>]
+
+# New F1 contract; @1 remains the default.
+ptkg course-compile <workspace> --out <package-dir> --contract os-camp-course@2
+ptkg course-sign <package-dir> --key <ed25519-key> --actor <teacher-id> \
+  --out <release-set.json> --trust-store-id <id> [--overlay <teacher-overlay-dir>]
+ptkg release-set-validate <release-set.json> --package <package-dir> \
+  --trust-store <trusted-keys.yaml> [--overlay <teacher-overlay-dir>]
+ptkg course-migrate-v2 <course-v1-dir> --out <migration-gaps.json>
 ```
 
-`course-compile` reads `09-course/` from a staged authoring workspace and writes normalized JSONL, content hashes, checksums, and the Dream Agent projection. The output directory must be empty. Draft validation permits `candidate`/`unresolved` content only as review findings; release validation blocks it.
+`course-compile` reads `09-course/` from a staged authoring workspace and writes normalized JSONL, content hashes, checksums, and rebuildable projections. The output directory must be empty. `@1` stays the default so existing workspaces and hashes do not silently change. `@2` additionally requires `blueprint-v2.yaml`, `composition-manifest.json`, `source-bridges.jsonl`, `assertions.jsonl`, `remediations.jsonl`, and the upgraded practice/gate objects. Draft validation permits candidates only for teacher review; release validation blocks unreviewed or unresolved high-impact content.
 
-`course-sign` accepts an Ed25519 PKCS#8 private key, changes the package to release status only after all non-signature release checks pass, and writes a public attestation. A signature does not trust itself. `course-validate --profile release` and `course-pack` require a separate `ptkg-trust-store@1` file through `--trust-store` or `PTKG_TRUST_STORE`:
+For `@1`, `course-sign` retains the original behavior: it accepts an Ed25519 PKCS#8 private key, promotes the package only after preflight checks, and writes a package attestation. For `@2`, it instead signs a Release Set that binds the public package root, optional teacher-overlay root, source-composition root, schema versions, and trust policy. A signature does not trust itself; `release-set-validate` requires a separate `ptkg-trust-store@1`.
+
+`course-migrate-v2` deliberately writes a deterministic gap report rather than inventing source anchors, typed assertions, trusted evidence, or overlay semantics that did not exist in `@1`.
 
 ```yaml
 spec_version: ptkg-trust-store@1
@@ -117,9 +128,9 @@ keys:
       -----END PUBLIC KEY-----
 ```
 
-## Course Package Contract
+## Course Package Contracts
 
-The portable contract ID is `os-camp-course@1`:
+The legacy portable contract ID is `os-camp-course@1`:
 
 ```text
 manifest.yaml
@@ -139,6 +150,22 @@ checksums.json
 ```
 
 Stages are `tutorial`, `foundation`, `pre_project`, and `project_reference`. The last stage provides project context only. A required unit must have a knowledge card, a code or high-fidelity practice, two diagnostic/remediation questions, two checkpoint questions, and a trusted-evidence gate. `COURSE001-012` enforce structure, paths/checksums, graph references and DAGs, assets, question pools, evidence, fixed source, review status, reuse metadata, privacy, signature trust, and projection consistency.
+
+New fusion courses use `os-camp-course@2` and add:
+
+```text
+course/assertions.jsonl
+course/remediations.jsonl
+course/source-bridges.jsonl
+governance/release-receipts.jsonl
+projections/knowledge-forest-v1.json
+projections/practice-definition-v1.json
+projections/dream-agent-v2.json
+```
+
+The teacher-review projection stays under the private authoring workspace and is never packed into the public course. Hidden assertions, trusted harness material, reference patches, and answers live only in `os-camp-teacher-overlay@1`. A signed `os-camp-release-set@1` binds that overlay (or explicit `null`) to exactly one public package and source composition. Any root replacement under the same course version is rejected.
+
+Release receipts embedded before final signing may leave `public_package_root` and `release_set_root` as `null`; the Release Set signature subsequently commits to the package containing those receipts. Student-attempt and mastery evidence may not use this pre-release form and must bind the final roots. This avoids a circular hash while keeping the evidence inside the signed release identity.
 
 ## G5 Golden Courses
 
@@ -200,8 +227,8 @@ Exit codes are `0` for success, `1` for validation blockers, and `2` for usage o
 ```text
 src/authoring/       Fixed-source authoring and evidence chain
 src/project/         Generic project workspace, analyzers, checkpoints, and Agent adapters
-src/course/          Course compiler, validation, signing, and packing
-schema/              Stable JSON Schema contracts
+src/course/          Legacy course compiler plus the explicit v2 contract/release workflow
+schema/              Stable JSON Schema contracts (`@1`, Practice/Evidence, composition, `@2`, Release Set)
 fixtures/            Golden and deliberately broken examples
 test/                Deterministic regression tests
 AGENT_INSTRUCTIONS.md Model-independent staged authoring protocol
@@ -222,7 +249,7 @@ npm test
 npm run check
 ```
 
-CI runs the full check and graph, authoring, and course-package golden validations on Windows and Ubuntu. The current baseline contains 85 tests, including deterministic G5 fixture regeneration, the 16-unit cgroup course, the 16-unit ABI course, exact shared-node reuse, the rCore smoke compilation, sealed multi-Agent CLI/split/merge/lease/scope safety (including explicit stale-lease token recovery, pre-planted shard-link rejection, optional-stage coverage and tampered-status command rejection), runtime-cache/overlay security cases, Windows short-worker selection, LF checkout protection, and bounded Linux-side QEMU staging cleanup. Rule meanings are append-only: PTKG001-014 retain their existing semantics, while course-package findings use the independent `COURSE001-012` namespace.
+CI runs the full check and graph, authoring, and course-package golden validations on Windows and Ubuntu. The current local baseline contains 97 tests (96 pass, 0 fail, one Windows symlink-permission skip), including deterministic G5 fixture regeneration, the 16-unit cgroup course, the 16-unit ABI course, exact shared-node reuse, the rCore smoke compilation, sealed multi-Agent CLI/split/merge/lease/scope safety, runtime-cache/overlay security cases, and the F1 `@2`/Practice/Evidence/bridge/Release Set/migration tests. Rule meanings are append-only: PTKG001-014 retain their existing semantics, while course-package findings use the independent `COURSE001-012` namespace.
 
 See [STATUS.md](./STATUS.md) for the current implementation gate and [AGENT_INSTRUCTIONS.md](./AGENT_INSTRUCTIONS.md) for the authoring protocol.
 

@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://os-camp.dev/ptkg/course/objects@2.schema.json",
+  "$defs": {
+    "id": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9][A-Za-z0-9._@-]*$" },
+    "sha64": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "ids": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+    "generator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool", "version"],
+      "properties": {
+        "tool": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "agent": { "type": "string", "minLength": 1 }
+      }
+    },
+    "manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "course_id", "version", "title", "language", "package_status", "curriculum_boundary", "source_composition_root", "source_contract_ids", "source_bridge_ids", "generator"],
+      "properties": {
+        "contract": { "const": "os-camp-course@2" },
+        "course_id": { "$ref": "#/$defs/id" },
+        "version": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "language": { "type": "string", "minLength": 1 },
+        "package_status": { "enum": ["draft", "release"] },
+        "curriculum_boundary": { "const": "pre_project_readiness" },
+        "source_composition_root": { "$ref": "#/$defs/sha64" },
+        "source_contract_ids": { "allOf": [{ "$ref": "#/$defs/ids" }, { "minItems": 1 }] },
+        "source_bridge_ids": { "$ref": "#/$defs/ids" },
+        "generator": { "$ref": "#/$defs/generator" }
+      }
+    },
+    "knowledgeForestProjection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "course_id", "version", "public_package_root", "default_collapse_depth", "nodes", "edges"],
+      "properties": {
+        "contract": { "const": "knowledge-forest-projection@1" },
+        "course_id": { "$ref": "#/$defs/id" },
+        "version": { "type": "string", "minLength": 1 },
+        "public_package_root": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+        "default_collapse_depth": { "type": "integer", "minimum": 0 },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "type", "stage_layer", "dependency_depth", "origin_projects", "reuse_count", "source_ids", "flags"],
+            "properties": {
+              "id": { "$ref": "#/$defs/id" },
+              "type": { "type": "string", "minLength": 1 },
+              "stage_layer": { "enum": ["tutorial", "foundation", "pre_project", "project_reference", null] },
+              "dependency_depth": { "type": "integer", "minimum": 0 },
+              "origin_projects": { "$ref": "#/$defs/ids" },
+              "reuse_count": { "type": "integer", "minimum": 0 },
+              "source_ids": { "$ref": "#/$defs/ids" },
+              "flags": { "type": "array", "uniqueItems": true, "items": { "enum": ["unresolved", "conflict", "expired"] } }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "from", "to", "relation"],
+            "properties": {
+              "id": { "$ref": "#/$defs/id" },
+              "from": { "$ref": "#/$defs/id" },
+              "to": { "$ref": "#/$defs/id" },
+              "relation": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    "teacherReviewProjection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "course_id", "version", "items"],
+      "properties": {
+        "contract": { "const": "teacher-review-projection@1" },
+        "course_id": { "$ref": "#/$defs/id" },
+        "version": { "type": "string", "minLength": 1 },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "queue", "object_ref", "object_hash", "reasons"],
+            "properties": {
+              "id": { "$ref": "#/$defs/id" },
+              "queue": { "enum": ["behavior_slice_evidence", "low_risk_metadata", "conflict_high_impact"] },
+              "object_ref": { "$ref": "#/$defs/id" },
+              "object_hash": { "$ref": "#/$defs/sha64" },
+              "reasons": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+            }
+          }
+        }
+      }
+    },
+    "publicReviewEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spec_version", "event_id", "object_ref", "object_hash", "action", "actor_id", "created_at"],
+      "properties": {
+        "spec_version": { "const": "public-review-event-summary@1" },
+        "event_id": { "$ref": "#/$defs/id" },
+        "object_ref": { "$ref": "#/$defs/id" },
+        "object_hash": { "$ref": "#/$defs/sha64" },
+        "action": { "enum": ["accept", "publish", "revoke"] },
+        "actor_id": { "type": "string", "minLength": 1 },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}
