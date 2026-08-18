@@ -51,8 +51,15 @@ The default compiler remains `@1`; existing workspaces do not silently change co
 - New focused F1 suite: 12/12 passed.
 - Final `npm run check`: 97 tests, 96 passed, 0 failed, 1 Windows symlink-permission skip.
 - `npm run fixtures:g5`: passed; generated fixtures produced no tracked drift.
-- Final diff audit, commit, push, and Windows/Ubuntu CI are still pending at the time of this log entry.
+- At the time this section was first written, the final diff audit, commit, push, and Windows/Ubuntu CI were still pending. They were completed in the F1 close-out below.
+
+## F1 close-out (2026-08-18)
+
+- Audited the committed diff for source checkouts, caches, private documents, credentials, signing keys, hidden tests, and runtime output; none are tracked.
+- Commit `c02224ff9b0c568bb812c068f4a4712625a59d91` was pushed to `origin/main`.
+- GitHub Actions run `32103734994` completed successfully on both Windows and Ubuntu.
+- The local and remote result is therefore F1 complete. This closes the contract/release foundation only; it does not claim a teacher-approved StarryOS `@2` course or successful cgroup S0/S2/S3 execution.
 
 ## Next action
 
-Run the final regression and golden checks, update the exact totals, audit the diff for private data and generated artifacts, then commit and push F1. F2 will build the first real merged-StarryOS `@2` vertical course; cgroup formal execution remains separately unresolved.
+F2 can now start after the teacher supplies the immutable `starryos_merged_baseline` 40-character commit and tree. F2 will build the first real merged-StarryOS `@2` vertical course; cgroup formal execution remains separately unresolved.
