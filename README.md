@@ -55,6 +55,37 @@ ptkg status <workspace>
 
 If a repository contains several plausible project goals, initialization stops at the project-contract checkpoint instead of silently choosing one.
 
+### Parallel Agent Authoring
+
+After the project contract, fixed source, and global project skeleton are frozen, two checkpoints may run in parallel. `competency_evidence` is split by connected groups of required coverage units; units that share a behavior chain stay together. `course_assets` is split by non-`project_reference` course unit, while the blueprint, unit definitions, cross-unit edges, gates, and readiness design stay serial:
+
+```bash
+ptkg task-split <workspace> --agents 3 --checkpoint competency_evidence
+ptkg status <workspace>
+
+# Run one command per shard shown by task-split/status. These may run concurrently.
+ptkg author <workspace> --agent codex --shard <shard-id>
+ptkg author <workspace> --agent claude --shard <shard-id>
+ptkg author <workspace> --agent manual --shard <shard-id>
+
+# Each completed output must be sealed before merge.
+ptkg author-seal <workspace> --shard <shard-id>
+
+# The coordinator previews before writing.
+ptkg author-merge <workspace>
+ptkg author-merge <workspace> --write
+```
+
+Each Agent receives an input-hash-bound manifest, a read-only context snapshot, and a separate `agent-workspace/output/` as its only candidate-output root. Codex runs with the isolated Agent workspace as its `workspace-write` root. Sealing records every output path, byte length, SHA-256, and one aggregate output hash; adding, deleting, or modifying a file after sealing invalidates the shard. An active task plan identifies the current round, so older shards remain auditable without blocking a newer split. A successful write marks the round as merged and `ptkg status` advances to the next real checkpoint. The merge coordinator rejects stale source/input identities, path traversal, symlinks, undeclared files, authority escalation, overlapping scope claims, and same-ID/different-content conflicts. Same-ID/same-content values deduplicate; successful JSONL output is canonical and sorted by locale-independent UTF-16 code-unit order.
+
+The coordinator lock is never taken over automatically after expiry. If a process stopped without releasing it, inspect the reported owner/token, verify that the old process is no longer running, then explicitly recover it:
+
+```bash
+ptkg author-recover-lease <workspace> --expected-token <token> --confirm-owner-stopped
+```
+
+Global project contracts, commit/tree selection, source facts, L0-L2 skeletons, course blueprints, cross-unit prerequisites, the Project Readiness Gate, teacher review/signing, and Docker/QEMU execution remain single-writer operations. See [docs/MULTI_AGENT_AUTHORING.md](./docs/MULTI_AGENT_AUTHORING.md) for the exact contract.
+
 ## Course Compiler and Release CLI (G2-G3)
 
 Course compilation, validation, signing, and deterministic archiving are available:
@@ -149,6 +180,11 @@ ptkg authoring-hash <dir> [--write]        Verify normalized SHA-256 hashes
 ptkg authoring-verify-workspace <dir>       Verify commit, tree, paths, and symbols
 ptkg authoring-impact <old> <new>           Build an incremental impact report
 ptkg authoring-execute <dir> ...            Run the fixed-source disposable evidence worker
+ptkg task-split <dir> --agents <n>          Create input-bound, isolated Agent shards
+ptkg author <dir> --agent <kind> --shard <id> Run one shard through a local Agent
+ptkg author-seal <dir> --shard <id>          Seal all output paths and hashes
+ptkg author-merge <dir> [--write]           Preview or apply a deterministic shard merge
+ptkg author-recover-lease <dir> ...          Explicitly clear one verified stale coordinator lease
 ```
 
 Exit codes are `0` for success, `1` for validation blockers, and `2` for usage or internal errors. JSON output is available with `--json` where applicable.
@@ -180,7 +216,7 @@ npm test
 npm run check
 ```
 
-CI runs the full check and graph, authoring, and course-package golden validations on Windows and Ubuntu. The current baseline contains 58 tests, including deterministic G5 fixture regeneration, the 16-unit cgroup course, the 16-unit ABI course, exact shared-node reuse, the rCore smoke compilation, runtime-cache/overlay security cases, Windows short-worker selection, LF checkout protection, and bounded Linux-side QEMU staging cleanup. Rule meanings are append-only: PTKG001-014 retain their existing semantics, while course-package findings use the independent `COURSE001-012` namespace.
+CI runs the full check and graph, authoring, and course-package golden validations on Windows and Ubuntu. The current baseline contains 85 tests, including deterministic G5 fixture regeneration, the 16-unit cgroup course, the 16-unit ABI course, exact shared-node reuse, the rCore smoke compilation, sealed multi-Agent CLI/split/merge/lease/scope safety (including explicit stale-lease token recovery, pre-planted shard-link rejection, optional-stage coverage and tampered-status command rejection), runtime-cache/overlay security cases, Windows short-worker selection, LF checkout protection, and bounded Linux-side QEMU staging cleanup. Rule meanings are append-only: PTKG001-014 retain their existing semantics, while course-package findings use the independent `COURSE001-012` namespace.
 
 See [STATUS.md](./STATUS.md) for the current implementation gate and [AGENT_INSTRUCTIONS.md](./AGENT_INSTRUCTIONS.md) for the authoring protocol.
 

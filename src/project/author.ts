@@ -4,6 +4,8 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { getProjectStatus } from './status.ts';
+import { loadActiveAuthoringShard } from './task-split.ts';
+import { sealAuthoringShard } from './shard-seal.ts';
 import type { AgentKind, AuthorResult, CheckpointId, ProjectInput } from './types.ts';
 import YAML from 'yaml';
 
@@ -80,17 +82,31 @@ ${CHECKPOINT_TASKS[checkpoint]}
 只处理这个 checkpoint。不要提前生成后续阶段的最终内容。`;
 }
 
-async function executeAgent(root: string, agent: Exclude<AgentKind, 'manual'>, prompt: string): Promise<{
+async function executeAgent(
+  root: string,
+  agent: Exclude<AgentKind, 'manual'>,
+  prompt: string,
+  executionRoot = root,
+): Promise<{
   exitCode: number;
   stdout: string;
   stderr: string;
 }> {
   const command = agent === 'codex' ? 'codex' : 'claude';
   const args = agent === 'codex'
-    ? ['exec', '--ephemeral', '--skip-git-repo-check', '-C', root, '-s', 'workspace-write', prompt]
-    : ['-p', '--permission-mode', 'acceptEdits', '--no-session-persistence', prompt];
+    ? ['exec', '--ephemeral', '--skip-git-repo-check', '-C', executionRoot, '-s', 'workspace-write', prompt]
+    : [
+      '-p',
+      '--safe-mode',
+      '--permission-mode',
+      'dontAsk',
+      '--tools',
+      'Read,Glob,Grep,Write,Edit',
+      '--no-session-persistence',
+      prompt,
+    ];
   try {
-    const result = await execFileAsync(command, args, { cwd: root, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 });
+    const result = await execFileAsync(command, args, { cwd: executionRoot, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 });
     return { exitCode: 0, stdout: result.stdout, stderr: result.stderr };
   } catch (error) {
     const failed = error as Error & { code?: number; stdout?: string; stderr?: string };
@@ -102,39 +118,68 @@ async function executeAgent(root: string, agent: Exclude<AgentKind, 'manual'>, p
   }
 }
 
-export async function authorProject(workspace: string, agent: AgentKind): Promise<AuthorResult> {
+export interface AuthorProjectOptions {
+  shardId?: string;
+}
+
+export async function authorProject(
+  workspace: string,
+  agent: AgentKind,
+  options: AuthorProjectOptions = {},
+): Promise<AuthorResult> {
   const root = path.resolve(workspace);
   const before = await getProjectStatus(root);
-  const checkpoint = before.next_checkpoint;
+  const shard = options.shardId ? await loadActiveAuthoringShard(root, options.shardId) : null;
+  const checkpoint = shard?.manifest.checkpoint ?? before.next_checkpoint;
   if (!checkpoint) {
     return { agent, checkpoint: null, instruction_path: null, log_path: null, exit_code: 0, status: before };
   }
-  const instruction = await buildCheckpointInstruction(root, checkpoint);
-  const instructionsDir = path.join(root, '.ptkg', 'instructions');
-  const logsDir = path.join(root, '.ptkg', 'logs');
+  const instruction = shard
+    ? await readFile(shard.instruction_path, 'utf8')
+    : await buildCheckpointInstruction(root, checkpoint);
+  const instructionsDir = shard ? path.dirname(shard.instruction_path) : path.join(root, '.ptkg', 'instructions');
+  const logsDir = shard ? path.join(root, '.ptkg', 'logs', 'shards') : path.join(root, '.ptkg', 'logs');
   await Promise.all([mkdir(instructionsDir, { recursive: true }), mkdir(logsDir, { recursive: true })]);
-  const instructionPath = path.join(instructionsDir, `${checkpoint}.md`);
-  await writeFile(instructionPath, `${instruction}\n`, 'utf8');
+  const instructionPath = shard ? shard.instruction_path : path.join(instructionsDir, `${checkpoint}.md`);
+  if (!shard) await writeFile(instructionPath, `${instruction}\n`, 'utf8');
   if (agent === 'manual') {
     const status = await getProjectStatus(root);
-    await writeFile(path.join(root, '.ptkg', 'state.json'), `${JSON.stringify(status, null, 2)}\n`, 'utf8');
+    if (!shard) await writeFile(path.join(root, '.ptkg', 'state.json'), `${JSON.stringify(status, null, 2)}\n`, 'utf8');
     return { agent, checkpoint, instruction_path: instructionPath, log_path: null, exit_code: 0, status };
   }
-  const execution = await executeAgent(root, agent, instruction);
-  const logPath = path.join(logsDir, `${checkpoint}.${agent}.log`);
+  const execution = await executeAgent(root, agent, instruction, shard?.agent_root ?? root);
+  const logPath = path.join(logsDir, `${shard?.manifest.shard_id ?? checkpoint}.${agent}.log`);
+  let exitCode = execution.exitCode;
+  let sealError = '';
+  if (shard && execution.exitCode === 0) {
+    try {
+      await sealAuthoringShard(root, shard.manifest.shard_id);
+    } catch (error) {
+      exitCode = 1;
+      sealError = `\n[seal-error]\n${(error as Error).message}\n`;
+    }
+  }
   await writeFile(
     logPath,
-    `agent=${agent}\ncheckpoint=${checkpoint}\nexit_code=${execution.exitCode}\n\n[stdout]\n${execution.stdout}\n\n[stderr]\n${execution.stderr}\n`,
+    `agent=${agent}\ncheckpoint=${checkpoint}\nexit_code=${exitCode}\n\n[stdout]\n${execution.stdout}\n\n[stderr]\n${execution.stderr}\n${sealError}`,
     'utf8',
   );
   const status = await getProjectStatus(root);
-  await writeFile(path.join(root, '.ptkg', 'state.json'), `${JSON.stringify(status, null, 2)}\n`, 'utf8');
+  if (shard) {
+    await writeFile(
+      path.join(shard.shard_root, 'agent-result.json'),
+      `${JSON.stringify({ shard_id: shard.manifest.shard_id, agent, exit_code: exitCode, log_path: logPath }, null, 2)}\n`,
+      'utf8',
+    );
+  } else {
+    await writeFile(path.join(root, '.ptkg', 'state.json'), `${JSON.stringify(status, null, 2)}\n`, 'utf8');
+  }
   return {
     agent,
     checkpoint,
     instruction_path: instructionPath,
     log_path: logPath,
-    exit_code: execution.exitCode,
+    exit_code: exitCode,
     status,
   };
 }

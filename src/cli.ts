@@ -41,6 +41,11 @@ import { initializeProjectWorkspace } from './project/workspace.ts';
 import { authorProject } from './project/author.ts';
 import { getProjectStatus } from './project/status.ts';
 import type { AgentKind } from './project/types.ts';
+import { splitAuthoringTasks } from './project/task-split.ts';
+import { mergeAuthoringShards } from './project/author-merge.ts';
+import { sealAuthoringShard } from './project/shard-seal.ts';
+import { PARALLEL_CHECKPOINTS, type ParallelCheckpointId } from './project/shard-types.ts';
+import { recoverWorkspaceLease } from './io/atomic.ts';
 import { compileCourse } from './course/compiler.ts';
 import { formatCourseValidation, validateCoursePackage } from './course/validate.ts';
 import { signCoursePackage } from './course/sign.ts';
@@ -72,8 +77,14 @@ const USAGE = `OS Camp PTKG v0.4 — 项目牵引式课程作者与校验工具
                                       可选重放 seeded fault 并声明实际覆盖的测试类别
   ptkg project-init <dir> --repo <url-or-path> [--goal <text>] [--doc <path-or-url>]...
                                       锁定项目源码并建立通用作者工作区
-  ptkg author <dir> --agent codex|claude|manual
-                                      执行或生成当前 checkpoint 指令
+  ptkg author <dir> --agent codex|claude|manual [--shard <id>]
+                                      执行全局 checkpoint 或隔离 Agent 分片
+  ptkg task-split <dir> --agents <2..32> [--checkpoint <name>]
+                                      按行为连通覆盖组或课程单元创建隔离分片
+  ptkg author-merge <dir> [--write]   dry-run 或确定性合并 Agent 分片
+  ptkg author-seal <dir> --shard <id> 封存一个已完成的 Agent 分片输出
+  ptkg author-recover-lease <dir> --expected-token <token> --confirm-owner-stopped
+                                      显式清除已过期且旧进程已停止的协调器锁
   ptkg status <dir>                   显示 checkpoint、未决项与下一步
   ptkg course-compile <workspace> --out <package-dir>
                                       编译确定性 os-camp-course@1 课程包
@@ -97,6 +108,11 @@ const USAGE = `OS Camp PTKG v0.4 — 项目牵引式课程作者与校验工具
   --doc <路径或URL>       可重复的项目文档
   --ref <commit/ref>      可选源码 ref；最终仍锁定 40 位 commit
   --agent <名称>          codex / claude / manual
+  --agents <数量>         task-split 的并行 Agent 数，2..32
+  --checkpoint <名称>     competency_evidence / course_assets
+  --shard <ID>            只执行活动 task plan 中的一个隔离分片
+  --expected-token <ID>   待恢复过期锁中显示的精确 token
+  --confirm-owner-stopped 明确确认旧协调器进程已经停止
   --key <文件>            Ed25519 PKCS#8 私钥文件
   --actor <ID>            教师或发布责任人 ID
   --trust-store <文件>    ptkg-trust-store@1 外部可信公钥
@@ -146,7 +162,7 @@ function parseArgs(argv: string[]): ParsedArgs {
 
     const name = arg.slice(2);
     // 带值的选项
-    if (['only', 'skip', 'stale-after', 'max', 'out', 'profile', 'cache-dir', 'runtime-cache', 'slice', 'image', 'run-command', 'prepare-command', 'fault-command', 'fault-ref', 'test-classes', 'expected', 'timeout-seconds', 'memory-mb', 'processes', 'repo', 'goal', 'doc', 'ref', 'agent', 'key', 'actor', 'trust-store'].includes(name)) {
+    if (['only', 'skip', 'stale-after', 'max', 'out', 'profile', 'cache-dir', 'runtime-cache', 'slice', 'image', 'run-command', 'prepare-command', 'fault-command', 'fault-ref', 'test-classes', 'expected', 'timeout-seconds', 'memory-mb', 'processes', 'repo', 'goal', 'doc', 'ref', 'agent', 'agents', 'checkpoint', 'shard', 'expected-token', 'key', 'actor', 'trust-store'].includes(name)) {
       const value = argv[i + 1];
       if (value === undefined || value.startsWith('--')) {
         throw new Error(`选项 --${name} 需要一个值。`);
@@ -439,6 +455,17 @@ async function main(argv: string[]): Promise<number> {
           console.log(`  ${checkpoint.status.padEnd(8)} ${checkpoint.id} · ${checkpoint.evidence.join('，')}`);
           for (const blocker of checkpoint.blockers) console.log(`    blocker: ${blocker}`);
         }
+        if (status.parallel_authoring) {
+          console.log(
+            `并行作者：${status.parallel_authoring.checkpoint} · ${status.parallel_authoring.merged ? '已合并' : `${status.parallel_authoring.ready_shards}/${status.parallel_authoring.shard_count} shards ready`}`,
+          );
+          if (status.parallel_authoring.pending_shard_ids.length > 0) {
+            console.log(`  待完成：${status.parallel_authoring.pending_shard_ids.join(', ')}`);
+          }
+          if (status.parallel_authoring.invalid_shard_ids.length > 0) {
+            console.log(`  已失效：${status.parallel_authoring.invalid_shard_ids.join(', ')}`);
+          }
+        }
         console.log(`下一步：${status.next_command ?? '全部 checkpoint 已完成'}`);
       }
       return status.source_locked ? 0 : 1;
@@ -450,7 +477,10 @@ async function main(argv: string[]): Promise<number> {
       if (!dir || typeof rawAgent !== 'string' || !['codex', 'claude', 'manual'].includes(rawAgent)) {
         throw new Error('author 需要 <workspace> 和 --agent codex|claude|manual。');
       }
-      const result = await authorProject(dir, rawAgent as AgentKind);
+      const rawShard = flags.get('shard');
+      const result = await authorProject(dir, rawAgent as AgentKind, {
+        shardId: typeof rawShard === 'string' ? rawShard : undefined,
+      });
       if (asJson) console.log(JSON.stringify(result, null, 2));
       else if (!result.checkpoint) console.log('全部 checkpoint 已完成。');
       else {
@@ -460,6 +490,83 @@ async function main(argv: string[]): Promise<number> {
         console.log(`退出码：${result.exit_code}`);
       }
       return result.exit_code === 0 ? 0 : 1;
+    }
+
+    case 'task-split': {
+      const dir = positional[0];
+      const rawAgents = flags.get('agents');
+      const rawCheckpoint = flags.get('checkpoint');
+      if (!dir || typeof rawAgents !== 'string') {
+        throw new Error('task-split 需要 <workspace> 和 --agents <2..32>。');
+      }
+      const agents = Number(rawAgents);
+      if (!Number.isInteger(agents)) throw new Error('--agents 必须是 2..32 的整数。');
+      let checkpoint: ParallelCheckpointId | undefined;
+      if (rawCheckpoint !== undefined) {
+        if (
+          typeof rawCheckpoint !== 'string'
+          || !(PARALLEL_CHECKPOINTS as readonly string[]).includes(rawCheckpoint)
+        ) {
+          throw new Error('--checkpoint 只接受 competency_evidence / course_assets。');
+        }
+        checkpoint = rawCheckpoint as ParallelCheckpointId;
+      }
+      const result = await splitAuthoringTasks(dir, { agents, checkpoint });
+      if (asJson) console.log(JSON.stringify(result, null, 2));
+      else {
+        console.log(`checkpoint：${result.checkpoint}`);
+        console.log(`input hash：${result.input_hash}`);
+        console.log(`活动任务清单：${result.plan_path}`);
+        for (const shard of result.shards) {
+          console.log(`  ${shard.shard_id} · ${shard.scope_kind}: ${shard.scope_ids.join(', ')}`);
+          console.log(`    ${shard.instruction_path}`);
+        }
+        console.log('下一步：让每个 Agent 只完成自己的 instruction，然后运行 author-merge dry-run。');
+      }
+      return 0;
+    }
+
+    case 'author-merge': {
+      const dir = positional[0];
+      if (!dir) throw new Error('author-merge 需要 <workspace>。');
+      const report = await mergeAuthoringShards(dir, { write: flags.get('write') === true });
+      if (asJson) console.log(JSON.stringify(report, null, 2));
+      else {
+        console.log(`模式：${report.dry_run ? 'dry-run' : 'write'}`);
+        console.log(`分片：${report.shard_ids.length}`);
+        console.log(
+          `accepted=${report.summary.accepted} duplicate=${report.summary.duplicate} conflict=${report.summary.conflict} stale=${report.summary.stale} rejected=${report.summary.rejected}`,
+        );
+        for (const item of report.items.filter((entry) => ['conflict', 'stale', 'rejected'].includes(entry.disposition))) {
+          console.log(`  ${item.disposition} ${item.shard_id} ${item.path}${item.object_id ? `#${item.object_id}` : ''} · ${item.reason}`);
+        }
+        console.log(report.applied ? `已写入：${report.written_paths.join(', ')}` : 'canonical workspace 未修改。');
+      }
+      return report.summary.conflict + report.summary.stale + report.summary.rejected === 0 ? 0 : 1;
+    }
+
+    case 'author-seal': {
+      const dir = positional[0];
+      const rawShard = flags.get('shard');
+      if (!dir || typeof rawShard !== 'string') throw new Error('author-seal 需要 <workspace> 和 --shard <id>。');
+      const seal = await sealAuthoringShard(dir, rawShard);
+      if (asJson) console.log(JSON.stringify(seal, null, 2));
+      else console.log(`已封存 ${seal.shard_id}：${seal.files.length} 个文件，output hash ${seal.output_hash}`);
+      return 0;
+    }
+
+    case 'author-recover-lease': {
+      const dir = positional[0];
+      const expectedToken = flags.get('expected-token');
+      const confirmed = flags.get('confirm-owner-stopped') === true;
+      if (!dir || typeof expectedToken !== 'string' || !confirmed) {
+        throw new Error('author-recover-lease 需要 <workspace>、--expected-token <token> 和 --confirm-owner-stopped。');
+      }
+      const lock = path.join(path.resolve(dir), '.ptkg', 'locks', 'authoring-coordinator.lock');
+      await recoverWorkspaceLease(lock, { expectedToken, confirmOwnerStopped: true });
+      if (asJson) console.log(JSON.stringify({ recovered: true, lock }, null, 2));
+      else console.log(`已显式清除过期协调器锁：${lock}`);
+      return 0;
     }
 
     case 'course-compile': {

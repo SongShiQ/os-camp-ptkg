@@ -7,6 +7,8 @@ import { validateAuthoringRun } from '../authoring/validate.ts';
 import { loadBundle } from '../loader.ts';
 import type { CheckpointId, CheckpointState, ProjectInput, ProjectWorkspaceStatus } from './types.ts';
 import { CHECKPOINTS } from './types.ts';
+import type { AgentTaskPlan } from './shard-types.ts';
+import { verifyShardSeal } from './shard-output.ts';
 
 async function exists(file: string): Promise<boolean> {
   return Boolean(await stat(file).catch(() => null));
@@ -15,6 +17,53 @@ async function exists(file: string): Promise<boolean> {
 async function readInput(root: string): Promise<ProjectInput | null> {
   try {
     return YAML.parse(await readFile(path.join(root, 'project-input.yaml'), 'utf8')) as ProjectInput;
+  } catch {
+    return null;
+  }
+}
+
+async function parallelStatus(root: string): Promise<ProjectWorkspaceStatus['parallel_authoring']> {
+  try {
+    const plan = JSON.parse(
+      await readFile(path.join(root, '.ptkg', 'coordination', 'task-plan.json'), 'utf8'),
+    ) as AgentTaskPlan;
+    if (
+      plan.spec_version !== 'ptkg-agent-task-plan@1'
+      || !['active', 'merged'].includes(plan.state)
+      || !Array.isArray(plan.shards)
+      || plan.shards.length === 0
+      || plan.shards.some((assignment) => (
+        typeof assignment?.shard_id !== 'string'
+        || !/^[a-z0-9._-]+$/i.test(assignment.shard_id)
+        || typeof assignment.manifest_hash !== 'string'
+        || !/^[0-9a-f]{64}$/.test(assignment.manifest_hash)
+      ))
+    ) {
+      return null;
+    }
+    const pending: string[] = [];
+    const invalid: string[] = [];
+    for (const assignment of plan.shards) {
+      const id = assignment.shard_id;
+      const shardRoot = path.join(root, '.ptkg', 'shards', id);
+      const outputRoot = path.join(shardRoot, 'agent-workspace', 'output');
+      const sealFile = path.join(shardRoot, 'seal.json');
+      const seal = await verifyShardSeal(outputRoot, sealFile, id, assignment.manifest_hash);
+      if (!seal.valid) {
+        const sealInfo = await stat(sealFile).catch(() => null);
+        if (sealInfo) invalid.push(id);
+        else pending.push(id);
+      }
+    }
+    return {
+      checkpoint: plan.checkpoint,
+      input_hash: plan.input_hash,
+      merged: plan.state === 'merged',
+      shard_count: plan.shards.length,
+      ready_shards: plan.shards.length - pending.length - invalid.length,
+      pending_shard_ids: pending,
+      invalid_shard_ids: invalid,
+    };
   } catch {
     return null;
   }
@@ -88,6 +137,14 @@ export async function getProjectStatus(workspace: string): Promise<ProjectWorksp
   checkpoints.push(state('reuse_review', reviewComplete, courseExists, reviewComplete ? ['review queues generated'] : []));
 
   const next = checkpoints.find((item) => item.status === 'ready' || item.status === 'blocked')?.id ?? null;
+  const parallel = await parallelStatus(root);
+  const nextCommand = parallel && !parallel.merged
+    ? parallel.invalid_shard_ids.length > 0
+      ? `ptkg author-seal "${root}" --shard ${parallel.invalid_shard_ids[0]}`
+      : parallel.pending_shard_ids.length === 0
+        ? `ptkg author-merge "${root}"`
+        : `ptkg author "${root}" --agent manual --shard ${parallel.pending_shard_ids[0]}`
+    : next ? `ptkg author "${root}" --agent manual` : null;
   return {
     workspace: root,
     project_ref: loaded.run?.manifest.project_ref ?? null,
@@ -96,7 +153,8 @@ export async function getProjectStatus(workspace: string): Promise<ProjectWorksp
     checkpoints,
     findings: validation?.findings ?? loaded.findings,
     unresolved_questions: input?.unresolved_questions ?? [],
-    next_command: next ? `ptkg author "${root}" --agent manual` : null,
+    next_command: nextCommand,
+    parallel_authoring: parallel,
   };
 }
 

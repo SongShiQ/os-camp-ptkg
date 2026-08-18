@@ -37,6 +37,21 @@ Run only the checkpoint reported by `ptkg status <workspace>`.
 
 Every checkpoint has an independent file contract and validator. Do not jump directly from a repository to a final course.
 
+## Parallel Authoring
+
+Parallel work is permitted only through the shard protocol. Do not run several Agents against the canonical workspace.
+
+1. A single coordinator freezes the project contract, commit/tree and L0-L2 skeleton.
+2. Run `ptkg task-split <workspace> --agents <n> --checkpoint competency_evidence|course_assets`.
+3. Each Agent handles one active shard, reads only its fixed `agent-workspace/input/context.json`, and writes candidate output only under `agent-workspace/output/`; use `ptkg author <workspace> --agent <kind> --shard <id>` for supported local Agents.
+4. Seal every completed shard with `ptkg author-seal <workspace> --shard <id>`. Do not edit its output after sealing; any added, deleted, or changed byte invalidates it.
+5. Run `ptkg author-merge <workspace>` first. Resolve every stale, rejected or conflicting item before `--write`.
+6. Run the ordinary authoring, graph and course validators after the merge.
+
+The active task plan and every shard bind the fixed source and normalized upstream `input_hash`. Same-ID/same-content objects may deduplicate. Same-ID/different-content objects require explicit review and must never use last-writer-wins.
+
+For `competency_evidence`, coverage units that share a behavior chain stay in one indivisible shard. For `course_assets`, cards, questions, and practices must each bind to exactly one authorized non-project-reference course unit. Project contracts, source identity, source-fact claims, projection structure, global blueprints, unit definitions, gates, cross-unit prerequisites, the readiness gate, teacher decisions, signatures and resource-heavy evidence execution remain single-writer operations in the first protocol version.
+
 ## Source Discipline
 
 - Every repository fact binds to the fixed 40-character commit.

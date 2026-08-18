@@ -89,6 +89,15 @@ export interface ProjectWorkspaceStatus {
   findings: AuthoringFinding[];
   unresolved_questions: string[];
   next_command: string | null;
+  parallel_authoring: {
+    checkpoint: CheckpointId;
+    input_hash: string;
+    merged: boolean;
+    shard_count: number;
+    ready_shards: number;
+    pending_shard_ids: string[];
+    invalid_shard_ids: string[];
+  } | null;
 }
 
 export interface ProjectInitOptions {
